@@ -9,7 +9,7 @@
   - Response: `{ token: string, user: { id, username, email, name, avatar, ... } }`
 
 - `POST /auth/register`
-  - Request: `{ username, email, password, phone?, studentId?, school? }`
+  - Request: `{ username, email, password, phone?, studentId? }`
   - Response: `{ user: { id, username, email }, message?: string }`
 
 认证通过后，前端将 `token` 存储在 `localStorage.authToken`，并将 `user` 存储在 `localStorage.authUser`。后续请求在 `Authorization: Bearer <token>` 中携带。
