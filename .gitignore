@@ -1,1 +1,58 @@
-node_modules
+# Global ignore rules for FrontEnd and BackEnd
+
+# OS-specific files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE/editor files
+.vscode/
+.idea/
+*.iml
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Build output
+build/
+dist/
+out/
+.tmp/
+tmp/
+.temp/
+
+# Coverage and test artifacts
+coverage/
+.nyc_output/
+*.lcov
+
+# Caches
+.cache/
+.parcel-cache/
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment files (keep examples tracked)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Misc runtime and package artifacts
+pids/
+*.pid
+*.pid.lock
+*.seed
+*.tgz
