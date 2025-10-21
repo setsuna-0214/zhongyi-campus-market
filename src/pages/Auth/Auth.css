@@ -1,0 +1,356 @@
+.auth-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  z-index: -2;
+}
+
+.auth-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+  z-index: -1;
+}
+
+.auth-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: -1;
+}
+
+.auth-content {
+  width: 100%;
+  padding: 20px;
+  z-index: 1;
+}
+
+.auth-card {
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.register-card {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 32px;
+  padding: 24px 0 0;
+}
+
+.auth-logo {
+  margin-bottom: 16px;
+}
+
+.auth-logo .logo-text {
+  font-size: 36px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth-title {
+  color: #262626 !important;
+  margin-bottom: 8px !important;
+  font-weight: 600 !important;
+}
+
+.auth-subtitle {
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+.auth-form {
+  padding: 0 24px;
+}
+
+.auth-form .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+}
+
+.auth-form .ant-input-affix-wrapper,
+.auth-form .ant-input,
+.auth-form .ant-select-selector {
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.auth-form .ant-input-affix-wrapper:hover,
+.auth-form .ant-input:hover,
+.auth-form .ant-select-selector:hover {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.auth-form .ant-input-affix-wrapper:focus,
+.auth-form .ant-input-affix-wrapper-focused,
+.auth-form .ant-input:focus,
+.auth-form .ant-select-focused .ant-select-selector {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.auth-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.forgot-link {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.forgot-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.auth-button {
+  height: 48px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+}
+
+.auth-button:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.social-login {
+  text-align: center;
+  margin: 24px 0;
+}
+
+.social-login .ant-space {
+  justify-content: center;
+  width: 100%;
+}
+
+.login-form-container {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.login-form-container .auth-form {
+  text-align: center;
+}
+
+.login-form-container .auth-form .ant-form-item {
+  text-align: left;
+}
+
+.login-form-container .auth-options {
+  justify-content: space-between;
+}
+
+.social-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid #d9d9d9;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.social-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.social-button.wechat:hover {
+  border-color: #07c160;
+  color: #07c160;
+}
+
+.social-button.qq:hover {
+  border-color: #12b7f5;
+  color: #12b7f5;
+}
+
+.social-button.alipay:hover {
+  border-color: #1677ff;
+  color: #1677ff;
+}
+
+.auth-footer {
+  text-align: center;
+  padding: 24px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 24px;
+}
+
+.auth-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.auth-link:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+/* 注册页面特有样式 */
+.register-card .auth-form {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.register-card .auth-form .ant-form-item {
+  text-align: left;
+}
+
+.register-card .auth-form .ant-form-item-label {
+  text-align: left;
+}
+
+.register-card .auth-form .ant-form-item-explain-error {
+  color: #ff4d4f !important;
+}
+
+.step-buttons {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.step-buttons .ant-btn {
+  min-width: 100px;
+}
+
+.upload-placeholder {
+  width: 100px;
+  height: 100px;
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-placeholder:hover {
+  border-color: #667eea;
+  background-color: #f8f9ff;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .auth-content {
+    padding: 10px;
+  }
+  
+  .auth-card {
+    margin: 10px 0;
+    border-radius: 12px;
+  }
+  
+  .auth-header {
+    padding: 16px 0 0;
+    margin-bottom: 24px;
+  }
+  
+  .auth-logo .logo-text {
+    font-size: 28px;
+  }
+  
+  .auth-form {
+    padding: 0 16px;
+  }
+  
+
+  
+  .auth-footer {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-options {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .social-login .ant-space {
+    gap: 12px !important;
+  }
+  
+  .social-button {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .step-buttons {
+    flex-direction: column;
+  }
+  
+  .step-buttons .ant-btn {
+    width: 100%;
+  }
+}
+
+/* 自定义滚动条 */
+.register-card::-webkit-scrollbar {
+  width: 4px;
+}
+
+.register-card::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.register-card::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.register-card::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

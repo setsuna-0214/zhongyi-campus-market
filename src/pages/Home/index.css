@@ -1,0 +1,757 @@
+.home-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* 轮播图样式 */
+.banner-section {
+  margin-bottom: 32px;
+}
+
+.home-carousel {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.carousel-item {
+  height: 400px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.carousel-content {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.carousel-text {
+  flex: 1;
+  color: white;
+  max-width: 500px;
+}
+
+.carousel-title {
+  color: white !important;
+  font-size: 36px !important;
+  font-weight: 700 !important;
+  margin-bottom: 16px !important;
+  line-height: 1.2 !important;
+}
+
+.carousel-subtitle {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 18px !important;
+  margin-bottom: 32px !important;
+}
+
+.carousel-button {
+  height: 48px;
+  padding: 0 32px;
+  font-size: 16px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.carousel-button:hover {
+  background: white;
+  color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-image {
+  flex: 1;
+  text-align: center;
+  max-width: 400px;
+}
+
+.carousel-image img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* 带轮播图背景的注册登录区域样式 */
+.auth-carousel-section {
+  position: relative;
+  height: 60vh;
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.auth-carousel {
+  height: 100%;
+}
+
+.auth-carousel .ant-carousel .slick-slide {
+  height: 60vh !important;
+  min-height: 420px !important;
+}
+
+.auth-carousel .ant-carousel .slick-slide > div {
+  height: 100% !important;
+}
+
+.auth-carousel-item {
+  position: relative;
+  height: 60vh;
+  min-height: 420px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-carousel-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.auth-carousel-background img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.auth-carousel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+.auth-carousel-content {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  color: white;
+  max-width: 800px;
+  padding: 0 20px;
+}
+
+.auth-content-wrapper {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 60px 40px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-main-title {
+  color: white !important;
+  font-size: 48px !important;
+  font-weight: 700 !important;
+  margin-bottom: 24px !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.auth-main-subtitle {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 20px !important;
+  margin-bottom: 40px !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.auth-fixed-buttons {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 4;
+}
+
+.auth-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.auth-main-button {
+  min-width: 140px;
+  height: 56px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.auth-main-button.register-button {
+  background: linear-gradient(135deg, #1890ff, #40a9ff);
+  border: none;
+  box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
+}
+
+.auth-main-button.register-button:hover {
+  background: linear-gradient(135deg, #40a9ff, #69c0ff);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(24, 144, 255, 0.5);
+}
+
+.auth-main-button.login-button {
+  background: white;
+  color: #1890ff;
+  border: 2px solid white;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+}
+
+.auth-main-button.login-button:hover {
+  background: #f0f8ff;
+  color: #1890ff;
+  border-color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.5);
+}
+
+/* 主要内容区域 */
+.home-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+/* 统计数据样式 */
+.stats-section {
+  margin-bottom: 48px;
+}
+
+.stats-container-horizontal {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+.stats-container-horizontal:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.stats-container-horizontal .ant-card-body {
+  padding: 24px 32px;
+}
+
+.stats-horizontal-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.stat-item-horizontal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.stat-icon {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.stat-title {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 16px;
+}
+
+/* 竖向统计布局 */
+.stats-container-vertical {
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: #fff;
+}
+
+.stats-container-vertical:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.stats-container-vertical .ant-card-body {
+  padding: 24px 24px;
+}
+
+.stat-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.stat-row .stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+}
+
+/* 分类样式 */
+.categories-section {
+  margin-bottom: 48px;
+}
+
+.section-title {
+  color: #262626 !important;
+  margin-bottom: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.category-card {
+  text-align: center;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.category-content {
+  padding: 16px 12px;
+  width: 100%;
+}
+
+.category-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  color: #1890ff;
+}
+
+.category-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 4px;
+  line-height: 1.2;
+  word-break: break-all;
+}
+
+.category-count {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* 热门商品样式 */
+.hot-products-section {
+  margin-bottom: 48px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.product-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.product-image-container {
+  position: relative;
+  height: 230px;
+  overflow: hidden;
+}
+
+.product-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image-container img {
+  transform: scale(1.05);
+}
+
+.product-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-family: 'Segoe UI', 'Trebuchet MS', 'Arial Rounded MT', Arial, sans-serif;
+  font-weight: 700;
+}
+
+.product-overlay.overlay-hot {
+  left: 8px;
+  right: auto;
+  color: #52c41a;
+  background: transparent;
+}
+
+.product-overlay.overlay-recent {
+  right: 8px;
+}
+
+.product-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.product-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.product-category-line {
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.product-category-tag {
+  border: none;
+  background: #f6ffed;
+  color: #52c41a;
+}
+
+.home-product-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+/* 新增：价格与发布时间在同一行 */
+.home-product-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.home-product-published {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.product-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff4d4f;
+}
+
+.home-product-seller {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-product-seller .seller-name {
+  font-size: 12px;
+  color: #595959;
+}
+
+.home-product-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* 最新发布和优秀卖家样式 */
+.recent-product-item {
+  cursor: pointer;
+  padding: 12px 0;
+  transition: background-color 0.3s ease;
+}
+
+.recent-product-item:hover {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.recent-product-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.price {
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
+.time {
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.seller-item {
+  padding: 12px 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .carousel-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 32px;
+  }
+  
+  .carousel-text {
+    max-width: 100%;
+  }
+  
+  .carousel-title {
+    font-size: 28px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .home-content {
+    padding: 0 16px 32px;
+  }
+  
+  .auth-carousel-section {
+    height: 60vh;
+    min-height: 380px;
+  }
+  
+  .auth-carousel-item {
+    height: 60vh;
+    min-height: 380px;
+  }
+  
+  .auth-content-wrapper {
+    padding: 40px 24px;
+  }
+  
+  .auth-main-title {
+    font-size: 32px !important;
+  }
+  
+  .auth-main-subtitle {
+    font-size: 16px !important;
+  }
+  
+  .auth-fixed-buttons {
+    bottom: 60px;
+  }
+  
+  .auth-buttons-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .auth-main-button {
+    width: 200px;
+    height: 48px;
+    font-size: 16px;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .category-content {
+    padding: 12px 4px;
+  }
+  
+  .category-icon {
+    font-size: 24px;
+  }
+  
+  .stats-horizontal-wrapper {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .stat-item-horizontal {
+    justify-content: center;
+  }
+  
+  .stat-divider {
+    width: 100%;
+    height: 1px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-carousel-section {
+    height: 52vh;
+    min-height: 340px;
+  }
+  
+  .auth-carousel-item {
+    height: 52vh;
+    min-height: 340px;
+  }
+  
+  .auth-content-wrapper {
+    padding: 30px 16px;
+  }
+  
+  .auth-main-title {
+    font-size: 24px !important;
+  }
+  
+  .auth-main-subtitle {
+    font-size: 14px !important;
+    margin-bottom: 30px !important;
+  }
+  
+  .auth-fixed-buttons {
+    bottom: 40px;
+  }
+  
+  .auth-main-button {
+    height: 44px;
+    width: 180px;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  
+  .stats-horizontal-wrapper {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .stat-item-horizontal {
+    justify-content: center;
+  }
+  
+  .stat-divider {
+    width: 100%;
+    height: 1px;
+    margin: 0;
+  }
+  
+  .stat-title {
+    font-size: 11px;
+  }
+  
+  .stat-value {
+    font-size: 18px;
+  }
+}
+
+/* 轮播图指示点样式 */
+.auth-carousel .ant-carousel-dots {
+  bottom: 120px !important;
+}
+
+.auth-carousel .ant-carousel-dots li {
+  width: 12px !important;
+  height: 12px !important;
+  margin: 0 8px !important;
+}
+
+.auth-carousel .ant-carousel-dots li button {
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  border: 2px solid rgba(255, 255, 255, 0.6) !important;
+  transition: all 0.3s ease !important;
+}
+
+.auth-carousel .ant-carousel-dots li.ant-carousel-dot-active button {
+  background: white !important;
+  border-color: white !important;
+  transform: scale(1.2) !important;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5) !important;
+}

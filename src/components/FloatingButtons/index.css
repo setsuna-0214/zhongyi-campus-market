@@ -1,0 +1,158 @@
+.floating-buttons {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+}
+
+.floating-buttons-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.floating-button {
+  width: 56px !important;
+  height: 56px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+}
+
+.floating-button:hover {
+  transform: scale(1.02) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+.floating-button.ant-btn-primary {
+  background: linear-gradient(135deg, #1890ff, #40a9ff) !important;
+}
+
+.floating-button.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff, #69c0ff) !important;
+}
+
+.publish-btn {
+  position: relative;
+}
+
+.message-btn {
+  position: relative;
+}
+
+.help-btn {
+  position: relative;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .floating-button {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .floating-button {
+    width: 44px !important;
+    height: 44px !important;
+  }
+}
+
+/* 动画效果 - 修复tooltip闪烁问题 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.floating-buttons-container {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* 悬浮时停止动画，防止tooltip闪烁 */
+.floating-buttons-container:hover {
+  animation: none;
+  transform: translateY(0);
+}
+
+/* 徽章样式 */
+.floating-buttons .ant-badge {
+  display: inline-block;
+}
+
+.floating-buttons .ant-badge-count {
+  font-size: 10px;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 自定义提示框样式 - 白色背景紧凑设计 */
+.floating-tooltip {
+  z-index: 1001 !important;
+  pointer-events: none !important;
+}
+
+.floating-tooltip .ant-tooltip-inner {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid #e8e8e8 !important;
+  max-width: 80px !important;
+  min-width: auto !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+}
+
+.floating-tooltip .ant-tooltip-arrow {
+  display: none !important;
+}
+
+/* 确保提示框稳定显示 */
+.floating-tooltip.ant-tooltip-hidden {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* 提示框动画 - 减少动画时间防止闪烁 */
+.floating-tooltip {
+  transition: opacity 0.1s ease-out, visibility 0.1s ease-out !important;
+}
+
+/* 修复提示框位置，使其紧贴按钮左边 */
+.floating-tooltip.ant-tooltip-placement-left {
+  margin-right: 8px !important;
+}
+
+.floating-tooltip.ant-tooltip-placement-left .ant-tooltip-inner {
+  margin-right: 0 !important;
+}
+
+/* 增加按钮的触发区域稳定性 */
+.floating-button {
+  position: relative !important;
+}
+
+.floating-button::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  pointer-events: none;
+}

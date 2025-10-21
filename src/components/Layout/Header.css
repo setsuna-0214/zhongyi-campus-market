@@ -1,0 +1,236 @@
+.app-header {
+  background: #fafafa !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  height: 64px;
+  line-height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* 提升选择器优先级，确保覆盖 Ant 默认头部背景色 */
+.ant-layout-header.app-header {
+  background: #fafafa !important;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 100%;
+}
+
+/* 搜索栏（页眉中部） */
+.header-search {
+  flex: 1;
+  max-width: 520px;
+  min-width: 220px;
+  margin: 0 16px;
+  display: flex;
+  align-items: center; /* 垂直居中搜索框，使上下间距相同 */
+}
+
+.header-search .ant-input-affix-wrapper {
+  height: 36px;
+  border-radius: 18px 0 0 18px;
+  background: #ffffff;
+  display: flex;
+  align-items: center; /* 保证内部内容垂直居中 */
+  line-height: normal; /* 避免继承 64px 行高导致偏移 */
+  margin: 0; /* 移除可能的默认外边距 */
+}
+
+.header-search .ant-input::placeholder {
+  color: #8c8c8c;
+}
+
+.header-search .ant-input-search-button {
+  height: 36px;
+  border-radius: 0 18px 18px 0;
+  display: flex;
+  align-items: center; /* 按钮文字垂直居中 */
+}
+
+/* 进一步防止受头部 64px 行高影响 */
+.header-search .ant-input,
+.header-search .ant-input-group,
+.header-search .ant-input-group-addon {
+  line-height: normal;
+}
+
+/* Logo样式 */
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+  margin-right: 24px;
+  height: 64px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.logo-text {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #1890ff;
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-subtitle {
+  font-size: 12px;
+  color: #595959;
+  margin-top: 2px;
+}
+
+/* 主菜单样式 */
+.main-menu {
+  flex: 1;
+  border-bottom: none;
+  background: transparent;
+  line-height: 64px;
+}
+
+.main-menu .ant-menu-item {
+  border-bottom: 2px solid transparent;
+  margin: 0 8px;
+  transition: color 0.2s ease, border-bottom-color 0.2s ease;
+}
+
+.main-menu .ant-menu-item:hover {
+  color: #1890ff;
+  border-bottom-color: #1890ff;
+}
+
+.main-menu .ant-menu-item-selected {
+  color: #1890ff;
+  border-bottom-color: #1890ff;
+  background-color: transparent;
+}
+
+
+/* 右侧操作区样式 */
+.header-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header-actions .ant-space {
+  gap: 8px !important;
+}
+
+.auth-button {
+  min-width: 70px;
+  height: 36px;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.auth-button:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.action-icon {
+  font-size: 18px;
+  color: #1f1f1f;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.action-icon:hover {
+  color: #1890ff;
+}
+
+.user-avatar {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.user-avatar:hover {
+  background-color: #f5f5f5;
+}
+
+.username {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #1f1f1f;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* 页眉右侧图标与文字的颜色 */
+/* 仅保留用户名样式，不再覆盖图标颜色 */
+.header-actions .user-avatar span {
+  color: #1f1f1f;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  
+  .logo-subtitle {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 16px;
+  }
+  
+  .main-menu {
+    display: none;
+  }
+  
+  .logo {
+    margin-right: 16px;
+  }
+  
+  .logo-text {
+    font-size: 20px;
+  }
+
+  .header-search {
+    max-width: 360px;
+    margin: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  
+  .header-actions .ant-space {
+    gap: 6px !important;
+  }
+  
+  .auth-button {
+    min-width: 60px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+  
+  .username {
+    display: none;
+  }
+
+  .header-search {
+    max-width: 280px;
+    margin: 0 8px;
+    min-width: 160px;
+  }
+}

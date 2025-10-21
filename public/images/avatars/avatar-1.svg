@@ -1,0 +1,8 @@
+<svg width="50" height="50" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="25" cy="25" r="25" fill="#1890ff"/>
+  <circle cx="25" cy="20" r="8" fill="white"/>
+  <path d="M 10 35 Q 25 30 40 35 L 40 50 L 10 50 Z" fill="white"/>
+  <text x="25" y="45" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#1890ff">
+    张
+  </text>
+</svg>
