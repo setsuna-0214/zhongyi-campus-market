@@ -67,7 +67,7 @@
 
 前端 `axios` 客户端会在请求头自动附加 `Authorization`。如需自定义，请在登录响应中返回 `token` 并由前端保存；或在每次调用前端服务方法时传入自定义配置。
 
-## 后续扩展（建议）
+## 后续扩展
 
 - 心愿单：`GET /wishlist`、`POST /wishlist`、`DELETE /wishlist/:id`
 - 订单：`GET /orders`、`GET /orders/:id`、`POST /orders/:id/confirm`
