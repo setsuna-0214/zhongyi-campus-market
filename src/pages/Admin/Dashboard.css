@@ -1,0 +1,560 @@
+.admin-dashboard {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 头部卡片 */
+.dashboard-header-card {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: none;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-left .ant-typography {
+  margin-bottom: 4px;
+  color: #262626;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-actions .ant-picker,
+.header-actions .ant-btn {
+  border-radius: 6px;
+}
+
+/* 统计卡片行 */
+.stats-row {
+  margin-bottom: 16px;
+}
+
+.stats-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: none;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.stats-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.stats-card .ant-statistic {
+  text-align: center;
+}
+
+.stats-card .ant-statistic-title {
+  color: #8c8c8c;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.stats-card .ant-statistic-content {
+  color: #262626;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.stats-card .ant-statistic-content-prefix {
+  color: #1890ff;
+  margin-right: 8px;
+}
+
+.growth-indicator {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.growth-positive {
+  color: #52c41a;
+}
+
+.growth-negative {
+  color: #ff4d4f;
+}
+
+/* 主要内容卡片 */
+.main-content-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: none;
+}
+
+.main-content-card .ant-card-body {
+  padding: 24px;
+}
+
+.main-content-card .ant-tabs-tab {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.tab-content {
+  padding: 24px;
+  text-align: center;
+  color: #8c8c8c;
+}
+
+/* 最近订单卡片 */
+.recent-orders-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: none;
+}
+
+.recent-orders-card .ant-table-thead > tr > th {
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+  color: #262626;
+}
+
+.recent-orders-card .ant-table-tbody > tr:hover > td {
+  background: #f5f8ff;
+}
+
+.recent-orders-card .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f5f5f5;
+}
+
+/* 系统警告卡片 */
+.alerts-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: none;
+  height: 100%;
+}
+
+.alerts-card .ant-list-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.alerts-card .ant-list-item:last-child {
+  border-bottom: none;
+}
+
+.alerts-card .ant-list-item-meta-avatar {
+  margin-right: 12px;
+}
+
+.alerts-card .ant-list-item-meta-title {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.alerts-card .ant-list-item-meta-description {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* 新用户卡片 */
+.new-users-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: none;
+}
+
+.new-users-card .ant-list-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.new-users-card .ant-list-item:last-child {
+  border-bottom: none;
+}
+
+.new-users-card .ant-list-item-meta-avatar {
+  margin-right: 12px;
+}
+
+.new-users-card .ant-list-item-meta-title {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.new-users-card .ant-list-item-meta-description {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* 系统状态卡片 */
+.system-status-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: none;
+}
+
+.status-item {
+  margin-bottom: 16px;
+}
+
+.status-item:last-child {
+  margin-bottom: 0;
+}
+
+.status-label {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #262626;
+  font-weight: 500;
+}
+
+.system-info {
+  margin-top: 16px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 标签样式 */
+.ant-tag {
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border: none;
+}
+
+/* 进度条样式 */
+.ant-progress-line {
+  margin-bottom: 0;
+}
+
+.ant-progress-text {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* 徽章样式 */
+.ant-badge-status-dot {
+  width: 8px;
+  height: 8px;
+}
+
+.ant-badge-status-text {
+  font-size: 12px;
+  color: #262626;
+}
+
+/* 按钮样式 */
+.ant-btn {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.ant-btn-primary {
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+}
+
+.ant-btn-primary:hover {
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.ant-btn-text:hover {
+  background: rgba(24, 144, 255, 0.1);
+}
+
+.ant-btn-link {
+  color: #1890ff;
+  padding: 0;
+}
+
+.ant-btn-link:hover {
+  color: #40a9ff;
+}
+
+/* 表格样式 */
+.ant-table-small .ant-table-thead > tr > th {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.ant-table-small .ant-table-tbody > tr > td {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+/* 分割线样式 */
+.ant-divider {
+  margin: 16px 0;
+  border-color: #f0f0f0;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .stats-card .ant-statistic-content {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 16px;
+  }
+  
+  .dashboard-header-card,
+  .main-content-card {
+    margin-bottom: 12px;
+  }
+  
+  .main-content-card .ant-card-body {
+    padding: 16px;
+  }
+  
+  .dashboard-header {
+    gap: 12px;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .header-actions .ant-picker,
+  .header-actions .ant-btn {
+    width: 100%;
+  }
+  
+  .stats-card .ant-statistic-content {
+    font-size: 18px;
+  }
+  
+  .growth-indicator {
+    font-size: 11px;
+  }
+  
+  .main-content-card .ant-tabs-tab {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+  
+  .tab-content {
+    padding: 16px;
+  }
+  
+  .recent-orders-card .ant-table-small .ant-table-thead > tr > th,
+  .recent-orders-card .ant-table-small .ant-table-tbody > tr > td {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  
+  .alerts-card .ant-list-item,
+  .new-users-card .ant-list-item {
+    padding: 8px 0;
+  }
+  
+  .alerts-card .ant-list-item-meta-title,
+  .new-users-card .ant-list-item-meta-title {
+    font-size: 13px;
+  }
+  
+  .alerts-card .ant-list-item-meta-description,
+  .new-users-card .ant-list-item-meta-description {
+    font-size: 11px;
+  }
+  
+  .status-label {
+    font-size: 13px;
+  }
+  
+  .info-item {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .admin-dashboard {
+    padding: 12px;
+  }
+  
+  .header-left .ant-typography h3 {
+    font-size: 18px;
+  }
+  
+  .stats-card .ant-statistic-content {
+    font-size: 16px;
+  }
+  
+  .stats-card .ant-statistic-title {
+    font-size: 12px;
+  }
+  
+  .main-content-card .ant-tabs-tab {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+  
+  .recent-orders-card .ant-table-small {
+    font-size: 10px;
+  }
+  
+  .recent-orders-card .ant-table-small .ant-table-thead > tr > th,
+  .recent-orders-card .ant-table-small .ant-table-tbody > tr > td {
+    padding: 4px 6px;
+  }
+  
+  .alerts-card .ant-list-item-meta-avatar,
+  .new-users-card .ant-list-item-meta-avatar {
+    margin-right: 8px;
+  }
+  
+  .system-status-card .status-item {
+    margin-bottom: 12px;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+/* 动画效果 */
+.stats-card {
+  animation: cardFadeIn 0.3s ease-out;
+}
+
+.recent-orders-card,
+.alerts-card,
+.new-users-card,
+.system-status-card {
+  animation: cardSlideIn 0.4s ease-out;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 加载状态 */
+.ant-spin-container {
+  transition: opacity 0.3s ease;
+}
+
+.ant-spin-blur {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 自定义滚动条 */
+.admin-dashboard::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-dashboard::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.admin-dashboard::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.admin-dashboard::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 卡片阴影层次 */
+.dashboard-header-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.main-content-card:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+}
+
+.recent-orders-card:hover,
+.alerts-card:hover,
+.new-users-card:hover,
+.system-status-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+/* 工具提示样式 */
+.ant-tooltip-inner {
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* 选择器样式 */
+.ant-picker {
+  border-radius: 6px;
+}
+
+.ant-picker:hover,
+.ant-picker-focused {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* 标签页样式 */
+.ant-tabs-tab {
+  transition: all 0.3s ease;
+}
+
+.ant-tabs-tab:hover {
+  color: #40a9ff;
+}
+
+.ant-tabs-tab-active {
+  font-weight: 600;
+}
+
+.ant-tabs-ink-bar {
+  background: #1890ff;
+  height: 3px;
+  border-radius: 2px;
+}
