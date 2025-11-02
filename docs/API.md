@@ -4,15 +4,118 @@
 
 ## 认证 Authentication
 
+### 登录
+> 邮箱登录
 - `POST /auth/login`
-  - Request: `{ username?: string, email?: string, password: string }`
-  - Response: `{ token: string, user: { id, username, email, name, avatar, ... } }`
+  - Request:
+    ```json
+    {
+      "email": "1234567@email.com",
+      "password": "yourpassword"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "message": "登录成功",
+      "data": {
+        "token": "jwt-token-string",
+        "user": {
+          "id": 1,
+          "username": "张同学",
+          "email": "1234567@email.com"
+        }
+      }
+    }
+    ```
 
+> 用户名登录
+- `POST /auth/login-username`
+  - Request:
+    ```json
+    {
+      "username": "zhangsan",
+      "password": "yourpassword"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "message": "登录成功",
+      "data": {
+        "token": "jwt-token-string",
+        "user": {
+          "id": 1,
+          "username": "zhangsan",
+          "email": "1234567@email.com"
+        }
+      }
+    }
+    ```
+
+### 注册
 - `POST /auth/register`
-  - Request: `{ username, email, password, phone?, studentId?, school? }`
-  - Response: `{ user: { id, username, email }, message?: string }`
+  - Request: 
+    ```json
+    {
+      "username": "zhangsan",
+      "email": "1234567@email.com",
+      "password": "yourpassword",
+      "confirmPassword": "yourpassword",
+      "verificationCode": "123456"
+    }
+    ```
+  - Response: 
+    ```json
+    {
+      "code": 200,
+      "message": "注册成功",
+      "data": {}
+    }
+    ```
 
-认证通过后，前端将 `token` 存储在 `localStorage.authToken`，并将 `user` 存储在 `localStorage.authUser`。后续请求在 `Authorization: Bearer <token>` 中携带。
+### 忘记密码
+- `POST /auth/forgot-password`
+  - Request:
+    ```json
+    {
+      "email": "1234567@email.com",
+      "verificationCode": "123456",
+      "newPassword": "newpassword",
+      "confirmPassword": "newpassword"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "message": "密码重置成功",
+      "data": {}
+    }
+    ```
+
+### 获取验证码
+- `POST /auth/send-code`
+  - Request:
+    ```json
+    {
+      "email": "1234567@email.com"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "message": "验证码发送成功",
+      "data": {}
+    }
+    ```
+
+### 认证说明
+认证通过后，前端将 `token` 存储在 `localStorage.authToken`，并将 `user` 存储在 `localStorage.authUser`。
+后续请求中，前端会在请求头自动附加 `Authorization: Bearer <token>`。
 
 ## 商品 Products
 
@@ -67,7 +170,7 @@
 
 前端 `axios` 客户端会在请求头自动附加 `Authorization`。如需自定义，请在登录响应中返回 `token` 并由前端保存；或在每次调用前端服务方法时传入自定义配置。
 
-## 后续扩展（建议）
+## 后续扩展
 
 - 心愿单：`GET /wishlist`、`POST /wishlist`、`DELETE /wishlist/:id`
 - 订单：`GET /orders`、`GET /orders/:id`、`POST /orders/:id/confirm`
