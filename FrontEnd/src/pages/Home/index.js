@@ -5,7 +5,6 @@ import {
   Card, 
   Button, 
   Carousel, 
-  Statistic, 
   Typography, 
   Space,
   Tag,
@@ -13,45 +12,58 @@ import {
   List
 } from 'antd';
 import { 
-  ShoppingOutlined, 
   UserOutlined, 
-  DollarOutlined,
-  TrophyOutlined,
   RightOutlined,
-  FireOutlined,
-  ClockCircleOutlined,
   EyeOutlined,
   EnvironmentOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import './index.css';
-import { getHomeStats, getHotProducts, getLatestProducts } from '../../api/home';
+import { getHotProducts, getLatestProducts, getHomeStats } from '../../api/home';
+import { CATEGORY_THEMES, getCategoryBackground, getCategoryIcons } from '../../utils/theme';
 import { message } from 'antd';
+import { getCategoryLabel, getStatusLabel, getStatusColor } from '../../utils/labels';
 
 const { Title, Paragraph } = Typography;
-
-// 初始化为空，运行时从后端获取
 
 
 const Home = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('hot'); // 'hot' or 'recent'
+  const [activeTab, setActiveTab] = useState('hot');
   const isLoggedIn = !!localStorage.getItem('authUser');
   const [stats, setStats] = useState(null);
   const [hotProducts, setHotProducts] = useState([]);
   const [recentProducts, setRecentProducts] = useState([]);
   const [topSellers, setTopSellers] = useState([]);
 
+  const formatRelativeTime = (iso) => {
+    try {
+      if (!iso) return '刚刚';
+      const t = new Date(iso).getTime();
+      const now = Date.now();
+      const diff = Math.max(0, now - t);
+      const sec = Math.floor(diff / 1000);
+      if (sec < 60) return '刚刚';
+      const min = Math.floor(sec / 60);
+      if (min < 60) return `${min}分钟前`;
+      const hour = Math.floor(min / 60);
+      if (hour < 24) return `${hour}小时前`;
+      const day = Math.floor(hour / 24);
+      if (day === 1) return '昨天';
+      if (day < 7) return `${day}天前`;
+      const d = new Date(t);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${dd}`;
+    } catch {
+      return '刚刚';
+    }
+  };
+
+
   useEffect(() => {
     (async () => {
-      try {
-        const s = await getHomeStats();
-        setStats(s || {});
-        // 修复：使用同步的 s 设置 topSellers，避免作用域问题
-        if (s?.topSellers) setTopSellers(s.topSellers);
-      } catch (err) {
-        message.info('主页统计暂不可用');
-      }
       try {
         const hot = await getHotProducts();
         setHotProducts(Array.isArray(hot) ? hot : (hot?.items || []));
@@ -64,7 +76,12 @@ const Home = () => {
       } catch (err) {
         message.info('最新发布暂不可用');
       }
-      // 取消原来的 s 引用位置（已上移到 getHomeStats 成功后）
+      try {
+        const s = await getHomeStats();
+        setStats(s);
+      } catch (err) {
+        // ignore stats errors
+      }
     })();
   }, []);
 
@@ -90,20 +107,24 @@ const Home = () => {
   ];
 
   const categories = [
-    { name: '数码电子', icon: '💻', count: stats?.categoryCounts?.digital || 0 },
-    { name: '图书教材', icon: '📚', count: stats?.categoryCounts?.books || 0 },
-    { name: '服装配饰', icon: '👕', count: stats?.categoryCounts?.fashion || 0 },
-    { name: '运动户外', icon: '⚽', count: stats?.categoryCounts?.sports || 0 },
-    { name: '生活用品', icon: '🧴', count: stats?.categoryCounts?.home || 0 },
-    { name: '家具家电', icon: '🪑', count: stats?.categoryCounts?.furniture || 0 },
-    { name: '文具用品', icon: '✏️', count: stats?.categoryCounts?.stationery || 0 },
-    { name: '其他物品', icon: '📦', count: stats?.categoryCounts?.other || 0 }
+    { name: '数码电子', code: 'electronics' },
+    { name: '图书教材', code: 'books' },
+    { name: '生活用品', code: 'daily' },
+    { name: '其他物品', code: 'other' }
   ];
+
+
+  const CATEGORY_COUNT_KEY = {
+    electronics: 'digital',
+    books: 'books',
+    daily: 'home',
+    other: 'other'
+  };
 
   return (
     <div className="home-page">
 
-      {/* 带轮播图背景的注册登录区域（未登录显示） */}
+      {/* 带轮播图背景的注册登录区域（未登录时显示） */}
       {!isLoggedIn && (
       <section className="auth-carousel-section">
         <Carousel 
@@ -134,7 +155,7 @@ const Home = () => {
             </div>
           ))}
         </Carousel>
-        {/* 固定的按钮区域 */}
+        {/* 固定的注册、登录按钮区域 */}
         <div className="auth-fixed-buttons">
           <div className="auth-buttons-container">
             <Button 
@@ -158,99 +179,90 @@ const Home = () => {
       )}
 
       <div className="home-content">
-        {/* 热门分类与数据统计 */}
         <section className="categories-section">
-          <Title level={2} className="section-title">
-            <FireOutlined /> 商品分类
-          </Title>
+          <div className="section-bar">
+            <div className="bar-title"><img src="/images/icons/category-title.svg" className="bar-icon" alt="分类图标" /> 商品分类</div>
+            <div className="bar-actions">
+            </div>
+          </div>
           <Row gutter={[24, 24]}>
-            <Col xs={24} lg={18}>
+            <Col xs={24} lg={24}>
               <Row gutter={[16, 16]}>
                 {categories.map((category, index) => (
-                  <Col span={6} key={index}>
+                  <Col xs={12} sm={8} md={6} lg={6} key={index}>
                     <Card 
-                      className="category-card"
+                      className={`category-card category-${category.code}`}
+                      style={{ background: getCategoryBackground(category.code) }}
                       hoverable
-                      onClick={() => navigate(`/products?category=${category.name}`)}
+                      onClick={() => navigate(`/products?category=${category.code}`)}
                     >
                       <div className="category-content">
-                        <div className="category-icon">{category.icon}</div>
+                        <div className="category-icon">
+                          {(() => {
+                            const icons = getCategoryIcons(category.code);
+                            const countClass = `icon-count-${icons.length}`;
+                            return (
+                              <div className={`category-icon-group ${countClass}`}>
+                                {icons.map((src, i) => (
+                                  <img
+                                    key={`${category.code}-${i}`}
+                                    className="category-icon-img"
+                                    src={src}
+                                    alt={`${category.name}-${i + 1}`}
+                                  />
+                                ))}
+                              </div>
+                            );
+                          })()}
+                        </div>
                         <div className="category-name">{category.name}</div>
-                        <div className="category-count">{category.count} 件</div>
+                        <div className="category-count">
+                          共 {stats?.categoryCounts ? (stats.categoryCounts[CATEGORY_COUNT_KEY[category.code]] ?? 0) : 0} 件
+                        </div>
                       </div>
                     </Card>
                   </Col>
                 ))}
               </Row>
             </Col>
-            <Col xs={24} lg={6}>
-              <Card className="stats-container-vertical">
-                <div className="stat-rows">
-                  <div className="stat-row">
-                    <div className="stat-label">
-                      <span style={{ fontSize: 22, fontWeight: 800, color: '#69c0ff' }}>商品总数</span>
-                    </div>
-                    <div className="stat-value" style={{ color: '#69c0ff' }}>{stats?.totalProducts || 0}件</div>
-                  </div>
-                  <div className="stat-row">
-                    <div className="stat-label">
-                      <span style={{ fontSize: 22, fontWeight: 800, color: '#95de64' }}>注册用户</span>
-                    </div>
-                    <div className="stat-value" style={{ color: '#95de64' }}>{stats?.totalUsers || 0}人</div>
-                  </div>
-                  <div className="stat-row">
-                    <div className="stat-label">
-                      <span style={{ fontSize: 22, fontWeight: 800, color: '#ffd666' }}>成功交易</span>
-                    </div>
-                    <div className="stat-value" style={{ color: '#ffd666' }}>{stats?.totalTransactions || 0}笔</div>
-                  </div>
-                  <div className="stat-row">
-                    <div className="stat-label">
-                      <span style={{ fontSize: 22, fontWeight: 800, color: '#ffa39e' }}>交易金额</span>
-                    </div>
-                    <div className="stat-value" style={{ color: '#ffa39e' }}>{stats?.totalAmount || 0}元</div>
-                  </div>
-                </div>
-              </Card>
-            </Col>
+
           </Row>
         </section>
 
-        {/* 热门商品/最新发布  优秀卖家 */}
+        {/* 热门商品/最新发布 */}
         <section className="hot-products-section">
           <div className="section-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <Title level={2} className="section-title" style={{ margin: 0 }}>
-                <FireOutlined /> {activeTab === 'hot' ? '热门商品' : '最新发布'}
-              </Title>
-              <Space>
-                <Button 
-                  type={activeTab === 'hot' ? 'primary' : 'default'}
-                  onClick={() => setActiveTab('hot')}
-                >
-                  热门商品
-                </Button>
-                <Button 
-                  type={activeTab === 'recent' ? 'primary' : 'default'}
-                  onClick={() => setActiveTab('recent')}
-                >
-                  最新发布
-                </Button>
-              </Space>
-            </div>
-            <Button 
-              type="link" 
-              onClick={() => navigate(activeTab === 'hot' ? '/products' : '/products?sort=newest')}
-              icon={<RightOutlined />}
-            >
-              查看更多
-            </Button>
+            <Space size="middle" align="center">
+              <Button
+                shape="round"
+                type={activeTab === 'hot' ? 'primary' : 'default'}
+                icon={<img src="/images/icons/star_6024697.svg" className="section-icon" alt="热门商品" />}
+                onClick={() => setActiveTab('hot')}
+              >
+                热门商品
+              </Button>
+              <Button
+                shape="round"
+                type={activeTab === 'recent' ? 'primary' : 'default'}
+                icon={<img src="/images/icons/innovation_11511322.svg" className="section-icon" alt="最新发布" />}
+                onClick={() => setActiveTab('recent')}
+              >
+                最新发布
+              </Button>
+              <Button 
+                type="link" 
+                onClick={() => navigate(activeTab === 'hot' ? '/products' : '/products?sort=newest')}
+                icon={<RightOutlined />}
+              >
+                查看更多
+              </Button>
+            </Space>
           </div>
           <Row gutter={[24, 24]}>
-            <Col xs={24} lg={18}>
+            <Col xs={24}>
               <Row gutter={[16, 16]}>
                 {(activeTab === 'hot' ? hotProducts : recentProducts).map((product) => (
-                  <Col xs={24} sm={12} md={8} lg={8} xl={8} key={product.id}>
+                  <Col xs={24} sm={12} md={6} lg={6} xl={6} key={product.id}>
                     <Card
                       className="product-card"
                       hoverable
@@ -265,7 +277,7 @@ const Home = () => {
                                 </>
                               ) : (
                                 <>
-                                  <ClockCircleOutlined /> {product.time}
+                                  {formatRelativeTime(product.publishTime)}
                                 </>
                               )}
                             </Space>
@@ -284,7 +296,12 @@ const Home = () => {
                           <div className="product-desc">
                             {product.category && (
                               <div className="product-category-line">
-                                <Tag color="green" className="product-category-tag">{product.category}</Tag>
+                                <Tag color="green" className="product-category-tag">{getCategoryLabel(product.category)}</Tag>
+                                {product.status && (
+                                  <Tag color={getStatusColor(product.status)} className="product-status-tag">
+                                    {getStatusLabel(product.status)}
+                                  </Tag>
+                                )}
                               </div>
                             )}
                             <div className="home-product-topline">
@@ -312,44 +329,6 @@ const Home = () => {
                   </Col>
                 ))}
               </Row>
-            </Col>
-            <Col xs={24} lg={6}>
-              <Card 
-                title={
-                  <Space>
-                    <TrophyOutlined />
-                    优秀卖家
-                  </Space>
-                }
-                extra={
-                  <Button type="link" onClick={() => navigate('/sellers')}>
-                    查看更多
-                  </Button>
-                }
-              >
-                <List
-                  dataSource={topSellers}
-                  renderItem={(seller) => (
-                    <List.Item className="seller-item">
-                      <List.Item.Meta
-                        avatar={<Avatar src={seller.avatar} size={48} />}
-                        title={
-                          <Space>
-                            {seller.name}
-                            <Tag color="gold">{seller.badge}</Tag>
-                          </Space>
-                        }
-                        description={
-                          <Space split={<span>|</span>}>
-                            <span>销量: {seller.sales}</span>
-                            <span>评分: {seller.rating}⭐</span>
-                          </Space>
-                        }
-                      />
-                    </List.Item>
-                  )}
-                />
-              </Card>
             </Col>
           </Row>
         </section>

@@ -75,7 +75,7 @@ const Login = () => {
                   欢迎回来
                 </Title>
                 <Text className="auth-subtitle">
-                  登录您的校园二手交易账户
+                  登录您的中易账户
                 </Text>
               </div>
 
@@ -94,7 +94,7 @@ const Login = () => {
                 >
                   <Input 
                     prefix={<UserOutlined />} 
-                    placeholder="请输入用户名或校园邮箱"
+                    placeholder="请输入用户名或邮箱"
                     autoComplete="username"
                   />
                 </Form.Item>
@@ -112,7 +112,6 @@ const Login = () => {
 
                 <Form.Item>
                   <div className="auth-options">
-                    <Checkbox>记住我</Checkbox>
                     <Link to="/forgot-password" className="forgot-link">
                       忘记密码？
                     </Link>

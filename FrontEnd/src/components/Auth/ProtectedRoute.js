@@ -26,7 +26,7 @@ export default function ProtectedRoute({ children, allowRoles, redirectTo = '/lo
   const isLoggedIn = Boolean(authUser);
   const hasRole = !allowRoles || (authUser && allowRoles.includes(authUser.role));
 
-  // 可选：后端校验（预留接口）
+  // 后端校验（预留接口）
   useEffect(() => {
     let mounted = true;
     if (serverCheck) {

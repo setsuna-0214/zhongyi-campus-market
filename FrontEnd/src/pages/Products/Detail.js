@@ -39,6 +39,8 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import './Detail.css';
 import { getProduct, getRelatedProducts } from '../../api/products';
+import { getCategoryLabel, getStatusLabel, getStatusColor } from '../../utils/labels';
+import { getFavorites, addToFavorites, removeFavoriteByProductId } from '../../api/favorites';
 
 const { TextArea } = Input;
 
@@ -57,9 +59,20 @@ const ProductDetail = () => {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
 
-  // 已移除模拟商品详情数据，统一从后端获取
+  // 统一状态与数量，计算是否可购买（须在任何 return 之前调用 Hook）
+  const normalizedStatus = useMemo(() => {
+    const raw = product?.status;
+    const s = String(raw || '').toLowerCase();
+    if (['available', 'selling', 'on_sale'].includes(s) || raw === '在售') return 'available';
+    if (['sold', 'sold_out'].includes(s) || raw === '已售出') return 'sold';
+    if (['unavailable', 'off_shelf', 'inactive'].includes(s) || raw === '已下架') return 'unavailable';
+    return s || '';
+  }, [product]);
 
-  // 相关商品改为从后端获取（已在 fetchProductDetail 中处理）
+  // 成色与数量字段已移除，可购买仅依赖状态
+  const isBuyable = useMemo(() => normalizedStatus === 'available', [normalizedStatus]);
+
+  // 类别与成色标签统一由 utils 提供
 
   // 获取商品详情
   const fetchProductDetail = useCallback(async () => {
@@ -81,10 +94,32 @@ const ProductDetail = () => {
     }
   }, [id]);
 
+  // 初始化收藏状态
+  const initFavoriteState = useCallback(async () => {
+    try {
+      const favorites = await getFavorites();
+      const exists = Array.isArray(favorites) && favorites.some(f => String(f.productId) === String(id));
+      setIsFavorited(!!exists);
+    } catch {
+      setIsFavorited(false);
+    }
+  }, [id]);
+
   // 处理收藏
-  const handleFavorite = () => {
-    setIsFavorited(!isFavorited);
-    message.success(isFavorited ? '已取消收藏' : '已添加到收藏');
+  const handleFavorite = async () => {
+    try {
+      if (isFavorited) {
+        await removeFavoriteByProductId(id);
+        setIsFavorited(false);
+        message.success('已取消收藏');
+      } else {
+        await addToFavorites(id);
+        setIsFavorited(true);
+        message.success('已添加到收藏');
+      }
+    } catch (e) {
+      message.error('操作失败，请稍后重试');
+    }
   };
 
   // 处理分享
@@ -178,6 +213,10 @@ const ProductDetail = () => {
     fetchProductDetail();
   }, [fetchProductDetail]);
 
+  useEffect(() => {
+    initFavoriteState();
+  }, [initFavoriteState]);
+
   if (loading || !product) {
     return <div className="loading-container">加载中...</div>;
   }
@@ -196,7 +235,7 @@ const ProductDetail = () => {
           </Breadcrumb.Item>
           <Breadcrumb.Item>
             <span onClick={() => navigate(`/products?category=${product.category}`)}>
-              {product.category === 'electronics' ? '数码电子' : '其他'}
+              {getCategoryLabel(product.category)}
             </span>
           </Breadcrumb.Item>
           <Breadcrumb.Item>{product.title}</Breadcrumb.Item>
@@ -315,24 +354,21 @@ const ProductDetail = () => {
                 <h1 className="product-title">{product.title}</h1>
                 <div className="product-meta">
                   <Tag color="blue">
-                    {product.category === 'electronics' ? '数码电子' : '其他'}
+                    {getCategoryLabel(product.category)}
                   </Tag>
-                  <Tag color="green">
-                    {product.condition === 'like-new' ? '几乎全新' : '其他'}
-                  </Tag>
-                  {product.status === 'available' && (
-                    <Tag color="success">在售</Tag>
+                  {/* 成色与剩余数量展示已移除 */}
+                  {normalizedStatus && (
+                    <Tag color={getStatusColor(normalizedStatus)}>{getStatusLabel(normalizedStatus)}</Tag>
                   )}
                 </div>
               </div>
 
               <div className="price-section">
                 <div className="current-price">¥{product.price}</div>
-                {product.originalPrice && product.originalPrice > product.price && (
-                  <div className="original-price">原价：¥{product.originalPrice}</div>
-                )}
                 <div className="price-note">价格可议</div>
               </div>
+
+              
 
               <div className="location-time">
                 <div className="location">
@@ -400,7 +436,7 @@ const ProductDetail = () => {
                     icon={<ShoppingCartOutlined />}
                     onClick={handleBuyNow}
                     block
-                    disabled={product.status !== 'available'}
+                    disabled={!isBuyable}
                   >
                     立即购买
                   </Button>
@@ -437,14 +473,14 @@ const ProductDetail = () => {
                       onClick={() => navigate(`/products/${item.id}`)}
                     >
                       <img 
-                        src={item.image} 
+                        src={item.image || (item.images?.[0] ?? '/images/products/product-1.svg')} 
                         alt={item.title} 
                         onError={(e) => { e.currentTarget.src = '/images/products/product-1.svg'; }}
                       />
                       <div className="related-info">
                         <div className="related-title">{item.title}</div>
                         <div className="related-price">¥{item.price}</div>
-                        <div className="related-seller">{item.seller}</div>
+                        <div className="related-seller">{typeof item.seller === 'string' ? item.seller : (item.seller?.name || '卖家')}</div>
                       </div>
                     </div>
                   ))}
@@ -495,20 +531,13 @@ const ProductDetail = () => {
         <TextArea
           rows={4}
           placeholder="请输入您想对卖家说的话..."
-          value={message}
+          value={chatMessage}
             onChange={(e) => setChatMessage(e.target.value)}
           maxLength={500}
           showCount
         />
       </Modal>
 
-      {/* 底部悬浮操作栏 */}
-      <div className="fixed-bottom-bar">
-        <div className="bar-inner">
-          <Button size="large" onClick={handleContact}>联系卖家</Button>
-          <Button type="primary" size="large" onClick={handleBuyNow}>立即购买</Button>
-        </div>
-      </div>
     </div>
   );
 };

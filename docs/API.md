@@ -172,7 +172,7 @@
 
 ## 后续扩展
 
-- 心愿单：`GET /wishlist`、`POST /wishlist`、`DELETE /wishlist/:id`
+- 收藏：`GET /favorites`、`POST /favorites`、`DELETE /favorites/:id`
 - 订单：`GET /orders`、`GET /orders/:id`、`POST /orders/:id/confirm`
 - 用户：`GET /users/me`、`PUT /users/me`
 - 聊天：`GET /conversations`、`GET /conversations/:id/messages`、`POST /messages`
