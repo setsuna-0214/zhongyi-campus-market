@@ -71,7 +71,6 @@
 }
 
 .product-card:hover {
-  transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   border-color: #667eea;
 }
@@ -92,7 +91,7 @@
 /* 商品图片容器 */
 .product-image-container {
   position: relative;
-  height: 200px;
+  height: 230px;
   overflow: hidden;
 }
 
@@ -110,141 +109,98 @@
 
 .product-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 12px;
-}
-
-.product-card:hover .product-overlay {
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-family: 'Segoe UI', 'Trebuchet MS', 'Arial Rounded MT', Arial, sans-serif;
+  font-weight: 700;
   opacity: 1;
 }
 
-.favorite-btn {
-  align-self: flex-end;
-  color: white;
-  font-size: 18px;
-  padding: 4px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-}
-
-.favorite-btn:hover,
-.favorite-btn.favorited {
-  color: #ff4757;
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.product-stats {
-  display: flex;
-  gap: 16px;
-  color: white;
-  font-size: 12px;
-}
-
-.product-stats span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+.product-overlay.overlay-hot {
+  left: 8px;
+  right: auto;
+  color: #52c41a;
+  background: transparent;
 }
 
 /* 商品信息 */
-.product-info {
-  height: 100%;
+/* 与首页一致的卡片信息结构样式 */
+.product-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.product-desc {
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
-.product-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: #262626;
-  margin: 0 0 8px 0;
-  line-height: 1.4;
-  height: 2.8em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  cursor: pointer;
-  transition: color 0.3s ease;
+.product-category-line {
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
 }
 
-.product-title:hover {
-  color: #667eea;
+.product-category-tag {
+  border: none;
+  background: #f6ffed;
+  color: #52c41a;
 }
 
-.product-tags {
-  margin-bottom: 8px;
+.home-product-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.product-tags .ant-tag {
-  margin-right: 4px;
-  margin-bottom: 4px;
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 4px;
+.home-product-published {
+  font-size: 12px;
+  color: #8c8c8c;
 }
 
 .product-price {
-  margin-bottom: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff4d4f;
 }
 
-.current-price {
-  color: #ff4757;
-  font-size: 16px;
-  font-weight: 600;
+.home-product-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
 }
 
-.original-price {
-  color: #8c8c8c;
-  font-size: 12px;
-  text-decoration: line-through;
-  margin-left: 8px;
-}
-
-.product-location {
+.home-product-seller {
   display: flex;
   align-items: center;
-  gap: 4px;
-  color: #8c8c8c;
-  font-size: 12px;
-  margin-bottom: 8px;
+  gap: 8px;
 }
 
-.seller-info {
+.home-product-seller .seller-name {
+  font-size: 12px;
+  color: #595959;
+}
+
+.home-product-location {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-top: auto;
-  padding-top: 8px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.seller-info img {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.seller-info span {
   font-size: 12px;
-  color: #666;
-}
-
-.seller-info .rating {
-  color: #faad14;
-  font-weight: 500;
-  margin-left: auto;
+  color: #8c8c8c;
 }
 
 /* 分页 */
@@ -404,4 +360,25 @@
 
 .products-section::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+.search-filter-section .ant-space-compact .ant-input-affix-wrapper,
+.search-filter-section .ant-space-compact .ant-input {
+  height: 40px;
+  border-radius: 20px 0 0 20px;
+}
+
+.search-filter-section .ant-space-compact .ant-btn {
+  height: 40px;
+  border-radius: 0 20px 20px 0;
+}
+
+/* 防止 input 遮挡 affix wrapper 的边缘线条，并统一字号 */
+.search-filter-section .ant-space-compact .ant-input-affix-wrapper {
+  overflow: hidden;
+  border: 1px solid var(--ant-border-color, #d9d9d9);
+  border-right: 0;
+}
+
+.search-filter-section .ant-space-compact .ant-input {
+  font-size: 16px;
 }

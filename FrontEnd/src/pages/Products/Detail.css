@@ -130,8 +130,8 @@
 .purchase-card {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  position: sticky;
-  top: 24px;
+  position: static;
+  top: auto;
 }
 
 .product-header {
@@ -162,13 +162,6 @@
   font-weight: 700;
   color: #ff4757;
   line-height: 1;
-}
-
-.original-price {
-  font-size: 14px;
-  color: #8c8c8c;
-  text-decoration: line-through;
-  margin-top: 4px;
 }
 
 .price-note {
@@ -299,32 +292,6 @@
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
-/* 底部悬浮操作栏 */
-.fixed-bottom-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #fff;
-  box-shadow: 0 -6px 18px rgba(0,0,0,0.08);
-  padding: 12px 16px;
-  z-index: 1000;
-}
-
-.fixed-bottom-bar .bar-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  gap: 12px;
-}
-
-.fixed-bottom-bar .ant-btn {
-  flex: 1;
-  height: 44px;
-  border-radius: 22px;
-  font-weight: 600;
-}
-
 /* 留言卡片样式微调 */
 .comments-card .ant-card-body {
   padding-top: 8px;
@@ -448,11 +415,6 @@
 }
 
 /* 响应式设计 */
-@media (max-width: 1200px) {
-  .purchase-card {
-    position: static;
-  }
-}
 
 @media (max-width: 768px) {
   .product-detail-page {

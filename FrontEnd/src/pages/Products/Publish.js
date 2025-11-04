@@ -57,13 +57,7 @@ const PublishProduct = () => {
     { value: 'life', label: '生活用品', children: ['家居用品', '护肤品', '食品', '文具', '其他'] }
   ];
 
-  const conditions = [
-    { value: 'new', label: '全新', desc: '未使用过，包装完好' },
-    { value: 'like-new', label: '几乎全新', desc: '使用次数很少，无明显磨损' },
-    { value: 'good', label: '成色良好', desc: '正常使用痕迹，功能完好' },
-    { value: 'fair', label: '有使用痕迹', desc: '明显使用痕迹，但不影响使用' },
-    { value: 'poor', label: '成色较差', desc: '磨损较严重，但仍可使用' }
-  ];
+  // 成色字段已移除
 
   const steps = [
     {
@@ -182,26 +176,7 @@ const PublishProduct = () => {
                   </Select>
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="condition"
-                  label="商品成色"
-                  rules={[{ required: true, message: '请选择商品成色' }]}
-                >
-                  <Radio.Group>
-                    {conditions.map(condition => (
-                      <Radio key={condition.value} value={condition.value}>
-                        <Space direction="vertical" size={0}>
-                          <Text strong>{condition.label}</Text>
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            {condition.desc}
-                          </Text>
-                        </Space>
-                      </Radio>
-                    ))}
-                  </Radio.Group>
-                </Form.Item>
-              </Col>
+              
               <Col span={24}>
                 <Form.Item
                   name="brand"
@@ -261,27 +236,12 @@ const PublishProduct = () => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={12}>
+              <Col span={24}>
                 <Form.Item
                   name="purchaseDate"
                   label="购买时间"
                 >
                   <DatePicker placeholder="选择购买时间（选填）" style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="originalPrice"
-                  label="原价"
-                >
-                  <InputNumber
-                    placeholder="原价（选填）"
-                    style={{ width: '100%' }}
-                    min={0}
-                    precision={2}
-                    formatter={value => `¥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={value => value.replace(/¥\s?|(,*)/g, '')}
-                  />
                 </Form.Item>
               </Col>
             </Row>
@@ -404,9 +364,7 @@ const PublishProduct = () => {
                 <Descriptions.Item label="商品分类">
                   {form.getFieldValue('category') || '未选择'}
                 </Descriptions.Item>
-                <Descriptions.Item label="商品成色">
-                  {form.getFieldValue('condition') || '未选择'}
-                </Descriptions.Item>
+                
                 <Descriptions.Item label="出售价格">
                   ¥{form.getFieldValue('price') || '0'}
                 </Descriptions.Item>
@@ -482,7 +440,7 @@ const PublishProduct = () => {
       </Card>
 
       <Modal
-        visible={previewVisible}
+        open={previewVisible}
         title="图片预览"
         footer={null}
         onCancel={() => setPreviewVisible(false)}

@@ -11,7 +11,7 @@ import './index.css';
 
 const FloatingButtons = () => {
   const navigate = useNavigate();
-  const [messageCount] = useState(5); // 模拟未读消息数
+  const [messageCount] = useState(0); // 未读消息数
   const isLoggedIn = !!localStorage.getItem('authUser');
 
   const handlePublish = () => {
@@ -37,8 +37,8 @@ const FloatingButtons = () => {
               placement="left"
               mouseEnterDelay={0.5}
               mouseLeaveDelay={0.1}
-              overlayClassName="floating-tooltip"
-              destroyTooltipOnHide={true}
+              classNames={{ root: 'floating-tooltip' }}
+              destroyOnHidden
             >
               <Button
                 icon={<PlusOutlined />}
@@ -55,8 +55,8 @@ const FloatingButtons = () => {
               placement="left"
               mouseEnterDelay={0.5}
               mouseLeaveDelay={0.1}
-              overlayClassName="floating-tooltip"
-              destroyTooltipOnHide={true}
+              classNames={{ root: 'floating-tooltip' }}
+              destroyOnHidden
             >
               <Button
                 icon={
@@ -78,8 +78,8 @@ const FloatingButtons = () => {
           placement="left"
           mouseEnterDelay={0.5}
           mouseLeaveDelay={0.1}
-          overlayClassName="floating-tooltip"
-          destroyTooltipOnHide={true}
+          classNames={{ root: 'floating-tooltip' }}
+          destroyOnHidden
         >
           <Button
             icon={<QuestionCircleOutlined />}

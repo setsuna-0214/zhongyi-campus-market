@@ -15,7 +15,7 @@ import PublishProduct from './pages/Products/Publish';
 import UserProfile from './pages/User/Profile';
 import OrderList from './pages/Order/List';
 import Chat from './pages/Chat';
-import WishList from './pages/WishList';
+import Favorites from './pages/Favorites';
 import AdminDashboard from './pages/Admin/Dashboard';
 import FloatingButtons from './components/FloatingButtons';
 import AdminGuard from './pages/Admin/Guard';
@@ -39,7 +39,8 @@ function App() {
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/orders" element={<OrderList />} />
           <Route path="/chat" element={<Chat />} />
-          <Route path="/wishlist" element={<WishList />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/wishlist" element={<Navigate to="/favorites" replace />} />
           <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -10,24 +10,22 @@ import {
   Pagination, 
   Slider, 
   Space,
+  Avatar,
   Empty,
   Spin,
   message
 } from 'antd';
 import { 
   SearchOutlined, 
-  FilterOutlined, 
-  HeartOutlined, 
-  HeartFilled,
   EyeOutlined,
-  ShoppingCartOutlined,
-  EnvironmentOutlined
+  EnvironmentOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.css';
 import { searchProducts } from '../../api/products';
+import { getCategoryLabel, getStatusLabel, getStatusColor, toCategoryCode } from '../../utils/labels';
 
-const { Search } = Input;
 const { Option } = Select;
 
 const Products = () => {
@@ -38,41 +36,72 @@ const Products = () => {
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [total, setTotal] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1));
   const [pageSize] = useState(12);
   
-  // 筛选条件
+  // 初始分类参数（支持中文或代码），统一转为代码
+  const initialCategoryParam = searchParams.get('category') || '';
+  const normalizedCategory = toCategoryCode(initialCategoryParam) || '';
+
+  useEffect(() => {
+    // 当 URL 查询参数变化时，同步到组件状态，避免状态与 URL 不一致
+    const nextPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const priceRangeParamUrl = searchParams.get('priceRange');
+    const nextPriceRange = (() => {
+      if (priceRangeParamUrl) {
+        const parts = priceRangeParamUrl.split(',').map(n => Number(n));
+        if (parts.length === 2 && parts.every(n => Number.isFinite(n))) return parts;
+      }
+      return [0, 10000];
+    })();
+    const nextFilters = {
+      keyword: searchParams.get('keyword') || '',
+      category: toCategoryCode(searchParams.get('category') || '') || '',
+      priceRange: nextPriceRange,
+      location: searchParams.get('location') || '',
+      sortBy: searchParams.get('sortBy') || 'latest'
+    };
+    const arraysEqual = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i]);
+    const filtersChanged = (
+      filters.keyword !== nextFilters.keyword ||
+      filters.category !== nextFilters.category ||
+      filters.location !== nextFilters.location ||
+      filters.sortBy !== nextFilters.sortBy ||
+      !arraysEqual(filters.priceRange, nextFilters.priceRange)
+    );
+    const pageChanged = currentPage !== nextPage;
+    if (filtersChanged) setFilters(nextFilters);
+    if (pageChanged) setCurrentPage(nextPage);
+  }, [searchParams]);
+  const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+  const priceRangeParam = searchParams.get('priceRange');
+  const initialPriceRange = (() => {
+    if (priceRangeParam) {
+      const parts = priceRangeParam.split(',').map(n => Number(n));
+      if (parts.length === 2 && parts.every(n => Number.isFinite(n))) {
+        return parts;
+      }
+    }
+    return [0, 10000];
+  })();
+  const sortByParam = searchParams.get('sortBy') || 'latest';
+
   const [filters, setFilters] = useState({
     keyword: searchParams.get('keyword') || '',
-    category: searchParams.get('category') || '',
-    condition: searchParams.get('condition') || '',
-    priceRange: [0, 10000],
-    location: '',
-    sortBy: 'latest'
+    category: normalizedCategory,
+    priceRange: initialPriceRange,
+    location: searchParams.get('location') || '',
+    sortBy: sortByParam
   });
-  
-  // 收藏状态
-  const [favorites, setFavorites] = useState(new Set());
-
   // 商品分类
   const categories = [
     { value: 'electronics', label: '数码电子' },
     { value: 'books', label: '图书教材' },
-    { value: 'clothing', label: '服装配饰' },
-    { value: 'sports', label: '运动户外' },
     { value: 'daily', label: '生活用品' },
-    { value: 'furniture', label: '家具家电' },
-    { value: 'beauty', label: '美妆护肤' },
-    { value: 'other', label: '其他' }
+    { value: 'other', label: '其他物品' }
   ];
 
-  // 商品成色
-  const conditions = [
-    { value: 'new', label: '全新' },
-    { value: 'like-new', label: '几乎全新' },
-    { value: 'good', label: '成色较好' },
-    { value: 'fair', label: '成色一般' }
-  ];
+  // 成色筛选已移除
 
   // 排序选项
   const sortOptions = [
@@ -104,78 +133,51 @@ const Products = () => {
 
   // 处理搜索
   const handleSearch = (value) => {
-    setFilters(prev => ({ ...prev, keyword: value }));
-    setCurrentPage(1);
-    updateSearchParams({ ...filters, keyword: value });
+    updateSearchParams({ keyword: value, page: 1 });
   };
 
   // 处理筛选
   const handleFilterChange = (key, value) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    setCurrentPage(1);
-    updateSearchParams(newFilters);
+    updateSearchParams({ [key]: value, page: 1 });
   };
 
-  // 更新URL参数
-  const updateSearchParams = (newFilters) => {
-    const params = new URLSearchParams();
-    Object.entries(newFilters).forEach(([key, value]) => {
-      if (value && value !== '' && !(Array.isArray(value) && value.length === 0)) {
-        if (Array.isArray(value)) {
-          params.set(key, value.join(','));
-        } else {
-          params.set(key, value);
-        }
+  // 更新URL参数（保留已有参数、移除空值，并确保与当前 filters/page 同步）
+  const updateSearchParams = (partial) => {
+    const params = new URLSearchParams(searchParams);
+    const entries = {
+      keyword: partial.keyword ?? filters.keyword,
+      category: partial.category ?? filters.category,
+      priceRange: partial.priceRange ?? filters.priceRange,
+      location: partial.location ?? filters.location,
+      sortBy: partial.sortBy ?? filters.sortBy,
+      page: partial.page ?? currentPage
+    };
+    Object.entries(entries).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        const val = value.join(',');
+        if (val) params.set(key, val); else params.delete(key);
+      } else if (value !== undefined && value !== null && String(value) !== '') {
+        params.set(key, String(value));
+      } else {
+        params.delete(key);
       }
     });
     setSearchParams(params);
   };
 
-  // 处理收藏
-  const handleFavorite = (productId) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(productId)) {
-      newFavorites.delete(productId);
-      message.success('已取消收藏');
-    } else {
-      newFavorites.add(productId);
-      message.success('已添加到收藏');
-    }
-    setFavorites(newFavorites);
-  };
-
   // 跳转到商品详情
   const handleProductClick = (productId) => {
+    if (!productId) { message.warning('\u65e0\u6cd5\u6253\u5f00\u5546\u54c1\u8be6\u60c5\uff1a\u7f3a\u5c11\u5546\u54c1ID'); return; }
     navigate(`/products/${productId}`);
   };
 
-  // 获取分类标签
-  const getCategoryLabel = (category) => {
-    const cat = categories.find(c => c.value === category);
-    return cat ? cat.label : category;
-  };
+  // 分类与成色标签由 utils 统一提供（此处无需重复定义）
 
-  // 获取成色标签
-  const getConditionLabel = (condition) => {
-    const cond = conditions.find(c => c.value === condition);
-    return cond ? cond.label : condition;
-  };
-
-  // 获取成色颜色
-  const getConditionColor = (condition) => {
-    const colors = {
-      'new': 'green',
-      'like-new': 'blue',
-      'good': 'orange',
-      'fair': 'default'
-    };
-    return colors[condition] || 'default';
-  };
+  // 出售状态中文与颜色映射由 utils 统一提供
 
   useEffect(() => {
     fetchProducts();
-  }, [filters, currentPage]);
+  }, [fetchProducts]);
 
   return (
     <div className="products-page">
@@ -184,15 +186,23 @@ const Products = () => {
         <div className="search-filter-section">
           <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-              <Search
-                placeholder="搜索商品名称、描述..."
-                allowClear
-                enterButton={<SearchOutlined />}
-                size="large"
-                value={filters.keyword}
-                onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))}
-                onSearch={handleSearch}
-              />
+              <Space.Compact style={{ width: '100%' }}>
+                <Input
+                  placeholder="搜索商品名称、描述..."
+                  size="large"
+                  value={filters.keyword}
+                  onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))}
+                  onPressEnter={() => handleSearch(filters.keyword)}
+                />
+                <Button
+                  type="primary"
+                  size="large"
+                  icon={<SearchOutlined />}
+                  onClick={() => handleSearch(filters.keyword)}
+                >
+                  搜索
+                </Button>
+              </Space.Compact>
             </Col>
             <Col xs={24} md={12}>
               <Space size="middle" className="filter-controls">
@@ -205,18 +215,6 @@ const Products = () => {
                 >
                   {categories.map(cat => (
                     <Option key={cat.value} value={cat.value}>{cat.label}</Option>
-                  ))}
-                </Select>
-                
-                <Select
-                  placeholder="商品成色"
-                  allowClear
-                  style={{ width: 120 }}
-                  value={filters.condition || undefined}
-                  onChange={(value) => handleFilterChange('condition', value)}
-                >
-                  {conditions.map(cond => (
-                    <Option key={cond.value} value={cond.value}>{cond.label}</Option>
                   ))}
                 </Select>
                 
@@ -261,77 +259,65 @@ const Products = () => {
             {products.length > 0 ? (
               <>
                 <Row gutter={[16, 16]}>
-                  {products.map(product => (
-                    <Col key={product.id} xs={12} sm={8} md={6} lg={6} xl={4}>
+                  {products.map((product, index) => (
+                    <Col key={product.id || product._id || `${product.title || 'item'}-${index}`} xs={24} sm={12} md={8} lg={8} xl={8}>
                       <Card
                         hoverable
                         className="product-card"
-                        onClick={() => handleProductClick(product.id)}
+                        onClick={() => handleProductClick(product.id ?? product._id)}
                         cover={
                           <div className="product-image-container">
                             <img
                               alt={product.title}
-                              src={product.images[0]}
-                              onClick={() => handleProductClick(product.id)}
+                              src={product.image || (Array.isArray(product.images) ? product.images[0] : undefined) || 'https://via.placeholder.com/300x200?text=No+Image'}
                             />
-                            <div className="product-overlay">
-                              <Button
-                                type="text"
-                                icon={favorites.has(product.id) ? <HeartFilled /> : <HeartOutlined />}
-                                className={`favorite-btn ${favorites.has(product.id) ? 'favorited' : ''}`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleFavorite(product.id);
-                                }}
-                              />
-                              <div className="product-stats">
-                                <span><EyeOutlined /> {product.views}</span>
-                                <span><HeartOutlined /> {product.likes}</span>
-                              </div>
+                            <div className={`product-overlay overlay-hot`}>
+                              <Space>
+                                <EyeOutlined /> {product.views}
+                              </Space>
                             </div>
                           </div>
                         }
-                        actions={[
-                          <Button
-                            type="primary"
-                            size="small"
-                            icon={<ShoppingCartOutlined />}
-                            onClick={() => handleProductClick(product.id)}
-                          >
-                            查看详情
-                          </Button>
-                        ]}
                       >
-                        <div className="product-info">
-                          <h3 className="product-title" onClick={() => handleProductClick(product.id)}>
-                            {product.title}
-                          </h3>
-                          
-                          <div className="product-tags">
-                            <Tag color="blue">{getCategoryLabel(product.category)}</Tag>
-                            <Tag color={getConditionColor(product.condition)}>
-                              {getConditionLabel(product.condition)}
-                            </Tag>
-                          </div>
-                          
-                          <div className="product-price">
-                            <span className="current-price">¥{product.price}</span>
-                            {product.originalPrice && product.originalPrice > product.price && (
-                              <span className="original-price">¥{product.originalPrice}</span>
-                            )}
-                          </div>
-                          
-                          <div className="product-location">
-                            <EnvironmentOutlined />
-                            <span>{product.location}</span>
-                          </div>
-                          
-                          <div className="seller-info">
-                            <img src={product.seller.avatar} alt={product.seller.name} />
-                            <span>{product.seller.name}</span>
-                            <span className="rating">★{product.seller.rating}</span>
-                          </div>
-                        </div>
+                        <Card.Meta
+                          title={
+                            <div className="product-title">
+                              {product.title}
+                            </div>
+                          }
+                          description={
+                            <div className="product-desc">
+                              {product.category && (
+                                <div className="product-category-line">
+                                  <Tag color="green" className="product-category-tag">{getCategoryLabel(product.category)}</Tag>
+                                  {product.status && (
+                                    <Tag color={getStatusColor(product.status)} className="product-status-tag">
+                                      {getStatusLabel(product.status)}
+                                    </Tag>
+                                  )}
+                                </div>
+                              )}
+                              <div className="home-product-topline">
+                                <div className="product-price">¥{product.price}</div>
+                                {product.publishTime && (
+                                  <div className="home-product-published">{product.publishTime}</div>
+                                )}
+                              </div>
+                              <div className="home-product-bottom">
+                                <div className="home-product-seller">
+                                  <Avatar size={24} icon={<UserOutlined />} />
+                                  <span className="seller-name">{typeof product.seller === 'string' ? product.seller : (product.seller?.name || '卖家')}</span>
+                                </div>
+                                {product.location && (
+                                  <div className="home-product-location">
+                                    <EnvironmentOutlined />
+                                    <span>{product.location}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          }
+                        />
                       </Card>
                     </Col>
                   ))}
@@ -346,7 +332,7 @@ const Products = () => {
                     showSizeChanger={false}
                     showQuickJumper
                     showTotal={(total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条`}
-                    onChange={(page) => setCurrentPage(page)}
+                    onChange={(page) => { updateSearchParams({ page }); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   />
                 </div>
               </>

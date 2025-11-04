@@ -31,31 +31,55 @@
   min-width: 220px;
   margin: 0 16px;
   display: flex;
-  align-items: center; /* 垂直居中搜索框，使上下间距相同 */
+  align-items: center; 
 }
 
-.header-search .ant-input-affix-wrapper {
-  height: 36px;
-  border-radius: 18px 0 0 18px;
+.header-search .ant-space-compact {
+  width: 100%;
+}
+
+.header-search .ant-space-compact .ant-input-affix-wrapper {
+  overflow: hidden;
+  border: 1px solid var(--ant-border-color, #d9d9d9);
+  border-right: 0;
+}
+
+.header-search .ant-space-compact .ant-input {
+  font-size: 16px;
+}
+
+.header-search .ant-space-compact .ant-input-affix-wrapper,
+.header-search .ant-space-compact .ant-input {
+  height: 40px;
+  border-radius: 20px 0 0 20px;
   background: #ffffff;
   display: flex;
-  align-items: center; /* 保证内部内容垂直居中 */
-  line-height: normal; /* 避免继承 64px 行高导致偏移 */
-  margin: 0; /* 移除可能的默认外边距 */
+  align-items: center;
+  line-height: normal;
+  margin: 0;
+}
+
+.header-search .ant-space-compact .ant-btn {
+  height: 40px;
+  border-radius: 0 20px 20px 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
 }
 
 .header-search .ant-input::placeholder {
   color: #8c8c8c;
 }
 
+/* 旧 Input.Search 按钮样式保留，便于兼容 */
 .header-search .ant-input-search-button {
-  height: 36px;
-  border-radius: 0 18px 18px 0;
+  height: 40px;
+  border-radius: 0 20px 20px 0;
   display: flex;
-  align-items: center; /* 按钮文字垂直居中 */
+  align-items: center;
 }
 
-/* 进一步防止受头部 64px 行高影响 */
+/* 防止受头部 64px 行高影响 */
 .header-search .ant-input,
 .header-search .ant-input-group,
 .header-search .ant-input-group-addon {
@@ -95,9 +119,13 @@
 /* 主菜单样式 */
 .main-menu {
   flex: 1;
-  border-bottom: none;
   background: transparent;
   line-height: 64px;
+}
+
+.main-menu.ant-menu-horizontal,
+.main-menu .ant-menu-overflow {
+  border-bottom: 0 !important;
 }
 
 .main-menu .ant-menu-item {
@@ -154,32 +182,54 @@
   color: #1890ff;
 }
 
-.user-avatar {
-  display: flex;
+.user-entry {
+  display: inline-flex;
   align-items: center;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 20px;
-  transition: background-color 0.3s ease;
+  padding: 12px 12px;
+  border-radius: 24px;
+  background: transparent;
+  color: #1f1f1f;
+  box-shadow: none;
+  border: none;
+  outline: none;
+  height: 100%;
+  line-height: normal;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.user-avatar:hover {
-  background-color: #f5f5f5;
+.user-entry:hover {
+  background-color: #1890ff;
+  color: #39c5bb;
 }
+
+.user-entry:focus-visible {
+  background-color: #1890ff;
+  color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.35);
+}
+
+.header-actions .ant-dropdown-trigger {
+  background: transparent;
+}
+
+
+.user-entry .ant-avatar {
+  box-shadow: none;
+  border: none;
+}
+
 
 .username {
   margin-left: 8px;
   font-size: 14px;
-  color: #1f1f1f;
+  color: inherit;
   font-weight: 600;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* 页眉右侧图标与文字的颜色 */
-/* 仅保留用户名样式，不再覆盖图标颜色 */
-.header-actions .user-avatar span {
-  color: #1f1f1f;
-}
 
 /* 响应式设计 */
 @media (max-width: 1024px) {
