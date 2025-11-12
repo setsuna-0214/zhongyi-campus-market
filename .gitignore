@@ -56,3 +56,5 @@ pids/
 *.pid.lock
 *.seed
 *.tgz
+
+.trae/documents

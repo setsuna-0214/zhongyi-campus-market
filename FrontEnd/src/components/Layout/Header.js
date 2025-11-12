@@ -4,11 +4,11 @@ import {
   UserOutlined,
   HeartOutlined,
   LogoutOutlined,
-  ShoppingOutlined,
   SearchOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import './Header.css';
+import { getCurrentUser } from '../../api/user';
 
 const { Header: AntHeader } = Layout;
 
@@ -23,19 +23,38 @@ const Header = () => {
   
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('authUser');
-      if (raw) {
+    let cancelled = false;
+    (async () => {
+      try {
+        const raw = localStorage.getItem('authUser');
+        if (!raw) {
+          setIsLoggedIn(false);
+          setUser(null);
+          return;
+        }
         setIsLoggedIn(true);
-        setUser(JSON.parse(raw));
-      } else {
-        setIsLoggedIn(false);
-        setUser(null);
+        // 通过统一的用户接口获取合并后的完整用户信息（包含昵称等）
+        const merged = await getCurrentUser();
+        if (!cancelled) {
+          setUser(merged);
+        }
+      } catch (e) {
+        // 失败时退回到本地存储的原始数据
+        try {
+          const raw = localStorage.getItem('authUser');
+          if (raw && !cancelled) {
+            setIsLoggedIn(true);
+            setUser(JSON.parse(raw));
+          }
+        } catch {
+          if (!cancelled) {
+            setIsLoggedIn(false);
+            setUser(null);
+          }
+        }
       }
-    } catch (e) {
-      setIsLoggedIn(false);
-      setUser(null);
-    }
+    })();
+    return () => { cancelled = true; };
   }, []);
 
   
@@ -65,16 +84,10 @@ const Header = () => {
       onClick: () => navigate('/profile')
     },
     {
-      key: 'orders',
-      icon: <ShoppingOutlined />,
-      label: '我的订单',
-      onClick: () => navigate('/orders')
-    },
-    {
       key: 'favorites',
       icon: <HeartOutlined />,
       label: '我的收藏',
-      onClick: () => navigate('/favorites')
+      onClick: () => navigate('/profile?tab=favorites')
     },
     {
       type: 'divider'
@@ -120,8 +133,7 @@ const Header = () => {
         </div>
 
         
-
-        {/* 右侧操作区（重新设计） */}
+        {/* 右侧操作区 */}
         <div className="header-actions">
           {isLoggedIn ? (
             <Dropdown
@@ -135,14 +147,18 @@ const Header = () => {
                   icon={<UserOutlined />}
                   src={user?.avatar}
                 />
-                <span className="username">{user?.name || '用户'}</span>
+                <span className="username">{user?.nickname || user?.username || user?.name || '用户'}</span>
               </button>
             </Dropdown>
           ) : (
-            <Space>
-              <Button className="auth-button" type="primary" onClick={() => navigate('/login')}>登录</Button>
-              <Button className="auth-button" onClick={() => navigate('/register')}>注册</Button>
-            </Space>
+            <button
+              type="button"
+              className="user-entry user-entry--guest"
+              aria-label="登录"
+              onClick={() => navigate('/login')}
+            >
+              <Avatar size="large" icon={<UserOutlined />} />
+            </button>
           )}
         </div>
       </div>

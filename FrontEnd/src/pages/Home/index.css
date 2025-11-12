@@ -198,15 +198,36 @@
 }
 
 .auth-main-button.register-button {
-  background: linear-gradient(135deg, #1890ff, #40a9ff);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
   border: none;
   box-shadow: 0 6px 20px rgba(24, 144, 255, 0.4);
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+
+.auth-main-button.register-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 800ms ease-in-out;
+  pointer-events: none;
+}
+
+.auth-main-button.register-button > span {
+  position: relative;
+  z-index: 1;
 }
 
 .auth-main-button.register-button:hover {
-  background: linear-gradient(135deg, #40a9ff, #69c0ff);
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(24, 144, 255, 0.5);
+}
+
+.auth-main-button.register-button:hover::after {
+  opacity: 1;
 }
 
 .auth-main-button.login-button {
@@ -231,127 +252,6 @@
   padding: 0 24px 48px;
 }
 
-/* ===================== 统计数据样式（横向） ===================== */
-.stats-section {
-  margin-bottom: 48px;
-}
-
-.stats-container-horizontal {
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-}
-
-.stats-container-horizontal:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-.stats-container-horizontal .ant-card-body {
-  padding: 24px 32px;
-}
-
-.stats-horizontal-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.stat-item-horizontal {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
-.stat-icon {
-  font-size: 24px;
-  color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  backdrop-filter: blur(10px);
-}
-
-.stat-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.stat-title {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 12px;
-  font-weight: 500;
-  margin-bottom: 4px;
-  line-height: 1;
-}
-
-.stat-value {
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.stat-divider {
-  width: 1px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 0 16px;
-}
-
-/* ===================== 统计数据样式（竖向） ===================== */
-.stats-container-vertical {
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  color: #fff;
-}
-
-.stats-container-vertical:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-.stats-container-vertical .ant-card-body {
-  padding: 24px 24px;
-}
-
-.stat-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.stat-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.stat-label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.stat-row .stat-value {
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1;
-  color: #ffffff;
-}
 
 /* ===================== 分类样式 ===================== */
 .categories-section {
@@ -402,22 +302,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 24px;
 }
 
-/* 两个图标时缩小尺寸 */
 .category-icon-group.icon-count-2 .category-icon-img {
   width: 56px;
   height: 56px;
 }
 
-/* 三个图标时继续缩小 */
 .category-icon-group.icon-count-3 .category-icon-img {
   width: 48px;
   height: 48px;
 }
 
-/* 图标组入场动效：淡入 + 轻微上移缩放 */
 @keyframes categoryIconEnter {
   0% {
     opacity: 0;
@@ -435,7 +332,7 @@
   animation: categoryIconEnter 380ms ease-out both;
 }
 
-/* 逐个图标延迟，形成层叠入场 */
+/* 图标延迟层叠入场 */
 .category-icon-group .category-icon-img:nth-child(1) { animation-delay: 60ms; }
 .category-icon-group.icon-count-2 .category-icon-img:nth-child(2),
 .category-icon-group.icon-count-3 .category-icon-img:nth-child(2) { animation-delay: 120ms; }
@@ -446,7 +343,6 @@
     width: 56px;
     height: 56px;
   }
-  /* 移动端间距略小，保证整体紧凑 */
   .category-icon-group {
     gap: 10px;
   }
@@ -522,7 +418,6 @@
   object-fit: contain;
   vertical-align: -0.2em;
 }
-/* 使黑色描边SVG在主按钮中反白以匹配白色前景 */
 .ant-btn-primary .section-icon {
   filter: brightness(0) invert(1);
 }
@@ -539,132 +434,6 @@
   margin-bottom: 24px;
 }
 
-.product-card {
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.product-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.product-image-container {
-  position: relative;
-  height: 230px;
-  overflow: hidden;
-}
-
-.product-image-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.product-card:hover .product-image-container img {
-  transform: scale(1.05);
-}
-
-.product-overlay {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: transparent;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-family: 'Segoe UI', 'Trebuchet MS', 'Arial Rounded MT', Arial, sans-serif;
-  font-weight: 700;
-}
-
-.product-overlay.overlay-hot {
-  left: 8px;
-  right: auto;
-  color: #52c41a;
-  background: transparent;
-}
-
-.product-overlay.overlay-recent {
-  right: 8px;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.45);
-}
-
-.product-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #262626;
-  margin-bottom: 6px;
-  line-height: 1.4;
-}
-
-.product-desc {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.product-category-line {
-  display: flex;
-  justify-content: center;
-  margin-top: 2px;
-}
-
-.product-category-tag {
-  border: none;
-  background: #f6ffed;
-  color: #52c41a;
-}
-
-.home-product-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
-}
-
-.home-product-topline {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.home-product-published {
-  font-size: 12px;
-  color: #8c8c8c;
-}
-
-.product-price {
-  font-size: 18px;
-  font-weight: 700;
-  color: #ff4d4f;
-}
-
-.home-product-seller {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.home-product-seller .seller-name {
-  font-size: 12px;
-  color: #595959;
-}
-
-.home-product-location {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #8c8c8c;
-}
 
 /* ===================== 最新发布样式 ===================== */
 .recent-product-item {

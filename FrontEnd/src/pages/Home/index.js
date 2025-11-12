@@ -1,28 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Row, 
-  Col, 
-  Card, 
-  Button, 
-  Carousel, 
-  Typography, 
+import React, { useState, useEffect, useRef, startTransition, useMemo } from 'react';
+import {
+  Row,
+  Col,
+  Button,
+  Carousel,
+  Typography,
   Space,
-  Tag,
-  Avatar,
-  List
+  Skeleton,
+  Card,
 } from 'antd';
 import { 
-  UserOutlined, 
   RightOutlined,
-  EyeOutlined,
-  EnvironmentOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import './index.css';
-import { getHotProducts, getLatestProducts, getHomeStats } from '../../api/home';
-import { CATEGORY_THEMES, getCategoryBackground, getCategoryIcons } from '../../utils/theme';
+import ProductCard from '../../components/ProductCard';
+import { getHotProducts, getLatestProducts } from '../../api/home';
+import { getCategoryBackground, getCategoryIcons } from '../../utils/theme';
 import { message } from 'antd';
-import { getCategoryLabel, getStatusLabel, getStatusColor } from '../../utils/labels';
+import { getStatusLabel } from '../../utils/labels';
 
 const { Title, Paragraph } = Typography;
 
@@ -31,10 +27,14 @@ const Home = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('hot');
   const isLoggedIn = !!localStorage.getItem('authUser');
-  const [stats, setStats] = useState(null);
   const [hotProducts, setHotProducts] = useState([]);
   const [recentProducts, setRecentProducts] = useState([]);
-  const [topSellers, setTopSellers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const didFetchRef = useRef(false);
+  // 分批渲染控制，减少首次渲染卡顿
+  const [visibleHotCount, setVisibleHotCount] = useState(0);
+  const [visibleRecentCount, setVisibleRecentCount] = useState(0);
+  const chunkTimerRef = useRef(null);
 
   const formatRelativeTime = (iso) => {
     try {
@@ -63,31 +63,94 @@ const Home = () => {
 
 
   useEffect(() => {
+    if (didFetchRef.current) return;
+    didFetchRef.current = true;
+    setLoading(true);
     (async () => {
-      try {
-        const hot = await getHotProducts();
-        setHotProducts(Array.isArray(hot) ? hot : (hot?.items || []));
-      } catch (err) {
-        message.info('热门商品暂不可用');
-      }
-      try {
-        const latest = await getLatestProducts();
-        setRecentProducts(Array.isArray(latest) ? latest : (latest?.items || []));
-      } catch (err) {
-        message.info('最新发布暂不可用');
-      }
-      try {
-        const s = await getHomeStats();
-        setStats(s);
-      } catch (err) {
-        // ignore stats errors
-      }
+      const [hotRes, latestRes] = await Promise.all([
+        getHotProducts().catch(() => 'ERR_HOT'),
+        getLatestProducts().catch(() => 'ERR_LATEST'),
+      ]);
+      startTransition(() => {
+        if (hotRes !== 'ERR_HOT') {
+          const raw = Array.isArray(hotRes) ? hotRes : (hotRes?.items || []);
+          const filtered = raw.filter(p => getStatusLabel(p.status) === '在售');
+          setHotProducts(filtered);
+        } else {
+          message.info('热门商品暂不可用');
+          setHotProducts([]);
+        }
+        if (latestRes !== 'ERR_LATEST') {
+          const raw = Array.isArray(latestRes) ? latestRes : (latestRes?.items || []);
+          const filtered = raw.filter(p => getStatusLabel(p.status) === '在售');
+          setRecentProducts(filtered);
+        } else {
+          message.info('最新发布暂不可用');
+          setRecentProducts([]);
+        }
+      });
+      setLoading(false);
     })();
   }, []);
 
+  // 数据加载完成后，仅对当前激活标签分批增加可见的商品卡片数量
+  useEffect(() => {
+    if (loading) return;
+    // 清理上一次的定时器
+    if (chunkTimerRef.current) {
+      clearTimeout(chunkTimerRef.current);
+      chunkTimerRef.current = null;
+    }
+
+    // 初始显示数量（首批）
+    const INITIAL_CHUNK = 8;
+    const CHUNK_SIZE = 8;
+    const STEP_DELAY = 60; // 每批次之间的延时
+
+    // 仅在当前激活标签未显示内容时设置首批显示数量
+    if (activeTab === 'hot') {
+      setVisibleHotCount((c) => (c > 0 ? c : Math.min(INITIAL_CHUNK, hotProducts.length)));
+    } else {
+      setVisibleRecentCount((c) => (c > 0 ? c : Math.min(INITIAL_CHUNK, recentProducts.length)));
+    }
+
+    const step = () => {
+      let progressed = false;
+      if (activeTab === 'hot') {
+        setVisibleHotCount((c) => {
+          if (c >= hotProducts.length) return c;
+          progressed = true;
+          return Math.min(c + CHUNK_SIZE, hotProducts.length);
+        });
+      } else {
+        setVisibleRecentCount((c) => {
+          if (c >= recentProducts.length) return c;
+          progressed = true;
+          return Math.min(c + CHUNK_SIZE, recentProducts.length);
+        });
+      }
+      if (progressed) {
+        chunkTimerRef.current = setTimeout(step, STEP_DELAY);
+      } else {
+        chunkTimerRef.current = null;
+      }
+    };
+
+    // 启动分批渲染（仅当前激活标签）
+    chunkTimerRef.current = setTimeout(step, STEP_DELAY);
+
+    // 清理
+    return () => {
+      if (chunkTimerRef.current) {
+        clearTimeout(chunkTimerRef.current);
+        chunkTimerRef.current = null;
+      }
+    };
+  }, [loading, hotProducts, recentProducts, activeTab]);
+
   const bannerItems = [
     {
-      title: '欢迎来到中易校园二手交易平台',
+      title: '欢迎来到中易校园交易平台',
       subtitle: '安全、便捷、高效的校园交易体验',
       image: '/images/carousel/carousel-1.svg',
       action: () => navigate('/products')
@@ -106,6 +169,49 @@ const Home = () => {
     }
   ];
 
+  const hotCards = useMemo(() => (
+    hotProducts.slice(0, visibleHotCount).map((product) => (
+      <Col xs={24} sm={12} md={6} lg={6} xl={6} key={`hot-${product.id}`}>
+        <ProductCard
+          imageSrc={product.image}
+          title={product.title}
+          price={product.price}
+          category={product.category}
+          status={product.status}
+          location={product.location}
+          sellerName={product.seller}
+          publishedAt={product.publishedAt}
+          views={product.views}
+          overlayType={'views-left'}
+          dateFormat={'ymd'}
+          onClick={() => navigate(`/products/${product.id}`)}
+        />
+      </Col>
+    ))
+  ), [hotProducts, visibleHotCount, navigate]);
+
+  const recentCards = useMemo(() => (
+    recentProducts.slice(0, visibleRecentCount).map((product) => (
+      <Col xs={24} sm={12} md={6} lg={6} xl={6} key={`recent-${product.id}`}>
+        <ProductCard
+          imageSrc={product.image}
+          title={product.title}
+          price={product.price}
+          category={product.category}
+          status={product.status}
+          location={product.location}
+          sellerName={product.seller}
+          publishedAt={product.publishTime}
+          views={product.views}
+          overlayType={'publish-right'}
+          publishedOverlayText={formatRelativeTime(product.publishTime)}
+          dateFormat={'ymd'}
+          onClick={() => navigate(`/products/${product.id}`)}
+        />
+      </Col>
+    ))
+  ), [recentProducts, visibleRecentCount, navigate]);
+
   const categories = [
     { name: '数码电子', code: 'electronics' },
     { name: '图书教材', code: 'books' },
@@ -113,13 +219,6 @@ const Home = () => {
     { name: '其他物品', code: 'other' }
   ];
 
-
-  const CATEGORY_COUNT_KEY = {
-    electronics: 'digital',
-    books: 'books',
-    daily: 'home',
-    other: 'other'
-  };
 
   return (
     <div className="home-page">
@@ -139,7 +238,7 @@ const Home = () => {
           {bannerItems.map((item, index) => (
             <div key={index} className="auth-carousel-item">
               <div className="auth-carousel-background">
-                <img src={item.image} alt={item.title} />
+                <img src={item.image} alt={item.title} loading="lazy" decoding="async" fetchpriority="low" />
                 <div className="auth-carousel-overlay"></div>
               </div>
               <div className="auth-carousel-content">
@@ -209,6 +308,8 @@ const Home = () => {
                                     className="category-icon-img"
                                     src={src}
                                     alt={`${category.name}-${i + 1}`}
+                                    loading="lazy"
+                                    decoding="async"
                                   />
                                 ))}
                               </div>
@@ -216,9 +317,7 @@ const Home = () => {
                           })()}
                         </div>
                         <div className="category-name">{category.name}</div>
-                        <div className="category-count">
-                          共 {stats?.categoryCounts ? (stats.categoryCounts[CATEGORY_COUNT_KEY[category.code]] ?? 0) : 0} 件
-                        </div>
+                        {/* 分类数量显示已移除 */}
                       </div>
                     </Card>
                   </Col>
@@ -237,7 +336,7 @@ const Home = () => {
                 shape="round"
                 type={activeTab === 'hot' ? 'primary' : 'default'}
                 icon={<img src="/images/icons/star_6024697.svg" className="section-icon" alt="热门商品" />}
-                onClick={() => setActiveTab('hot')}
+                onClick={() => startTransition(() => setActiveTab('hot'))}
               >
                 热门商品
               </Button>
@@ -245,7 +344,7 @@ const Home = () => {
                 shape="round"
                 type={activeTab === 'recent' ? 'primary' : 'default'}
                 icon={<img src="/images/icons/innovation_11511322.svg" className="section-icon" alt="最新发布" />}
-                onClick={() => setActiveTab('recent')}
+                onClick={() => startTransition(() => setActiveTab('recent'))}
               >
                 最新发布
               </Button>
@@ -260,75 +359,40 @@ const Home = () => {
           </div>
           <Row gutter={[24, 24]}>
             <Col xs={24}>
-              <Row gutter={[16, 16]}>
-                {(activeTab === 'hot' ? hotProducts : recentProducts).map((product) => (
-                  <Col xs={24} sm={12} md={6} lg={6} xl={6} key={product.id}>
-                    <Card
-                      className="product-card"
-                      hoverable
-                      cover={
-                        <div className="product-image-container">
-                          <img src={product.image} alt={product.title} />
-                          <div className={`product-overlay ${activeTab === 'hot' ? 'overlay-hot' : 'overlay-recent'}`}>
-                            <Space>
-                              {activeTab === 'hot' ? (
-                                <>
-                                  <EyeOutlined /> {product.views}
-                                </>
-                              ) : (
-                                <>
-                                  {formatRelativeTime(product.publishTime)}
-                                </>
-                              )}
-                            </Space>
-                          </div>
+              {loading ? (
+                <Row gutter={[16, 16]}>
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <Col xs={24} sm={12} md={6} lg={6} xl={6} key={`skeleton-${i}`}>
+                      <Card className="product-card">
+                        <Skeleton.Image style={{ width: '100%', height: 160, borderRadius: 8 }} active />
+                        <div style={{ marginTop: 12 }}>
+                          <Skeleton active paragraph={{ rows: 2 }} title={{ width: '60%' }} />
                         </div>
-                      }
-                      onClick={() => navigate(`/products/${product.id}`)}
-                    >
-                      <Card.Meta
-                        title={
-                          <div className="product-title">
-                            {product.title}
-                          </div>
-                        }
-                        description={
-                          <div className="product-desc">
-                            {product.category && (
-                              <div className="product-category-line">
-                                <Tag color="green" className="product-category-tag">{getCategoryLabel(product.category)}</Tag>
-                                {product.status && (
-                                  <Tag color={getStatusColor(product.status)} className="product-status-tag">
-                                    {getStatusLabel(product.status)}
-                                  </Tag>
-                                )}
-                              </div>
-                            )}
-                            <div className="home-product-topline">
-                              <div className="product-price">¥{product.price}</div>
-                              {product.publishedAt && (
-                                <div className="home-product-published">{product.publishedAt}</div>
-                              )}
-                            </div>
-                            <div className="home-product-bottom">
-                              <div className="home-product-seller">
-                                <Avatar size={24} icon={<UserOutlined />} />
-                                <span className="seller-name">{product.seller}</span>
-                              </div>
-                              {product.location && (
-                                <div className="home-product-location">
-                                  <EnvironmentOutlined />
-                                  <span>{product.location}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        }
-                      />
-                    </Card>
-                  </Col>
-                ))}
-              </Row>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              ) : (
+                <>
+                  {/* 常驻渲染热门商品列表，通过 display 切换以避免切换时的卸载/挂载卡顿 */}
+                  <Row 
+                    gutter={[16, 16]} 
+                    style={activeTab === 'hot' ? undefined : { display: 'none' }}
+                    aria-hidden={activeTab !== 'hot'}
+                  >
+                    {hotCards}
+                  </Row>
+
+                  {/* 常驻渲染最新发布列表，通过 display 切换以避免切换时的卸载/挂载卡顿 */}
+                  <Row 
+                    gutter={[16, 16]} 
+                    style={activeTab === 'recent' ? undefined : { display: 'none' }}
+                    aria-hidden={activeTab !== 'recent'}
+                  >
+                    {recentCards}
+                  </Row>
+                </>
+              )}
             </Col>
           </Row>
         </section>

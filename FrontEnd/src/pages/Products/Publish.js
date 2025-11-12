@@ -12,32 +12,25 @@ import {
   Col,
   Steps,
   message,
-  Radio,
   Checkbox,
   DatePicker,
   Switch,
   Divider,
-  Tag,
-  Space,
   Typography,
   Alert,
-  Progress,
   Descriptions,
   Modal
 } from 'antd';
 import {
   PlusOutlined,
-  InboxOutlined,
-  CameraOutlined,
-  CheckCircleOutlined,
-  ExclamationCircleOutlined
+  CheckCircleOutlined
 } from '@ant-design/icons';
 import './Publish.css';
 
 const { TextArea } = Input;
 const { Option } = Select;
 const { Title, Text } = Typography;
-const { Dragger } = Upload;
+// 移除未使用的 Dragger
 
 const PublishProduct = () => {
   const navigate = useNavigate();
@@ -101,7 +94,7 @@ const PublishProduct = () => {
   };
 
   // 表单提交
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (_values) => {
     setLoading(true);
     try {
       // 模拟API调用
@@ -385,7 +378,7 @@ const PublishProduct = () => {
               rules={[{ required: true, message: '请同意发布协议' }]}
             >
               <Checkbox>
-                我已阅读并同意 <a href="#" onClick={(e) => e.preventDefault()}>《商品发布协议》</a>
+                我已阅读并同意 <Button type="link" onClick={(e) => e.preventDefault()}>《商品发布协议》</Button>
               </Checkbox>
             </Form.Item>
           </Card>

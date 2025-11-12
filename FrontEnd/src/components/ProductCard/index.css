@@ -1,0 +1,357 @@
+/* 统一的商品卡片样式 */
+
+.product-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform, box-shadow;
+  transform: translateY(0);
+  cursor: pointer;
+  contain: layout paint;
+  content-visibility: auto;
+  contain-intrinsic-size: 380px;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* 商品图片容器与图片 */
+.product-image-container {
+  position: relative;
+  height: 230px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.product-image-container img,
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.25s ease, transform 0.2s ease, filter 0.25s ease;
+  will-change: opacity, transform, filter;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 图片淡入过渡：初始轻微模糊与透明，加载后清晰呈现 */
+.product-image {
+  opacity: 0;
+  filter: blur(6px);
+}
+
+.product-image.loaded {
+  opacity: 1;
+  filter: none;
+}
+
+.product-card:hover .product-image-container img {
+  transform: scale(1.05);
+}
+
+/* 低功耗/减少动效设备降级 */
+@media (prefers-reduced-motion: reduce) {
+  .product-image-container img {
+    transition: none;
+  }
+  .product-card:hover .product-image-container img {
+    transform: none;
+  }
+  .product-card {
+    transition: none;
+  }
+  .product-card:hover {
+    transform: none;
+  }
+}
+
+/* 顶部覆盖信息：热门/最新发布 */
+.product-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  line-height: 0;
+  font-size: 12px;
+  font-family: 'Segoe UI', 'Trebuchet MS', 'Arial Rounded MT', Arial, sans-serif;
+  font-weight: 700;
+}
+
+.product-overlay.overlay-hot {
+  left: 8px;
+  right: auto;
+  background: transparent;
+}
+
+.product-overlay.overlay-recent {
+  right: 8px;
+  background: transparent;
+}
+
+/* 图片底部浮层（收藏时间） */
+.product-overlay-bottom {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+}
+
+/* 浏览量徽标 */
+.views-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45); 
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  backdrop-filter: saturate(160%) blur(2px);
+  color: #ffffff;
+}
+
+.views-badge .anticon {
+  color: #ffffff;
+  font-size: 12px;
+}
+
+
+.views-number {
+  font-size: 12px; 
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* 最近发布徽标 */
+.recent-badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45); 
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  backdrop-filter: saturate(160%) blur(2px);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.unavailable-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* 卡片信息区 */
+.product-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 6px;
+  line-height: 1;
+}
+
+.product-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.product-category-line {
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.product-category-tag {
+  border: none;
+  background: #f6ffed;
+  color: #52c41a;
+}
+
+/* 分类标签与状态标签统一形态（仅在显式类名时生效） */
+.ant-tag.product-category-tag {
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0 8px;
+  line-height: 20px;
+}
+
+/* 通用标签命名类（可在组件外复用） */
+/* 仅对显式添加这些类名的 Tag 生效，不做全局覆盖 */
+.ant-tag.tag-pill {
+  border-radius: 999px;
+}
+
+.ant-tag.tag-sm {
+  font-size: 12px;
+  line-height: 20px;
+  padding: 0 8px;
+}
+
+.ant-tag.tag-md {
+  font-size: 13px;
+  line-height: 22px;
+  padding: 0 10px;
+}
+
+.ant-tag.tag-bold {
+  font-weight: 600;
+  border: none;
+}
+
+.ant-tag.tag-muted {
+  background: #f5f5f5;
+  color: #595959;
+  border: none;
+}
+
+/* 产品状态标签统一形态 */
+.ant-tag.product-status-tag {
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0 8px;
+  line-height: 20px;
+}
+
+.home-product-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.home-product-published {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.product-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ff4d4f;
+}
+
+.home-product-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.home-product-seller {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-product-seller .seller-name {
+  font-size: 12px;
+  color: #595959;
+}
+
+.home-product-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* 收藏复选框（仅在需要时显示） */
+.product-checkbox {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  backdrop-filter: saturate(160%) blur(2px);
+  /* 布局与交互 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+/* 自定义勾选符号 */
+.product-checkbox::after {
+  content: '😎';
+  font-size: 16px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 1);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.product-checkbox:checked::after {
+  opacity: 1;
+}
+
+.product-card:hover .product-checkbox {
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+
+.product-checkbox:focus-visible {
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.6), 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+
+.product-checkbox:active {
+  transform: scale(0.96);
+}
+
+.product-checkbox:checked {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .product-image-container {
+    height: 150px;
+  }
+  .product-title {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .product-image-container {
+    height: 120px;
+  }
+  .product-checkbox {
+    top: 4px;
+    right: 4px;
+    left: auto;
+    width: 24px;
+    height: 24px;
+  }
+  .product-title {
+    font-size: 11px;
+  }
+}

@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  Card, 
   Input, 
   Button, 
   Avatar, 
-  List, 
   Typography, 
   Space, 
   Badge, 
@@ -25,7 +23,7 @@ import {
   MoreOutlined,
   ArrowLeftOutlined
 } from '@ant-design/icons';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import './index.css';
 import { listConversations, listMessages, sendMessage } from '../../api/chat';
 
@@ -33,7 +31,7 @@ const { TextArea } = Input;
 const { Text, Title } = Typography;
 
 const Chat = () => {
-  const navigate = useNavigate();
+  
   const [searchParams] = useSearchParams();
   const messagesEndRef = useRef(null);
   
@@ -41,7 +39,7 @@ const Chat = () => {
   const [currentConversation, setCurrentConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
   // 从后端拉取会话与消息

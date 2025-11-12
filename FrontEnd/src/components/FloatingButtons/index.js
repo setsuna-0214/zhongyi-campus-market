@@ -3,7 +3,6 @@ import { Button, Badge, Tooltip } from 'antd';
 import { 
   PlusOutlined, 
   MessageOutlined, 
-  CustomerServiceOutlined,
   QuestionCircleOutlined 
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
