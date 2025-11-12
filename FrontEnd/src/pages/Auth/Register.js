@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Form,
   Input,
@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
-import { register } from '../../api/auth';
+import { register, sendCode } from '../../api/auth';
 
 const { Title, Text } = Typography;
 
@@ -24,7 +24,13 @@ const Register = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
-  const [verificationSent, setVerificationSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => setCountdown((c) => c - 1), 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   const sendVerificationCode = async () => {
     try {
@@ -33,15 +39,12 @@ const Register = () => {
         message.error('请先输入邮箱地址');
         return;
       }
-
       setLoading(true);
-      // 模拟发送验证码
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setVerificationSent(true);
+      await sendCode({ email });
       message.success('验证码已发送到您的邮箱');
+      setCountdown(60);
     } catch (error) {
-      message.error('发送验证码失败');
+      message.error(error?.message || '发送验证码失败');
     } finally {
       setLoading(false);
     }
@@ -138,10 +141,10 @@ const Register = () => {
               <Button
                 onClick={sendVerificationCode}
                 loading={loading}
-                disabled={verificationSent}
+                disabled={countdown > 0}
                 block
               >
-                {verificationSent ? '已发送' : '发送验证码'}
+                {countdown > 0 ? `重新发送(${countdown}s)` : '发送验证码'}
               </Button>
             </Col>
           </Row>
@@ -157,7 +160,7 @@ const Register = () => {
       </div>
 
       <div className="auth-content">
-        <Row justify="center" align="middle" style={{ minHeight: '100vh', padding: '20px 0' }}>
+        <Row justify="center" align="middle" style={{ minHeight: '100vh', padding: '12px 0' }}>
           <Col xs={22} sm={20} md={16} lg={12} xl={8}>
             <Card className="auth-card register-card">
               <div className="auth-header">

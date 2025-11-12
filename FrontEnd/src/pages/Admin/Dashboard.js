@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Row,
@@ -14,10 +14,6 @@ import {
   Avatar,
   Tabs,
   DatePicker,
-  Select,
-  Input,
-  Modal,
-  Form,
   message,
   Tooltip,
   Badge,
@@ -32,10 +28,6 @@ import {
   FallOutlined,
   EyeOutlined,
   EditOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-  SearchOutlined,
-  FilterOutlined,
   ExportOutlined,
   ReloadOutlined,
   WarningOutlined,
@@ -49,7 +41,6 @@ import './Dashboard.css';
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
-const { Option } = Select;
 
 // 将静态数据移到组件外部，避免重复渲染
 const mockDashboardData = {
@@ -263,7 +254,7 @@ const AdminDashboard = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
-        <Tag color={getStatusColor(status)}>
+        <Tag color={getStatusColor(status)} className="tag-pill tag-sm tag-bold">
           {getStatusText(status)}
         </Tag>
       )
@@ -276,7 +267,7 @@ const AdminDashboard = () => {
     {
       title: '操作',
       key: 'action',
-      render: (_, record) => (
+      render: (_, _record) => (
         <Space size="small">
           <Tooltip title="查看详情">
             <Button type="text" icon={<EyeOutlined />} size="small" />
@@ -488,7 +479,7 @@ const AdminDashboard = () => {
                           title={
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <Text strong>{item.name}</Text>
-                              <Tag color={getStatusColor(item.status)}>
+                              <Tag color={getStatusColor(item.status)} className="tag-pill tag-sm tag-bold">
                                 {getStatusText(item.status)}
                               </Tag>
                             </div>

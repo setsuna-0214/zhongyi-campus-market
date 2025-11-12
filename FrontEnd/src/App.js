@@ -9,18 +9,18 @@ import Header from './components/Layout/Header';
 import Home from './pages/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
+import ForgotPassword from './pages/Auth/ForgotPassword';
 import ProductList from './pages/Products';
 import ProductDetail from './pages/Products/Detail';
 import PublishProduct from './pages/Products/Publish';
 import UserProfile from './pages/User/Profile';
-import OrderList from './pages/Order/List';
 import Chat from './pages/Chat';
-import Favorites from './pages/Favorites';
 import AdminDashboard from './pages/Admin/Dashboard';
 import FloatingButtons from './components/FloatingButtons';
 import AdminGuard from './pages/Admin/Guard';
 
 import './App.css';
+import './components/ProductCard/index.css';
 
 const { Content } = Layout;
 
@@ -32,15 +32,16 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/register" element={<Register />} />
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/publish" element={<PublishProduct />} />
           <Route path="/profile" element={<UserProfile />} />
-          <Route path="/orders" element={<OrderList />} />
           <Route path="/chat" element={<Chat />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/wishlist" element={<Navigate to="/favorites" replace />} />
+          {/* 收藏页已整合至用户页 */}
+          <Route path="/favorites" element={<Navigate to="/profile?tab=favorites" replace />} />
+          <Route path="/wishlist" element={<Navigate to="/profile?tab=favorites" replace />} />
           <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

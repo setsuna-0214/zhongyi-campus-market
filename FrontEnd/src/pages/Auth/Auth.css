@@ -42,7 +42,7 @@
 
 .auth-content {
   width: 100%;
-  padding: 20px;
+  padding: 12px;
   z-index: 1;
 }
 
@@ -56,14 +56,14 @@
 }
 
 .register-card {
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .auth-header {
   text-align: center;
-  margin-bottom: 32px;
-  padding: 24px 0 0;
+  margin-bottom: 20px;
+  padding: 12px 0 0;
 }
 
 .auth-logo {
@@ -91,7 +91,13 @@
 }
 
 .auth-form {
-  padding: 0 24px;
+  padding: 0 16px;
+}
+
+/* 统一所有认证表单的内容宽度，与注册页保持一致 */
+.auth-card .auth-form {
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .auth-form .ant-form-item-label > label {
@@ -105,6 +111,15 @@
   border-radius: 8px;
   border: 1px solid #d9d9d9;
   transition: all 0.3s ease;
+}
+
+/* 减少表单项之间的垂直间距，降低滚动距离 */
+.auth-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.auth-form .ant-form-item:last-child {
+  margin-bottom: 0;
 }
 
 .auth-form .ant-input-affix-wrapper:hover,
@@ -148,13 +163,49 @@
   font-size: 16px;
   font-weight: 500;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  transition: transform 250ms ease, box-shadow 250ms ease;
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* 渐变叠加层 */
+.auth-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  opacity: 0;
+  transition: opacity 400ms ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+  will-change: opacity;
+  border-radius: inherit;
+}
+
+.auth-button:hover::after {
+  opacity: 1;
+}
+
+.auth-button > span {
+  position: relative;
+  z-index: 1;
 }
 
 .auth-button:hover {
-  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.auth-button.ant-btn-primary,
+.auth-button.ant-btn-primary:hover,
+.auth-button.ant-btn-primary:focus {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: #fff !important;
 }
 
 .social-login {
@@ -168,8 +219,9 @@
 }
 
 .login-form-container {
-  max-width: 400px;
-  margin: 0 auto;
+  max-width: none;
+  width: 100%;
+  margin: 0;
 }
 
 .login-form-container .auth-form {
@@ -215,9 +267,9 @@
 
 .auth-footer {
   text-align: center;
-  padding: 24px;
+  padding: 16px;
   border-top: 1px solid #f0f0f0;
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 .auth-link {
@@ -334,23 +386,4 @@
   .step-buttons .ant-btn {
     width: 100%;
   }
-}
-
-/* 自定义滚动条 */
-.register-card::-webkit-scrollbar {
-  width: 4px;
-}
-
-.register-card::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 2px;
-}
-
-.register-card::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 2px;
-}
-
-.register-card::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
 }

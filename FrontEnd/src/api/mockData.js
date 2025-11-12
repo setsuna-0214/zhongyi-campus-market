@@ -1,4 +1,5 @@
 // 本地 Mock 数据，用于未接入后端时前端展示示例
+import { FALLBACK_IMAGE } from '../utils/images';
 
 // 卖家示例
 export const mockSellers = [
@@ -57,7 +58,7 @@ export const mockProducts = [
     images: ['/images/products/math-textbook.jpg'],
     views: 98,
     seller: mockSellers[1],
-    status: '已售出',
+    status: '已下架',
     publishTime: '2025-11-03T08:00:00.000Z',
     tags: ['教材', '数学', '考试'],
     description:
@@ -246,37 +247,33 @@ export const mockProducts = [
   }
 ];
 
-// 首页统计与优秀卖家
-export const mockHomeStats = {
-  totalProducts: mockProducts.length,
-  totalUsers: 5231,
-  totalDeals: 1487,
-  transactionAmount: 356420,
-  categoryCounts: {
-    digital: mockProducts.filter(p => p.category === 'electronics').length,
-    books: mockProducts.filter(p => p.category === 'books').length,
-    fashion: 0,
-    sports: 0,
-    home: mockProducts.filter(p => p.category === 'daily').length,
-    furniture: 0,
-    stationery: 0,
-    other: 0
-  },
-  topSellers: mockSellers
-};
 
 // 调试用户信息
+const nowYMDHMS = (() => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  return `${y}-${m}-${day} ${hh}:${mm}:${ss}`;
+})();
+
 export const mockUserDebug = {
-  id: 'u_debug_1',
+  id: '1',
   username: '1',
-  name: '调试用户',
-  role: 'user',
   avatar: '/images/avatars/avatar-1.svg',
-  school: 'XX大学',
   phone: '13800000000',
   email: 'debug@example.com',
-  address: 'XX大学宿舍 1-101',
-  token: 'debug-token'
+  address: '珠海校区 - 榕园9号',
+  token: 'debug-token',
+  nickname: '调试用户',
+  bio: '这是用于调试的用户，包含完整字段以便测试展示。',
+  joinDate: '2023-09-01',
+  role: 'user',
+  gender: '男',
+  lastLoginAt: nowYMDHMS
 };
 
 // 收藏示例（为调试用户）
@@ -318,7 +315,7 @@ export const initialOrders = [
       quantity: 1
     },
     seller: mockSellers[2],
-    buyer: { id: mockUserDebug.id, name: mockUserDebug.name }
+    buyer: { id: mockUserDebug.id, name: mockUserDebug.nickname || '调试用户' }
   },
   {
     id: 'o1002',
@@ -333,7 +330,7 @@ export const initialOrders = [
       quantity: 1
     },
     seller: mockSellers[1],
-    buyer: { id: mockUserDebug.id, name: mockUserDebug.name }
+    buyer: { id: mockUserDebug.id, name: mockUserDebug.nickname || '调试用户' }
   }
 ];
 
@@ -426,6 +423,35 @@ export function ensureMockState() {
         localStorage.setItem('mock_favorites', JSON.stringify(initialFavorites));
       }
     }
+    // 清理旧的收藏条目中的无效/过期 coverImage 与 productImage
+    try {
+      const rawFav = localStorage.getItem('mock_favorites');
+      if (rawFav) {
+        let items = [];
+        try { items = JSON.parse(rawFav) || []; } catch { items = []; }
+        let changed = false;
+        items = items.map(item => {
+          const pid = String(item.productId || item.product?.id || '').trim();
+          const p = mockProducts.find(mp => String(mp.id) === pid);
+          const primaryImage = Array.isArray(p?.images) ? p.images[0] : undefined;
+          const isBadCover = /product-1\.svg$/.test(String(item.coverImage || ''));
+          const isBadProduct = /product-1\.svg$/.test(String(item.productImage || ''));
+          if (primaryImage && (item.coverImage !== primaryImage || item.productImage !== primaryImage || isBadCover || isBadProduct)) {
+            changed = true;
+            return { ...item, coverImage: primaryImage, productImage: primaryImage };
+          }
+          if (!primaryImage && (isBadCover || isBadProduct)) {
+            const fallback = item.productImage || item.coverImage || (Array.isArray(item.images) ? item.images[0] : undefined) || FALLBACK_IMAGE;
+            changed = true;
+            return { ...item, coverImage: fallback, productImage: fallback };
+          }
+          return item;
+        });
+        if (changed) {
+          try { localStorage.setItem('mock_favorites', JSON.stringify(items)); } catch {}
+        }
+      }
+    } catch {}
     // 保留订单与消息初始化
     if (!localStorage.getItem('mock_orders')) {
       localStorage.setItem('mock_orders', JSON.stringify(initialOrders));

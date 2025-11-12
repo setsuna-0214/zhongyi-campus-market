@@ -1,25 +1,16 @@
 export const CATEGORY_THEMES = {
-  electronics: 'linear-gradient(135deg, #1e88e5, #42a5f5)', // 蓝（接近 #1890ff）
-  books: 'linear-gradient(135deg, #5c6bc0, #7986cb)',       // 靛蓝
-  daily: 'linear-gradient(135deg, #81d4fa, #64b5f6)',       // 淡蓝
-  other: 'linear-gradient(135deg, #9fa8da, #7986cb)'        // 蓝灰
+  electronics: 'linear-gradient(135deg, #1e88e5, #42a5f5)',
+  books: 'linear-gradient(135deg, #5c6bc0, #7986cb)',
+  daily: 'linear-gradient(135deg, #81d4fa, #64b5f6)',
+  other: 'linear-gradient(135deg, #9fa8da, #7986cb)'
 };
 
 export const getCategoryBackground = (code) => {
   return CATEGORY_THEMES[code] || 'linear-gradient(135deg, #1890ff, #1c7ed6)';
 };
 
-// 根据分类代码返回对应的彩色卡通图标路径（位于 public/images/category）
-export const getCategoryIcon = (code) => {
-  const known = [
-    'electronics', 'books','daily', 'other'
-  ];
-  const key = typeof code === 'string' ? code.toLowerCase() : 'other';
-  const file = known.includes(key) ? key : 'other';
-  return `/images/category/${file}.svg`;
-};
 
-// 返回该分类的图标数组（1-3个），用于在卡片中同时显示多个图标
+// 分类的图标数组
 export const getCategoryIcons = (code) => {
   const key = typeof code === 'string' ? code.toLowerCase() : 'other';
   switch (key) {

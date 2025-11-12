@@ -29,7 +29,6 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 可以根据后端返回结构统一处理错误消息
     const msg = error?.response?.data?.message || error.message || '网络错误';
     return Promise.reject(new Error(msg));
   }

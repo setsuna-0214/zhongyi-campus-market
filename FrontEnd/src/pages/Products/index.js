@@ -1,30 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   Row, 
   Col, 
-  Card, 
-  Input, 
   Select, 
-  Button, 
-  Tag, 
   Pagination, 
   Slider, 
   Space,
-  Avatar,
   Empty,
   Spin,
   message
 } from 'antd';
-import { 
-  SearchOutlined, 
-  EyeOutlined,
-  EnvironmentOutlined,
-  UserOutlined
-} from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.css';
+import ProductCard from '../../components/ProductCard';
+import { resolveImageSrc } from '../../utils/images';
 import { searchProducts } from '../../api/products';
-import { getCategoryLabel, getStatusLabel, getStatusColor, toCategoryCode } from '../../utils/labels';
+import { toCategoryCode } from '../../utils/labels';
 
 const { Option } = Select;
 
@@ -59,21 +50,23 @@ const Products = () => {
       category: toCategoryCode(searchParams.get('category') || '') || '',
       priceRange: nextPriceRange,
       location: searchParams.get('location') || '',
-      sortBy: searchParams.get('sortBy') || 'latest'
+      sortBy: searchParams.get('sortBy') || 'latest',
+      status: searchParams.get('status') || '在售'
     };
     const arraysEqual = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i]);
-    const filtersChanged = (
-      filters.keyword !== nextFilters.keyword ||
-      filters.category !== nextFilters.category ||
-      filters.location !== nextFilters.location ||
-      filters.sortBy !== nextFilters.sortBy ||
-      !arraysEqual(filters.priceRange, nextFilters.priceRange)
-    );
-    const pageChanged = currentPage !== nextPage;
-    if (filtersChanged) setFilters(nextFilters);
-    if (pageChanged) setCurrentPage(nextPage);
+    setFilters(prev => {
+      const changed = (
+        prev.keyword !== nextFilters.keyword ||
+        prev.category !== nextFilters.category ||
+        prev.location !== nextFilters.location ||
+        prev.sortBy !== nextFilters.sortBy ||
+        prev.status !== nextFilters.status ||
+        !arraysEqual(prev.priceRange, nextFilters.priceRange)
+      );
+      return changed ? nextFilters : prev;
+    });
+    setCurrentPage(prev => (prev !== nextPage ? nextPage : prev));
   }, [searchParams]);
-  const initialPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
   const priceRangeParam = searchParams.get('priceRange');
   const initialPriceRange = (() => {
     if (priceRangeParam) {
@@ -91,7 +84,8 @@ const Products = () => {
     category: normalizedCategory,
     priceRange: initialPriceRange,
     location: searchParams.get('location') || '',
-    sortBy: sortByParam
+    sortBy: sortByParam,
+    status: searchParams.get('status') || '在售'
   });
   // 商品分类
   const categories = [
@@ -101,8 +95,6 @@ const Products = () => {
     { value: 'other', label: '其他物品' }
   ];
 
-  // 成色筛选已移除
-
   // 排序选项
   const sortOptions = [
     { value: 'latest', label: '最新发布' },
@@ -110,8 +102,6 @@ const Products = () => {
     { value: 'price-high', label: '价格从高到低' },
     { value: 'popular', label: '最受欢迎' }
   ];
-
-  // 已移除模拟商品数据，统一从后端获取
 
   // 获取商品列表（接入后端）
   const fetchProducts = useCallback(async () => {
@@ -131,10 +121,6 @@ const Products = () => {
     }
   }, [filters, currentPage, pageSize]);
 
-  // 处理搜索
-  const handleSearch = (value) => {
-    updateSearchParams({ keyword: value, page: 1 });
-  };
 
   // 处理筛选
   const handleFilterChange = (key, value) => {
@@ -150,6 +136,7 @@ const Products = () => {
       priceRange: partial.priceRange ?? filters.priceRange,
       location: partial.location ?? filters.location,
       sortBy: partial.sortBy ?? filters.sortBy,
+      status: partial.status ?? filters.status,
       page: partial.page ?? currentPage
     };
     Object.entries(entries).forEach(([key, value]) => {
@@ -165,19 +152,37 @@ const Products = () => {
     setSearchParams(params);
   };
 
-  // 跳转到商品详情
-  const handleProductClick = (productId) => {
+  // 跳转到商品详情（稳定引用）
+  const handleProductClick = useCallback((productId) => {
     if (!productId) { message.warning('\u65e0\u6cd5\u6253\u5f00\u5546\u54c1\u8be6\u60c5\uff1a\u7f3a\u5c11\u5546\u54c1ID'); return; }
     navigate(`/products/${productId}`);
-  };
+  }, [navigate]);
 
-  // 分类与成色标签由 utils 统一提供（此处无需重复定义）
-
-  // 出售状态中文与颜色映射由 utils 统一提供
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  const productCards = useMemo(() => (
+    products.map((product, index) => (
+      <Col key={product.id || product._id || `${product.title || 'item'}-${index}`} xs={24} sm={12} md={6} lg={6} xl={6}>
+        <ProductCard
+          imageSrc={resolveImageSrc({ product })}
+          title={product.title}
+          price={product.price}
+          category={product.category}
+          status={product.status}
+          location={product.location}
+          sellerName={typeof product.seller === 'string' ? product.seller : (product.seller?.name || '卖家')}
+          publishedAt={product.publishTime}
+          views={product.views}
+          overlayType={'views-left'}
+          dateFormat={'ymd'}
+          onClick={() => handleProductClick(product.id ?? product._id)}
+        />
+      </Col>
+    ))
+  ), [products, handleProductClick]);
 
   return (
     <div className="products-page">
@@ -185,26 +190,7 @@ const Products = () => {
         {/* 搜索和筛选区域 */}
         <div className="search-filter-section">
           <Row gutter={[16, 16]}>
-            <Col xs={24} md={12}>
-              <Space.Compact style={{ width: '100%' }}>
-                <Input
-                  placeholder="搜索商品名称、描述..."
-                  size="large"
-                  value={filters.keyword}
-                  onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))}
-                  onPressEnter={() => handleSearch(filters.keyword)}
-                />
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={<SearchOutlined />}
-                  onClick={() => handleSearch(filters.keyword)}
-                >
-                  搜索
-                </Button>
-              </Space.Compact>
-            </Col>
-            <Col xs={24} md={12}>
+            <Col xs={24} md={24}>
               <Space size="middle" className="filter-controls">
                 <Select
                   placeholder="商品分类"
@@ -218,6 +204,17 @@ const Products = () => {
                   ))}
                 </Select>
                 
+                <Select
+                  placeholder="出售状态"
+                  style={{ width: 120 }}
+                  value={filters.status}
+                  onChange={(value) => handleFilterChange('status', value)}
+                >
+                  <Option value="全部">全部</Option>
+                  <Option value="在售">在售</Option>
+                  <Option value="已下架">已下架</Option>
+                </Select>
+
                 <Select
                   placeholder="排序方式"
                   style={{ width: 120 }}
@@ -242,7 +239,7 @@ const Products = () => {
               step={100}
               value={filters.priceRange}
               onChange={(value) => handleFilterChange('priceRange', value)}
-              style={{ width: 200, margin: '0 16px' }}
+              style={{ width: 260, margin: '0 12px' }}
             />
             <span>¥{filters.priceRange[0]} - ¥{filters.priceRange[1]}</span>
           </div>
@@ -259,68 +256,7 @@ const Products = () => {
             {products.length > 0 ? (
               <>
                 <Row gutter={[16, 16]}>
-                  {products.map((product, index) => (
-                    <Col key={product.id || product._id || `${product.title || 'item'}-${index}`} xs={24} sm={12} md={8} lg={8} xl={8}>
-                      <Card
-                        hoverable
-                        className="product-card"
-                        onClick={() => handleProductClick(product.id ?? product._id)}
-                        cover={
-                          <div className="product-image-container">
-                            <img
-                              alt={product.title}
-                              src={product.image || (Array.isArray(product.images) ? product.images[0] : undefined) || 'https://via.placeholder.com/300x200?text=No+Image'}
-                            />
-                            <div className={`product-overlay overlay-hot`}>
-                              <Space>
-                                <EyeOutlined /> {product.views}
-                              </Space>
-                            </div>
-                          </div>
-                        }
-                      >
-                        <Card.Meta
-                          title={
-                            <div className="product-title">
-                              {product.title}
-                            </div>
-                          }
-                          description={
-                            <div className="product-desc">
-                              {product.category && (
-                                <div className="product-category-line">
-                                  <Tag color="green" className="product-category-tag">{getCategoryLabel(product.category)}</Tag>
-                                  {product.status && (
-                                    <Tag color={getStatusColor(product.status)} className="product-status-tag">
-                                      {getStatusLabel(product.status)}
-                                    </Tag>
-                                  )}
-                                </div>
-                              )}
-                              <div className="home-product-topline">
-                                <div className="product-price">¥{product.price}</div>
-                                {product.publishTime && (
-                                  <div className="home-product-published">{product.publishTime}</div>
-                                )}
-                              </div>
-                              <div className="home-product-bottom">
-                                <div className="home-product-seller">
-                                  <Avatar size={24} icon={<UserOutlined />} />
-                                  <span className="seller-name">{typeof product.seller === 'string' ? product.seller : (product.seller?.name || '卖家')}</span>
-                                </div>
-                                {product.location && (
-                                  <div className="home-product-location">
-                                    <EnvironmentOutlined />
-                                    <span>{product.location}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          }
-                        />
-                      </Card>
-                    </Col>
-                  ))}
+                  {productCards}
                 </Row>
                 
                 {/* 分页 */}

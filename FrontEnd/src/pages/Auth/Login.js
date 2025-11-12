@@ -5,28 +5,22 @@ import {
   Button, 
   Card, 
   Typography, 
-  Divider, 
-  Space, 
-  Checkbox,
   message,
   Row,
   Col
 } from 'antd';
 import { 
   UserOutlined, 
-  LockOutlined, 
-  WechatOutlined,
-  QqOutlined,
-  AlipayOutlined
+  LockOutlined
 } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './Auth.css';
 import { login } from '../../api/auth';
 
 const { Title, Text } = Typography;
 
 const Login = () => {
-  const navigate = useNavigate();
+  
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
@@ -53,9 +47,6 @@ const Login = () => {
     }
   };
 
-  const handleSocialLogin = (platform) => {
-    message.info(`${platform}登录功能开发中...`);
-  };
 
   return (
     <div className="auth-container">
@@ -64,8 +55,8 @@ const Login = () => {
       </div>
       
       <div className="auth-content">
-        <Row justify="center" align="middle" style={{ minHeight: '100vh' }}>
-          <Col xs={22} sm={16} md={12} lg={8} xl={6}>
+        <Row justify="center" align="middle" style={{ minHeight: '100vh', padding: '12px 0' }}>
+          <Col xs={22} sm={20} md={16} lg={12} xl={8}>
             <Card className="auth-card">
               <div className="auth-header">
                 <div className="auth-logo">
@@ -131,35 +122,6 @@ const Login = () => {
                 </Form.Item>
                 </Form>
 
-                <Divider>
-                  <Text type="secondary">或者使用以下方式登录</Text>
-                </Divider>
-
-                <div className="social-login">
-                  <Space size="large">
-                  <Button 
-                    icon={<WechatOutlined />} 
-                    shape="circle" 
-                    size="large"
-                    className="social-button wechat"
-                    onClick={() => handleSocialLogin('微信')}
-                  />
-                  <Button 
-                    icon={<QqOutlined />} 
-                    shape="circle" 
-                    size="large"
-                    className="social-button qq"
-                    onClick={() => handleSocialLogin('QQ')}
-                  />
-                  <Button 
-                    icon={<AlipayOutlined />} 
-                    shape="circle" 
-                    size="large"
-                    className="social-button alipay"
-                    onClick={() => handleSocialLogin('支付宝')}
-                  />
-                  </Space>
-                </div>
               </div>
 
               <div className="auth-footer">

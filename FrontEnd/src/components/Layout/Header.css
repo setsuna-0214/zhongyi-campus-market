@@ -9,7 +9,6 @@
   z-index: 1000;
 }
 
-/* 提升选择器优先级，确保覆盖 Ant 默认头部背景色 */
 .ant-layout-header.app-header {
   background: #fafafa !important;
 }
@@ -24,7 +23,7 @@
   height: 100%;
 }
 
-/* 搜索栏（页眉中部） */
+/* 搜索栏 */
 .header-search {
   flex: 1;
   max-width: 520px;
@@ -71,18 +70,8 @@
   color: #8c8c8c;
 }
 
-/* 旧 Input.Search 按钮样式保留，便于兼容 */
-.header-search .ant-input-search-button {
-  height: 40px;
-  border-radius: 0 20px 20px 0;
-  display: flex;
-  align-items: center;
-}
-
-/* 防止受头部 64px 行高影响 */
 .header-search .ant-input,
-.header-search .ant-input-group,
-.header-search .ant-input-group-addon {
+.header-search .ant-input-group {
   line-height: normal;
 }
 
@@ -157,19 +146,6 @@
   gap: 8px !important;
 }
 
-.auth-button {
-  min-width: 70px;
-  height: 36px;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
-  padding: 0 16px;
-  font-size: 14px;
-}
-
-.auth-button:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
 
 .action-icon {
   font-size: 18px;
@@ -200,7 +176,7 @@
 
 .user-entry:hover {
   background-color: #1890ff;
-  color: #39c5bb;
+  color: #1890ff;
 }
 
 .user-entry:focus-visible {
@@ -228,6 +204,10 @@
   line-height: 1;
   display: inline-flex;
   align-items: center;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 
@@ -268,11 +248,6 @@
     gap: 6px !important;
   }
   
-  .auth-button {
-    min-width: 60px;
-    padding: 0 12px;
-    font-size: 13px;
-  }
   
   .username {
     display: none;
@@ -283,4 +258,20 @@
     margin: 0 8px;
     min-width: 160px;
   }
+}
+.user-entry.user-entry--guest:hover {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* 未登录态用户图标 */
+.user-entry.user-entry--guest:hover .ant-avatar-icon .anticon,
+.user-entry.user-entry--guest:hover .anticon {
+  color: #1890ff;
+}
+
+/* 未登录态图标颜色渐变动画 */
+.user-entry.user-entry--guest .ant-avatar-icon .anticon,
+.user-entry.user-entry--guest .anticon {
+  transition: color 400ms ease-in-out;
 }

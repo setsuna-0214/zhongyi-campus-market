@@ -1,19 +1,10 @@
-import client from './client';
-import { isMockEnabled } from './mockData';
+import { isMockEnabled, ensureMockState } from './mockData';
+import * as mock from './cart.mock';
+import * as real from './cart.real';
 
-export async function addToCart(productId, quantity = 1) {
-  if (isMockEnabled()) {
-    return { success: true };
-  }
-  const { data } = await client.post('/cart', { productId, quantity });
-  return data;
-}
+const useMock = isMockEnabled();
+if (useMock) { ensureMockState(); }
+const impl = useMock ? mock : real;
 
-export async function batchAddToCart(items) {
-  // items: [{ productId, quantity }]
-  if (isMockEnabled()) {
-    return { success: true, count: Array.isArray(items) ? items.length : 0 };
-  }
-  const { data } = await client.post('/cart/batch', { items });
-  return data;
-}
+export const addToCart = impl.addToCart;
+export const batchAddToCart = impl.batchAddToCart;

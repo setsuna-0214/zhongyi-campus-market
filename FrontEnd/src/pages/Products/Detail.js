@@ -14,7 +14,6 @@ import {
   Modal,
   Input,
   message,
-  Badge,
   Tooltip,
   Breadcrumb,
   List
@@ -29,8 +28,6 @@ import {
   EnvironmentOutlined,
   ClockCircleOutlined,
   SafetyCertificateOutlined,
-  StarOutlined,
-  UserOutlined,
   PhoneOutlined,
   MailOutlined,
   HomeOutlined,
@@ -41,6 +38,7 @@ import './Detail.css';
 import { getProduct, getRelatedProducts } from '../../api/products';
 import { getCategoryLabel, getStatusLabel, getStatusColor } from '../../utils/labels';
 import { getFavorites, addToFavorites, removeFavoriteByProductId } from '../../api/favorites';
+import { resolveImageSrc, FALLBACK_IMAGE } from '../../utils/images';
 
 const { TextArea } = Input;
 
@@ -59,20 +57,15 @@ const ProductDetail = () => {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
 
-  // 统一状态与数量，计算是否可购买（须在任何 return 之前调用 Hook）
+  // 能否购买状态判断
   const normalizedStatus = useMemo(() => {
     const raw = product?.status;
     const s = String(raw || '').toLowerCase();
     if (['available', 'selling', 'on_sale'].includes(s) || raw === '在售') return 'available';
-    if (['sold', 'sold_out'].includes(s) || raw === '已售出') return 'sold';
+    if (['sold', 'sold_out'].includes(s) || raw === '已下架') return 'unavailable';
     if (['unavailable', 'off_shelf', 'inactive'].includes(s) || raw === '已下架') return 'unavailable';
     return s || '';
   }, [product]);
-
-  // 成色与数量字段已移除，可购买仅依赖状态
-  const isBuyable = useMemo(() => normalizedStatus === 'available', [normalizedStatus]);
-
-  // 类别与成色标签统一由 utils 提供
 
   // 获取商品详情
   const fetchProductDetail = useCallback(async () => {
@@ -165,8 +158,7 @@ const ProductDetail = () => {
 
   // 立即购买
   const handleBuyNow = () => {
-    // 跳转到订单页面
-    navigate(`/orders/create?productId=${id}`);
+    message.info('订单页已移除');
   };
 
   // 添加留言
@@ -191,22 +183,24 @@ const ProductDetail = () => {
     navigate(`/users/${product.seller.id}`);
   };
 
-  // 格式化时间
-  const formatTime = (timeString) => {
-    const time = new Date(timeString);
-    const now = new Date();
-    const diff = now - time;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (days === 0) {
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      if (hours === 0) {
-        const minutes = Math.floor(diff / (1000 * 60));
-        return `${minutes}分钟前`;
+  // 格式化为 年-月-日 时:分:秒
+  const formatToYMDHMS = (input) => {
+    if (!input) return '';
+    try {
+      const d = new Date(input);
+      if (isNaN(d.getTime())) {
+        return String(input);
       }
-      return `${hours}小时前`;
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      const ss = String(d.getSeconds()).padStart(2, '0');
+      return `${y}-${m}-${day} ${hh}:${mm}:${ss}`;
+    } catch (_) {
+      return String(input);
     }
-    return `${days}天前`;
   };
 
   useEffect(() => {
@@ -253,7 +247,7 @@ const ProductDetail = () => {
                       alt={`${product.title} ${index + 1}`}
                       width="100%"
                       height={400}
-                      fallback="/images/products/product-1.svg"
+                      fallback={FALLBACK_IMAGE}
                       style={{ objectFit: 'cover' }}
                     />
                   </div>
@@ -293,7 +287,7 @@ const ProductDetail = () => {
                   <h4>商品标签</h4>
                   <Space wrap>
                     {product.tags.map((tag, index) => (
-                      <Tag key={index} color="blue">{tag}</Tag>
+                      <Tag key={index} color="blue" className="tag-pill tag-sm tag-bold">{tag}</Tag>
                     ))}
                   </Space>
                 </div>
@@ -351,14 +345,13 @@ const ProductDetail = () => {
           <Col xs={24} lg={10}>
             <Card className="purchase-card">
               <div className="product-header">
-                <h1 className="product-title">{product.title}</h1>
+                <h1 className="detail-title">{product.title}</h1>
                 <div className="product-meta">
-                  <Tag color="blue">
+                  <Tag color="blue" className="tag-pill tag-sm tag-bold">
                     {getCategoryLabel(product.category)}
                   </Tag>
-                  {/* 成色与剩余数量展示已移除 */}
                   {normalizedStatus && (
-                    <Tag color={getStatusColor(normalizedStatus)}>{getStatusLabel(normalizedStatus)}</Tag>
+                    <Tag color={getStatusColor(normalizedStatus)} className="tag-pill tag-sm tag-bold">{getStatusLabel(normalizedStatus)}</Tag>
                   )}
                 </div>
               </div>
@@ -377,7 +370,7 @@ const ProductDetail = () => {
                 </div>
                 <div className="publish-time">
                   <ClockCircleOutlined />
-                  <span>{formatTime(product.publishTime)}发布</span>
+                  <span>{formatToYMDHMS(product.publishTime || product.publishedAt || product.createdAt)} 发布</span>
                 </div>
               </div>
 
@@ -436,7 +429,7 @@ const ProductDetail = () => {
                     icon={<ShoppingCartOutlined />}
                     onClick={handleBuyNow}
                     block
-                    disabled={!isBuyable}
+                    disabled
                   >
                     立即购买
                   </Button>
@@ -473,9 +466,9 @@ const ProductDetail = () => {
                       onClick={() => navigate(`/products/${item.id}`)}
                     >
                       <img 
-                        src={item.image || (item.images?.[0] ?? '/images/products/product-1.svg')} 
+                        src={resolveImageSrc({ item })} 
                         alt={item.title} 
-                        onError={(e) => { e.currentTarget.src = '/images/products/product-1.svg'; }}
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }}
                       />
                       <div className="related-info">
                         <div className="related-title">{item.title}</div>
