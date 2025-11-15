@@ -33,14 +33,17 @@ public class AuthController {
         this.authService = authService;
     }
 
-    // 发送注册验证码
-    @PostMapping("/register/send-code")
-    public Result SendRegisterCode(@Valid @RequestBody RegisterRequest request){
+    @PostMapping("/send-code")
+    public Result SendRegisterCode(@RequestBody java.util.Map<String,String> body){
+        String email = body == null ? null : body.get("email");
+        if(email == null || email.isBlank()){
+            return new Result(400,"邮箱不能为空",null);
+        }
         try {
-            authService.SendRegisterCode(request.getEmail());
+            authService.SendRegisterCode(email);
             return new Result(200,"验证码发送成功",null);
         }catch (IllegalStateException e){
-            return new Result(400,"验证码发送失败",null);
+            return new Result(429,"发送过于频繁，请稍后再试",null);
         }
     }
 
