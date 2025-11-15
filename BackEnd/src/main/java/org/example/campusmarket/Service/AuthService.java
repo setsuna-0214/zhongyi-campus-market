@@ -28,12 +28,13 @@ public class AuthService {
     public AuthService(VerificationCodeService codeService){
         this.codeService = codeService;
     }
+
     //验证码发送服务
     public void SendRegisterCode(String email){
         codeService.sendCode(email);
     }
-    //注册方法
 
+    //注册方法
     public Result register(String username,String email,String password){
 
         if(authMapper.findByUsername(username) != null){
@@ -48,7 +49,6 @@ public class AuthService {
         return authMapper.insertUser(user)==1 ? new Result(200,"注册成功",null) : new Result(500,"注册失败",null);
     }
 
-
     //邮箱登录方法
     public Result login(String email,String password){
         User user = authMapper.findByEmail(email);
@@ -60,10 +60,10 @@ public class AuthService {
             return new Result(401,"密码错误",null);
         }
         //创建安全的用户对象
-        User safeUser = new User(user.getId(), user.getUsername(), user.getEmail(), null);
+        User safeUser = new User(user.getUser_id(), user.getUsername(), user.getEmail(), null);
 
         //签发token
-        String token = TokenUtil.generateToken(safeUser.getId(),safeUser.getUsername(),safeUser.getPassword(),jwtSecret,jwtExpSeconds);
+        String token = TokenUtil.GenerateToken(safeUser.getUser_id(),safeUser.getUsername(),safeUser.getPassword(),jwtSecret,jwtExpSeconds);
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         data.put("user", safeUser);
@@ -79,8 +79,8 @@ public class AuthService {
         if(!PasswordEncrypt.matches(password,user.getPassword())){
             return new Result(401,"密码错误",null);
         }
-        User safeUser = new User(user.getId(), user.getUsername(), user.getEmail(), null);
-        String token = TokenUtil.generateToken(safeUser.getId(),safeUser.getUsername(),safeUser.getPassword(),jwtSecret,jwtExpSeconds);
+        User safeUser = new User(user.getUser_id(), user.getUsername(), user.getEmail(), null);
+        String token = TokenUtil.GenerateToken(safeUser.getUser_id(),safeUser.getUsername(),safeUser.getPassword(),jwtSecret,jwtExpSeconds);
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         data.put("user", safeUser);
