@@ -11,21 +11,22 @@ import {
   Upload,
   Modal,
   message,
-  Tooltip,
-  Empty
+  Empty,
+  Dropdown
 } from 'antd';
 import { 
   SendOutlined, 
   PictureOutlined, 
   SmileOutlined,
-  PhoneOutlined,
-  VideoCameraOutlined,
   MoreOutlined,
   ArrowLeftOutlined
 } from '@ant-design/icons';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import './index.css';
-import { listConversations, listMessages, sendMessage } from '../../api/chat';
+import { listConversations, listMessages, sendMessage, createConversation, deleteConversation } from '../../api/chat';
+import { getProduct } from '../../api/products';
+import { resolveImageSrc } from '../../utils/images';
+import ProductCard from '../../components/ProductCard';
 
 const { TextArea } = Input;
 const { Text, Title } = Typography;
@@ -34,6 +35,7 @@ const Chat = () => {
   
   const [searchParams] = useSearchParams();
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
   
   const [conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState(null);
@@ -41,26 +43,58 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState('');
   const [, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [sharedProduct, setSharedProduct] = useState(null);
 
   // 从后端拉取会话与消息
-
   // 初始化数据
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
         const convs = await listConversations();
-        setConversations(Array.isArray(convs) ? convs : []);
+        const dedup = (arr) => {
+          if (!Array.isArray(arr)) return [];
+          const seen = new Set();
+          const out = [];
+          for (const c of arr) {
+            const key = `${String(c.userId)}|${c.orderId ?? ''}`;
+            if (!seen.has(key)) { seen.add(key); out.push(c); }
+          }
+          return out;
+        };
+        const list = dedup(convs);
+        setConversations(list);
         const sellerId = searchParams.get('sellerId');
         const orderId = searchParams.get('orderId');
+        const productId = searchParams.get('productId');
+        if (productId) {
+          try {
+            const p = await getProduct(productId);
+            setSharedProduct(p);
+          } catch {}
+        }
         if (sellerId || orderId) {
-          const target = (convs || []).find(conv => 
+          let target = (list || []).find(conv => 
             conv.userId?.toString() === sellerId || conv.orderId === orderId
           );
+          if (!target && sellerId) {
+            try {
+              const conv = await createConversation({ userId: sellerId, productId, orderId });
+              setConversations(prev => {
+                const exists = prev.some(c => String(c.userId) === String(conv.userId) && c.orderId === conv.orderId);
+                return exists ? prev : [conv, ...prev];
+              });
+              target = conv;
+              const msgs = await listMessages(conv.id);
+              setMessages(Array.isArray(msgs) ? msgs : []);
+            } catch {}
+          }
           if (target) {
             setCurrentConversation(target);
-            const msgs = await listMessages(target.id);
-            setMessages(Array.isArray(msgs) ? msgs : []);
+            if (!messages || messages.length === 0) {
+              const msgs = await listMessages(target.id);
+              setMessages(Array.isArray(msgs) ? msgs : []);
+            }
           }
         }
       } catch (err) {
@@ -131,27 +165,50 @@ const Chat = () => {
     );
 
     try {
-      const serverMsg = await sendMessage(currentConversation.id, {
+      await sendMessage(currentConversation.id, {
         type: 'text',
         content: outgoing.content
       });
-      if (serverMsg) {
-        setMessages(prev => [...prev, { ...serverMsg, isOwn: true }]);
-        setConversations(prev => 
-          prev.map(conv => 
-            conv.id === currentConversation.id
-              ? { 
-                  ...conv, 
-                  lastMessage: serverMsg.content,
-                  lastMessageTime: serverMsg.timestamp
-                }
-              : conv
-          )
-        );
-      }
     } catch (err) {
       message.error(err?.message || '发送消息失败');
     }
+  };
+
+  const handleSendProductCard = async () => {
+    if (!currentConversation || !sharedProduct) return;
+    const p = sharedProduct;
+    const content = {
+      id: p.id,
+      title: p.title,
+      price: p.price,
+      category: p.category,
+      status: p.status,
+      location: p.location,
+      sellerName: typeof p.seller === 'string' ? p.seller : (p.seller?.name || '卖家'),
+      publishedAt: p.publishTime || p.publishedAt || p.createdAt,
+      views: p.views,
+      imageSrc: resolveImageSrc({ product: p }),
+      overlayType: 'views-left',
+      dateFormat: 'ymd'
+    };
+    const msg = {
+      id: Date.now(),
+      senderId: 'current',
+      senderName: '我',
+      content,
+      type: 'product',
+      timestamp: new Date().toLocaleString(),
+      isOwn: true
+    };
+    setMessages(prev => [...prev, msg]);
+    setConversations(prev => prev.map(conv => (
+      conv.id === currentConversation.id
+        ? { ...conv, lastMessage: `分享了商品卡片：${p.title || ''}`.trim(), lastMessageTime: msg.timestamp }
+        : conv
+    )));
+    try {
+      await sendMessage(currentConversation.id, { type: 'product', content });
+    } catch {}
   };
 
   // 处理键盘事件
@@ -177,13 +234,10 @@ const Chat = () => {
       };
       setMessages(prev => [...prev, imageMessage]);
       try {
-        const serverMsg = await sendMessage(currentConversation.id, {
+        await sendMessage(currentConversation.id, {
           type: 'image',
           content: e.target.result
         });
-        if (serverMsg) {
-          setMessages(prev => [...prev, { ...serverMsg, isOwn: true }]);
-        }
       } catch (err) {
         message.error(err?.message || '发送图片失败');
       }
@@ -200,16 +254,38 @@ const Chat = () => {
   // 渲染消息
   const renderMessage = (message) => {
     const isOwn = message.isOwn;
+    if (message.type === 'product') {
+      const item = message.content || {};
+      return (
+        <div key={message.id} className={`message ${isOwn ? 'own' : 'other'}`}>
+          <div className="message-content">
+            <ProductCard
+              imageSrc={item.imageSrc}
+              title={item.title}
+              price={item.price}
+              category={item.category}
+              status={item.status}
+              location={item.location}
+              sellerName={item.sellerName}
+              publishedAt={item.publishedAt}
+              views={item.views}
+              overlayType={item.overlayType || 'views-left'}
+              dateFormat={item.dateFormat || 'ymd'}
+              onClick={() => item.id && navigate(`/products/${item.id}`)}
+              imageHeight={160}
+            />
+            <div className="message-time">
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {message.timestamp}
+              </Text>
+            </div>
+          </div>
+        </div>
+      );
+    }
     
     return (
       <div key={message.id} className={`message ${isOwn ? 'own' : 'other'}`}>
-        {!isOwn && (
-          <Avatar 
-            src={currentConversation?.userAvatar} 
-            size={32}
-            className="message-avatar"
-          />
-        )}
         <div className="message-content">
           <div className={`message-bubble ${isOwn ? 'own' : 'other'}`}>
             {message.type === 'text' ? (
@@ -235,15 +311,6 @@ const Chat = () => {
             </Text>
           </div>
         </div>
-        {isOwn && (
-          <Avatar 
-            style={{ backgroundColor: '#1890ff' }}
-            size={32}
-            className="message-avatar"
-          >
-            我
-          </Avatar>
-        )}
       </div>
     );
   };
@@ -281,8 +348,20 @@ const Chat = () => {
                   </div>
                   
                   <div className="conversation-bottom">
-                    <Text type="secondary" className="last-message" ellipsis>
-                      {conversation.lastMessage}
+                <Text type="secondary" className="last-message" ellipsis>
+                      {(() => {
+                        const lm = conversation.lastMessage;
+                        if (!lm) return '';
+                        if (typeof lm === 'string') return lm;
+                        if (typeof lm === 'object') {
+                          if (lm.type === 'text' && lm.content) return String(lm.content);
+                          if (lm.type === 'image') return '[图片]';
+                          if (lm.type === 'product') return `分享了商品卡片：${lm.title || ''}`.trim();
+                          if (lm.title) return `分享了商品卡片：${lm.title}`;
+                          return '[新消息]';
+                        }
+                        try { return String(lm); } catch { return '[新消息]'; }
+                      })()}
                     </Text>
                   </div>
                   
@@ -334,15 +413,31 @@ const Chat = () => {
               </div>
               
               <Space>
-                <Tooltip title="语音通话">
-                  <Button type="text" icon={<PhoneOutlined />} />
-                </Tooltip>
-                <Tooltip title="视频通话">
-                  <Button type="text" icon={<VideoCameraOutlined />} />
-                </Tooltip>
-                <Tooltip title="更多">
+                <Dropdown
+                  menu={{
+                    items: [{ key: 'delete', label: '删除该聊天' }],
+                    onClick: async ({ key }) => {
+                      if (key === 'delete' && currentConversation) {
+                        Modal.confirm({
+                          title: '确定删除该聊天？',
+                          onOk: async () => {
+                            try {
+                              await deleteConversation(currentConversation.id);
+                              setConversations(prev => prev.filter(c => c.id !== currentConversation.id));
+                              setMessages([]);
+                              setCurrentConversation(null);
+                              message.success('已删除该聊天');
+                            } catch (err) {
+                              message.error(err?.message || '删除失败');
+                            }
+                          }
+                        });
+                      }
+                    }
+                  }}
+                >
                   <Button type="text" icon={<MoreOutlined />} />
-                </Tooltip>
+                </Dropdown>
               </Space>
             </div>
 
@@ -370,6 +465,9 @@ const Chat = () => {
                     <Button type="text" icon={<PictureOutlined />} />
                   </Upload>
                   <Button type="text" icon={<SmileOutlined />} />
+                  {currentConversation && sharedProduct && (
+                    <Button type="default" onClick={handleSendProductCard}>发送商品卡片</Button>
+                  )}
                 </Space>
               </div>
               

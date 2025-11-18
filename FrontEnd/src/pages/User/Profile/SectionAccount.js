@@ -34,11 +34,12 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
                         const { newEmail } = emailForm.getFieldsValue();
                         if (!newEmail) return;
                         setEmailCodeLoading(true);
+                        await sendCode({ email: newEmail });
                         await requestEmailChange({ newEmail });
                       } finally {
                         setEmailCodeLoading(false);
                       }
-                    }} loading={emailCodeLoading}>发送验证码到新邮箱</Button>
+                    }} loading={emailCodeLoading}>发送验证码</Button>
                   </Space.Compact>
                 </Form.Item>
                 <Button type="primary" onClick={async () => {
@@ -59,7 +60,7 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
         <Col xs={24} md={12}>
           <Card type="inner" title="修改密码" size="small">
             <Space direction="vertical" size={6} style={{ width: '100%' }}>
-              <Text type="secondary">需验证当前邮箱：{userInfo.email || '未绑定邮箱'}</Text>
+              <Text type="secondary">需验证邮箱：{userInfo.email || '未绑定邮箱'}</Text>
               <Form form={pwdForm} layout="vertical">
                 <Form.Item name="currentPassword" label="当前密码" rules={[{ required: true, message: '请输入当前密码' }]} style={{ marginBottom: 12 }}>
                   <Input.Password placeholder="请输入当前密码" size="middle" />
@@ -83,7 +84,7 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
                       } finally {
                         setPwdCodeLoading(false);
                       }
-                    }} loading={pwdCodeLoading}>发送验证码到当前邮箱</Button>
+                    }} loading={pwdCodeLoading}>发送验证码</Button>
                   </Space.Compact>
                 </Form.Item>
                 <Button type="primary" onClick={async () => {

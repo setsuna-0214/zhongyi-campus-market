@@ -33,8 +33,10 @@ export const STATUS_CODE_TO_LABEL = {
   sold: '已下架',
   off_shelf: '已下架',
   unavailable: '已下架',
+  pending: '待处理',
   在售: '在售',
-  已下架: '已下架'
+  已下架: '已下架',
+  待处理: 'pending'
 };
 
 export function getStatusLabel(status) {
@@ -44,7 +46,8 @@ export function getStatusLabel(status) {
 // 出售状态颜色（用于 Tag）
 export const STATUS_COLOR_MAP = {
   在售: 'blue',
-  已下架: 'red'
+  已下架: 'red',
+  待处理: 'orange'
 };
 
 export function getStatusColor(status) {

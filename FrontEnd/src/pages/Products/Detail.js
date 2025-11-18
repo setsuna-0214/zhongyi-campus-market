@@ -28,7 +28,6 @@ import {
   EnvironmentOutlined,
   ClockCircleOutlined,
   SafetyCertificateOutlined,
-  PhoneOutlined,
   MailOutlined,
   HomeOutlined,
   RightOutlined
@@ -130,15 +129,7 @@ const ProductDetail = () => {
     }
   };
 
-  // 处理联系卖家
-  const handleContact = () => {
-    setContactModalVisible(true);
-  };
-
-  // 处理发送消息
-  const handleSendMessage = () => {
-    setMessageModalVisible(true);
-  };
+  const _unused = null;
 
   // 发送消息
   const sendMessage = () => {
@@ -156,9 +147,23 @@ const ProductDetail = () => {
     setChatMessage('');
   };
 
-  // 立即购买
+  const [purchaseConfirmVisible, setPurchaseConfirmVisible] = useState(false);
+  const [purchaseResultVisible, setPurchaseResultVisible] = useState(false);
+  const [createdOrderId, setCreatedOrderId] = useState(null);
+
   const handleBuyNow = () => {
-    message.info('订单页已移除');
+    setPurchaseConfirmVisible(true);
+  };
+
+  const gotoContactSeller = () => {
+    const sellerId = product?.seller?.id;
+    if (sellerId) {
+      const params = new URLSearchParams({ sellerId, productId: id });
+      if (createdOrderId) params.set('orderId', String(createdOrderId));
+      navigate(`/chat?${params.toString()}`);
+    } else {
+      navigate('/chat');
+    }
   };
 
   // 添加留言
@@ -429,7 +434,7 @@ const ProductDetail = () => {
                     icon={<ShoppingCartOutlined />}
                     onClick={handleBuyNow}
                     block
-                    disabled
+                    disabled={normalizedStatus !== 'available'}
                   >
                     立即购买
                   </Button>
@@ -437,18 +442,10 @@ const ProductDetail = () => {
                     <Button
                       size="large"
                       icon={<MessageOutlined />}
-                      onClick={handleSendMessage}
-                      style={{ flex: 1 }}
+                      onClick={gotoContactSeller}
+                      block
                     >
-                      私信
-                    </Button>
-                    <Button
-                      size="large"
-                      icon={<PhoneOutlined />}
-                      onClick={handleContact}
-                      style={{ flex: 1 }}
-                    >
-                      联系
+                      联系卖家
                     </Button>
                   </Space>
                 </Space>
@@ -510,6 +507,45 @@ const ProductDetail = () => {
             <p>• 建议校内面交验货</p>
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        title="是否确认购买？"
+        open={purchaseConfirmVisible}
+        onCancel={() => setPurchaseConfirmVisible(false)}
+        onOk={async () => {
+          try {
+            const { createOrder } = await import('../../api/orders');
+            const resp = await createOrder({ productId: id, quantity: 1 });
+            const oid = resp?.id || resp?.orderId || null;
+            setCreatedOrderId(oid);
+            setPurchaseConfirmVisible(false);
+            setPurchaseResultVisible(true);
+          } catch (err) {
+            message.error(err?.message || '下单失败');
+          }
+        }}
+        okText="确认"
+        cancelText="取消"
+        centered
+      />
+
+      <Modal
+        title="已通知卖家处理您的订单"
+        open={purchaseResultVisible}
+        onCancel={() => setPurchaseResultVisible(false)}
+        footer={null}
+        centered
+      >
+        <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+          <Button
+            type="primary"
+            onClick={() => { gotoContactSeller(); setPurchaseResultVisible(false); }}
+          >
+            联系卖家
+          </Button>
+          <Button onClick={() => setPurchaseResultVisible(false)}>我知道了</Button>
+        </Space>
       </Modal>
 
       {/* 发送消息弹窗 */}

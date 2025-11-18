@@ -39,14 +39,12 @@ function App() {
           <Route path="/publish" element={<PublishProduct />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/chat" element={<Chat />} />
-          {/* 收藏页已整合至用户页 */}
           <Route path="/favorites" element={<Navigate to="/profile?tab=favorites" replace />} />
           <Route path="/wishlist" element={<Navigate to="/profile?tab=favorites" replace />} />
           <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Content>
-      {/* 页脚暂时删除 */}
       <FloatingButtons />
     </Layout>
   );

@@ -9,3 +9,5 @@ const impl = useMock ? mock : real;
 export const listConversations = impl.listConversations;
 export const listMessages = impl.listMessages;
 export const sendMessage = impl.sendMessage;
+export const createConversation = impl.createConversation;
+export const deleteConversation = impl.deleteConversation;

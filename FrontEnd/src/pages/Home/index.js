@@ -152,19 +152,19 @@ const Home = () => {
     {
       title: '欢迎来到中易校园交易平台',
       subtitle: '安全、便捷、高效的校园交易体验',
-      image: '/images/carousel/carousel-1.svg',
+      image: '/images/carousel/banner1-Vjwxq.jpg',
       action: () => navigate('/products')
     },
     {
       title: '发布你的闲置物品',
       subtitle: '让闲置物品重新焕发价值',
-      image: '/images/carousel/carousel-2.svg',
+      image: '/images/carousel/banner2-38SxR.jpg',
       action: () => navigate('/publish')
     },
     {
       title: '加入校园交易社区',
       subtitle: '与同校同学安全交易',
-      image: '/images/carousel/carousel-3.svg',
+      image: '/images/carousel/banner3-1mewp.jpg',
       action: () => navigate('/register')
     }
   ];
@@ -317,7 +317,6 @@ const Home = () => {
                           })()}
                         </div>
                         <div className="category-name">{category.name}</div>
-                        {/* 分类数量显示已移除 */}
                       </div>
                     </Card>
                   </Col>
@@ -374,7 +373,6 @@ const Home = () => {
                 </Row>
               ) : (
                 <>
-                  {/* 常驻渲染热门商品列表，通过 display 切换以避免切换时的卸载/挂载卡顿 */}
                   <Row 
                     gutter={[16, 16]} 
                     style={activeTab === 'hot' ? undefined : { display: 'none' }}
@@ -383,7 +381,6 @@ const Home = () => {
                     {hotCards}
                   </Row>
 
-                  {/* 常驻渲染最新发布列表，通过 display 切换以避免切换时的卸载/挂载卡顿 */}
                   <Row 
                     gutter={[16, 16]} 
                     style={activeTab === 'recent' ? undefined : { display: 'none' }}

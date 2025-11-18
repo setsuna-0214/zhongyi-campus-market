@@ -1,12 +1,32 @@
-import { initialConversations, initialMessages, ensureMockState } from './mockData';
+import { initialConversations, initialMessages, ensureMockState, mockProducts } from './mockData';
+import { resolveImageSrc } from '../utils/images';
 
 export async function listConversations() {
   ensureMockState();
   try {
     const raw = localStorage.getItem('mock_conversations');
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        const seen = new Set();
+        const out = [];
+        for (const c of arr) {
+          const key = `${String(c.userId)}|${c.orderId ?? ''}`;
+          if (!seen.has(key)) { seen.add(key); out.push(c); }
+        }
+        try { localStorage.setItem('mock_conversations', JSON.stringify(out)); } catch {}
+        return out;
+      }
+    }
   } catch {}
-  return initialConversations;
+  const arr = initialConversations;
+  const seen = new Set();
+  const out = [];
+  for (const c of arr) {
+    const key = `${String(c.userId)}|${c.orderId ?? ''}`;
+    if (!seen.has(key)) { seen.add(key); out.push(c); }
+  }
+  return out;
 }
 
 export async function listMessages(conversationId) {
@@ -42,5 +62,52 @@ export async function sendMessage(conversationId, payload) {
     localStorage.setItem('mock_conversations', JSON.stringify(updated));
   } catch {}
   return message;
+}
+
+export async function createConversation({ userId, productId, orderId }) {
+  ensureMockState();
+  const prod = mockProducts.find(p => String(p.id) === String(productId));
+  const image = resolveImageSrc({ product: prod });
+  const conv = {
+    id: `c_${Date.now()}`,
+    userId: userId,
+    userName: prod?.seller?.name || '卖家',
+    userAvatar: prod?.seller?.avatar || '/images/avatars/avatar-1.svg',
+    lastMessage: '',
+    lastMessageTime: new Date().toLocaleString(),
+    unreadCount: 0,
+    orderId: orderId || null,
+    productName: prod?.title || String(productId),
+    productImage: image
+  };
+  try {
+    const raw = localStorage.getItem('mock_conversations');
+    const convs = raw ? JSON.parse(raw) : initialConversations;
+    localStorage.setItem('mock_conversations', JSON.stringify([conv, ...convs]));
+    const msgsRaw = localStorage.getItem('mock_messages');
+    const allMsgs = msgsRaw ? JSON.parse(msgsRaw) : initialMessages;
+    allMsgs[conv.id] = Array.isArray(allMsgs[conv.id]) ? allMsgs[conv.id] : [];
+    localStorage.setItem('mock_messages', JSON.stringify(allMsgs));
+  } catch {}
+  return conv;
+}
+
+export async function deleteConversation(conversationId) {
+  ensureMockState();
+  try {
+    const raw = localStorage.getItem('mock_conversations');
+    const convs = raw ? JSON.parse(raw) : initialConversations;
+    const next = Array.isArray(convs) ? convs.filter(c => c.id !== conversationId) : [];
+    localStorage.setItem('mock_conversations', JSON.stringify(next));
+  } catch {}
+  try {
+    const msgsRaw = localStorage.getItem('mock_messages');
+    const allMsgs = msgsRaw ? JSON.parse(msgsRaw) : initialMessages;
+    if (allMsgs && allMsgs[conversationId]) {
+      delete allMsgs[conversationId];
+      localStorage.setItem('mock_messages', JSON.stringify(allMsgs));
+    }
+  } catch {}
+  return { success: true };
 }
 

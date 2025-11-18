@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { Card, Row, Col, Button, Space, Select, Input, Checkbox, Empty, Pagination, Popconfirm, Typography } from 'antd';
 import ProductCard from '../../../components/ProductCard';
 import { resolveImageSrc } from '../../../utils/images';
-import { batchAddToCart } from '../../../api/cart';
 
 const { Text } = Typography;
 
@@ -83,13 +82,7 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
     });
   };
 
-  const handleBatchAddToCart = async () => {
-    if (selectedIds.length === 0) return;
-    const availableItems = filtered.filter(item => selectedIds.includes(item.id) && item.isAvailable);
-    if (availableItems.length === 0) return;
-    await batchAddToCart(availableItems.map(i => ({ productId: i.productId, quantity: 1 })));
-    setSelectedIds([]);
-  };
+  
 
   return (
     <>
@@ -114,7 +107,6 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
               {selectedIds.length > 0 && <Text type="secondary">已选择 {selectedIds.length} 个商品</Text>}
             </div>
             <Space>
-              <Button type="primary" onClick={handleBatchAddToCart} disabled={selectedIds.length === 0}>批量加入购物车</Button>
               <Button danger onClick={() => { const toRemove = [...selectedIds]; toRemove.forEach(id => onRemoveFavorite(id)); setSelectedIds([]); }} disabled={selectedIds.length === 0}>批量移除</Button>
             </Space>
           </div>

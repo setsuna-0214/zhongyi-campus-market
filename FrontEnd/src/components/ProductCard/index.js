@@ -87,7 +87,7 @@ const ProductCard = ({
   imageAlt,
   imageHeight,
 }) => {
-  const overlayClass = overlayType === 'publish-right' ? 'overlay-recent' : 'overlay-hot';
+  const overlayClass = overlayType === 'publish-right' ? 'overlay-recent' : (overlayType === 'views-left' ? 'overlay-hot' : '');
 
   const [imageLoaded, setImageLoaded] = useState(false);
   const publishedAtDisplay = publishedAt ? (dateFormat === 'ymd' ? formatToYMD(publishedAt) : publishedAt) : '';
@@ -121,16 +121,18 @@ const ProductCard = ({
             onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; setImageLoaded(true); }}
             className={imageLoaded ? 'product-image loaded' : 'product-image'}
           />
-          <div className={`product-overlay ${overlayClass}`}>
-            {overlayType === 'publish-right' ? (
-              <span className="recent-badge">{publishedOverlayText || publishedAt}</span>
-            ) : (
-              <div className="views-badge" aria-label={`浏览量 ${formatViews(views)}`}>
-                <EyeOutlined />
-                <span className="views-number">{formatViews(views)}</span>
-              </div>
-            )}
-          </div>
+          {(overlayType && overlayType !== 'none') && (
+            <div className={`product-overlay ${overlayClass}`}>
+              {overlayType === 'publish-right' ? (
+                <span className="recent-badge">{publishedOverlayText || publishedAt}</span>
+              ) : overlayType === 'views-left' ? (
+                <div className="views-badge" aria-label={`浏览量 ${formatViews(views)}`}>
+                  <EyeOutlined />
+                  <span className="views-number">{formatViews(views)}</span>
+                </div>
+              ) : null}
+            </div>
+          )}
           {favoriteAtDisplay && (
             <div className="product-overlay-bottom">
               <div className="views-badge" aria-label={`收藏于 ${favoriteAtDisplay}`}>

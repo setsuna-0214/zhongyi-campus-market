@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Avatar, Dropdown, Input, Button, Space } from 'antd';
 import { 
   UserOutlined,
-  HeartOutlined,
   LogoutOutlined,
   SearchOutlined
 } from '@ant-design/icons';
@@ -15,13 +14,11 @@ const { Header: AntHeader } = Layout;
 const Header = () => {
   const navigate = useNavigate();
   
-
   // 登录状态
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [headerKeyword, setHeaderKeyword] = useState('');
   
-
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -84,12 +81,6 @@ const Header = () => {
       onClick: () => navigate('/profile')
     },
     {
-      key: 'favorites',
-      icon: <HeartOutlined />,
-      label: '我的收藏',
-      onClick: () => navigate('/profile?tab=favorites')
-    },
-    {
       type: 'divider'
     },
     {
@@ -108,7 +99,7 @@ const Header = () => {
         {/* Logo */}
         <div className="logo" onClick={() => navigate('/')}>
           <span className="logo-text">中易</span>
-          <span className="logo-subtitle">🤣🥰🤯😱</span>
+          <span className="logo-subtitle">🤣🥰🤯</span>
         </div>
 
         {/* 搜索 */}
@@ -147,7 +138,6 @@ const Header = () => {
                   icon={<UserOutlined />}
                   src={user?.avatar}
                 />
-                <span className="username">{user?.nickname || user?.username || user?.name || '用户'}</span>
               </button>
             </Dropdown>
           ) : (

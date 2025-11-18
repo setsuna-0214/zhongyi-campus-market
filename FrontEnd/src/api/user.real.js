@@ -56,4 +56,3 @@ export async function changePassword({ currentPassword, newPassword, verificatio
   const { data } = await client.post('/user/me/password', { currentPassword, newPassword, verificationCode });
   return data;
 }
-

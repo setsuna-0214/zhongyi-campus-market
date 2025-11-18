@@ -10,12 +10,8 @@ import {
   Card,
   Row,
   Col,
-  Steps,
   message,
   Checkbox,
-  DatePicker,
-  Switch,
-  Divider,
   Typography,
   Alert,
   Descriptions,
@@ -26,6 +22,7 @@ import {
   CheckCircleOutlined
 } from '@ant-design/icons';
 import './Publish.css';
+import { CATEGORY_CODE_TO_LABEL, getCategoryLabel } from '../../utils/labels';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -35,41 +32,17 @@ const { Title, Text } = Typography;
 const PublishProduct = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [imageList, setImageList] = useState([]);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
 
   // 商品分类数据
-  const categories = [
-    { value: 'electronics', label: '数码电子', children: ['手机', '电脑', '耳机', '相机', '游戏设备'] },
-    { value: 'books', label: '图书教材', children: ['教科书', '小说', '工具书', '考试资料', '杂志'] },
-    { value: 'clothing', label: '服装配饰', children: ['上衣', '裤子', '鞋子', '包包', '配饰'] },
-    { value: 'sports', label: '运动户外', children: ['运动鞋', '运动服', '健身器材', '户外用品', '球类'] },
-    { value: 'life', label: '生活用品', children: ['家居用品', '护肤品', '食品', '文具', '其他'] }
-  ];
+  const categories = Object.entries(CATEGORY_CODE_TO_LABEL).map(([value, label]) => ({ value, label }));
 
   // 成色字段已移除
 
-  const steps = [
-    {
-      title: '基本信息',
-      description: '填写商品基本信息'
-    },
-    {
-      title: '详细描述',
-      description: '上传图片和详细描述'
-    },
-    {
-      title: '交易设置',
-      description: '设置价格和交易方式'
-    },
-    {
-      title: '发布确认',
-      description: '确认信息并发布'
-    }
-  ];
+  // 单页表单展示所有原步骤内容
 
   // 图片上传处理
   const handleImageChange = ({ fileList }) => {
@@ -99,7 +72,6 @@ const PublishProduct = () => {
     try {
       // 模拟API调用
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
       message.success('商品发布成功！');
       navigate('/products');
     } catch (error) {
@@ -109,25 +81,23 @@ const PublishProduct = () => {
     }
   };
 
-  // 步骤导航
-  const next = () => {
-    form.validateFields().then(() => {
-      setCurrentStep(currentStep + 1);
-    }).catch(() => {
-      message.error('请完善当前步骤的信息');
-    });
-  };
+  
 
-  const prev = () => {
-    setCurrentStep(currentStep - 1);
-  };
+  return (
+    <div className="page-container publish-container">
+      <div className="publish-header">
+        <Title level={2}>发布商品</Title>
+        <Text type="secondary">发布你的闲置物品，让它们找到新主人</Text>
+      </div>
 
-  // 渲染不同步骤的内容
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <Card title="基本信息" className="step-card">
+      <Card className="publish-card">
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          className="publish-form"
+        >
+          <Card title="商品信息" className="step-card">
             <Row gutter={24}>
               <Col span={12}>
                 <Form.Item
@@ -156,36 +126,6 @@ const PublishProduct = () => {
                   </Select>
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="subcategory"
-                  label="子分类"
-                  rules={[{ required: true, message: '请选择子分类' }]}
-                >
-                  <Select placeholder="请选择子分类">
-                    <Option value="手机">手机</Option>
-                    <Option value="电脑">电脑</Option>
-                    <Option value="耳机">耳机</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              
-              <Col span={24}>
-                <Form.Item
-                  name="brand"
-                  label="品牌型号"
-                >
-                  <Input placeholder="请输入品牌和型号（选填）" />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
-        );
-
-      case 1:
-        return (
-          <Card title="详细描述" className="step-card">
-            <Row gutter={24}>
               <Col span={24}>
                 <Form.Item
                   name="images"
@@ -208,7 +148,7 @@ const PublishProduct = () => {
                     )}
                   </Upload>
                   <Text type="secondary">
-                    最多上传8张图片，建议尺寸800x800px，支持JPG、PNG格式
+                    最多上传8张图片，支持JPG、PNG格式
                   </Text>
                 </Form.Item>
               </Col>
@@ -223,26 +163,15 @@ const PublishProduct = () => {
                 >
                   <TextArea
                     rows={6}
-                    placeholder="请详细描述商品的外观、功能、使用情况等信息"
+                    placeholder="详细描述商品的外观、功能、使用情况等信息"
                     showCount
                     maxLength={500}
                   />
                 </Form.Item>
               </Col>
-              <Col span={24}>
-                <Form.Item
-                  name="purchaseDate"
-                  label="购买时间"
-                >
-                  <DatePicker placeholder="选择购买时间（选填）" style={{ width: '100%' }} />
-                </Form.Item>
-              </Col>
             </Row>
           </Card>
-        );
 
-      case 2:
-        return (
           <Card title="交易设置" className="step-card">
             <Row gutter={24}>
               <Col span={12}>
@@ -317,21 +246,9 @@ const PublishProduct = () => {
                   </Select>
                 </Form.Item>
               </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="urgent"
-                  label="紧急出售"
-                  valuePropName="checked"
-                >
-                  <Switch checkedChildren="是" unCheckedChildren="否" />
-                </Form.Item>
-              </Col>
             </Row>
           </Card>
-        );
 
-      case 3:
-        return (
           <Card title="发布确认" className="step-card">
             <Alert
               message="发布须知"
@@ -355,7 +272,7 @@ const PublishProduct = () => {
                   {form.getFieldValue('title') || '未填写'}
                 </Descriptions.Item>
                 <Descriptions.Item label="商品分类">
-                  {form.getFieldValue('category') || '未选择'}
+                  {getCategoryLabel(form.getFieldValue('category')) || '未选择'}
                 </Descriptions.Item>
                 
                 <Descriptions.Item label="出售价格">
@@ -369,65 +286,17 @@ const PublishProduct = () => {
                 </Descriptions.Item>
               </Descriptions>
             </div>
-
-            <Divider />
-
-            <Form.Item
-              name="agreement"
-              valuePropName="checked"
-              rules={[{ required: true, message: '请同意发布协议' }]}
-            >
-              <Checkbox>
-                我已阅读并同意 <Button type="link" onClick={(e) => e.preventDefault()}>《商品发布协议》</Button>
-              </Checkbox>
-            </Form.Item>
           </Card>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="page-container publish-container">
-      <div className="publish-header">
-        <Title level={2}>发布商品</Title>
-        <Text type="secondary">发布你的闲置物品，让它们找到新主人</Text>
-      </div>
-
-      <Card className="publish-card">
-        <Steps current={currentStep} items={steps} className="publish-steps" />
-        
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          className="publish-form"
-        >
-          {renderStepContent()}
 
           <div className="step-actions">
-            {currentStep > 0 && (
-              <Button onClick={prev} style={{ marginRight: 8 }}>
-                上一步
-              </Button>
-            )}
-            {currentStep < steps.length - 1 && (
-              <Button type="primary" onClick={next}>
-                下一步
-              </Button>
-            )}
-            {currentStep === steps.length - 1 && (
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                icon={<CheckCircleOutlined />}
-              >
-                发布商品
-              </Button>
-            )}
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              icon={<CheckCircleOutlined />}
+            >
+              发布商品
+            </Button>
           </div>
         </Form>
       </Card>

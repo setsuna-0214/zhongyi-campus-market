@@ -11,3 +11,4 @@ export const getOrderStats = impl.getOrderStats;
 export const confirmReceived = impl.confirmReceived;
 export const cancelOrder = impl.cancelOrder;
 export const submitReview = impl.submitReview;
+export const createOrder = impl.createOrder;
