@@ -1,4 +1,4 @@
-import { ensureMockState } from './mockData';
+import { ensureMockState, mockProducts, mockUserDebug } from './mockData';
 import { readMockList, writeMockList } from './mockHelpers';
 
 export async function listOrders(params = {}) {
@@ -43,5 +43,32 @@ export async function submitReview(orderId) {
   const orders = readMockList('mock_orders').map(o => o.id === orderId ? { ...o, hasReviewed: true } : o);
   writeMockList('mock_orders', orders);
   return { success: true };
+}
+
+export async function createOrder({ productId, quantity = 1 }) {
+  ensureMockState();
+  const orders = readMockList('mock_orders');
+  const product = mockProducts.find(p => String(p.id) === String(productId));
+  const now = new Date().toISOString();
+  const newOrder = {
+    id: `o${Date.now()}`,
+    status: 'pending',
+    hasReviewed: false,
+    orderTime: now,
+    product: {
+      id: product?.id || productId,
+      title: product?.title || '商品',
+      coverImage: Array.isArray(product?.images) ? product.images[0] : product?.coverImage,
+      price: product?.price ?? 0,
+      quantity,
+      category: product?.category,
+      location: product?.location
+    },
+    seller: product?.seller || { id: 'seller', name: '卖家' },
+    buyer: { id: mockUserDebug.id, name: mockUserDebug.nickname || '我' }
+  };
+  const next = [newOrder, ...orders];
+  writeMockList('mock_orders', next);
+  return newOrder;
 }
 

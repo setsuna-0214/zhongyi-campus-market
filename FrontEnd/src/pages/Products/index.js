@@ -4,12 +4,13 @@ import {
   Col, 
   Select, 
   Pagination, 
-  Slider, 
+  InputNumber,
   Space,
   Empty,
   Spin,
   message
 } from 'antd';
+
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.css';
 import ProductCard from '../../components/ProductCard';
@@ -191,13 +192,13 @@ const Products = () => {
         <div className="search-filter-section">
           <Row gutter={[16, 16]}>
             <Col xs={24} md={24}>
-              <Space size="middle" className="filter-controls">
+              <Space size="middle" className="filter-controls" wrap>
                 <Select
                   placeholder="商品分类"
                   allowClear
                   style={{ width: 120 }}
                   value={filters.category || undefined}
-                  onChange={(value) => handleFilterChange('category', value)}
+                  onChange={(value) => handleFilterChange('category', value || '')}
                 >
                   {categories.map(cat => (
                     <Option key={cat.value} value={cat.value}>{cat.label}</Option>
@@ -225,24 +226,39 @@ const Products = () => {
                     <Option key={option.value} value={option.value}>{option.label}</Option>
                   ))}
                 </Select>
+
+                {/* 价格筛选 */}
+                <Space size="small">
+                  <span>价格：</span>
+                  <InputNumber
+                    min={0}
+                    max={10000}
+                    value={filters.priceRange[0]}
+                    onChange={(value) => {
+                      const min = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
+                      const max = filters.priceRange[1];
+                      handleFilterChange('priceRange', [min, max]);
+                    }}
+                    placeholder="最低价"
+                    style={{ width: 100 }}
+                  />
+                  <span>~</span>
+                  <InputNumber
+                    min={0}
+                    max={10000}
+                    value={filters.priceRange[1]}
+                    onChange={(value) => {
+                      const max = typeof value === 'number' && !Number.isNaN(value) ? value : 10000;
+                      const min = filters.priceRange[0];
+                      handleFilterChange('priceRange', [min, max]);
+                    }}
+                    placeholder="最高价"
+                    style={{ width: 100 }}
+                  />
+                </Space>
               </Space>
             </Col>
           </Row>
-          
-          {/* 价格筛选 */}
-          <div className="price-filter">
-            <span>价格范围：</span>
-            <Slider
-              range
-              min={0}
-              max={10000}
-              step={100}
-              value={filters.priceRange}
-              onChange={(value) => handleFilterChange('priceRange', value)}
-              style={{ width: 260, margin: '0 12px' }}
-            />
-            <span>¥{filters.priceRange[0]} - ¥{filters.priceRange[1]}</span>
-          </div>
         </div>
 
         {/* 商品列表 */}

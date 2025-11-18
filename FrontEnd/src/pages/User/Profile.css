@@ -60,11 +60,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.avatar-edit-btn {
-  display: none; /* 旧文本按钮隐藏 */
-}
-
-/* 新的头像横幅背景，宽度随内容区最大宽度展开 */
+/* 头像横幅背景 */
 .avatar-banner {
   width: 100%;
   min-height: 160px;
@@ -132,8 +128,6 @@
   color: #666;
 }
 
-/* 发送消息相关样式已移除 */
-
 .product-item {
   display: flex;
   flex-direction: column;
@@ -149,7 +143,6 @@
   justify-content: flex-start;
 }
 
-/* 菜单项图标与文字布局：图标绝对定位，文字居中且左右留白相等 */
 .user-sider .ant-menu-item .ant-menu-item-icon {
   position: absolute;
   left: 16px;
@@ -160,7 +153,7 @@
 .user-sider .ant-menu-item .ant-menu-title-content {
   display: block;
   width: 100%;
-  padding: 8px 16px; /* 左右相同留白 */
+  padding: 8px 16px; 
   margin: 0;
   text-align: center;
 }
@@ -169,19 +162,18 @@
 .user-sider-header {
   padding: 16px;
   font-weight: 600;
-  font-size: 18px; /* 字体大小适中 */
+  font-size: 18px;
   color: #262626;
   border-bottom: 1px solid #f0f0f0;
   margin-bottom: 8px;
   background: #fff;
-  text-align: center; /* 居中对齐标题 */
+  text-align: center;
 }
 
 .user-sider-title {
   line-height: 1.4;
 }
 
-/* 彻底隐藏滚动条（WebKit 系列） */
 .user-sider::-webkit-scrollbar,
 .user-sider .ant-menu::-webkit-scrollbar {
   width: 0;
@@ -189,7 +181,6 @@
   display: none;
 }
 
-/* 性别分段选择选中态背景高亮（#1890ff），文字白色 */
 .gender-highlight-segmented .ant-segmented-item-selected {
   background-color: #1890ff !important;
   border-color: #1890ff !important;
@@ -198,7 +189,6 @@
   color: #fff !important;
 }
 
-/* 紧凑的内联表单项：减少左右间距 */
 .ant-form-inline .ant-form-item {
   margin-right: 12px;
 }

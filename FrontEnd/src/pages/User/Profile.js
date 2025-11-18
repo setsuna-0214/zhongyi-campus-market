@@ -15,6 +15,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
     HeartOutlined,
     CameraOutlined,
     LockOutlined,
+    OrderedListOutlined,
   } from '@ant-design/icons';
 import './Profile.css';
 import { PROFILE_BANNER_OPTIONS, DEFAULT_PROFILE_BANNER_KEY } from '../../config/profile';
@@ -24,6 +25,7 @@ import SectionBasic from './Profile/SectionBasic';
 import SectionProducts from './Profile/SectionProducts';
 import SectionFavorites from './Profile/SectionFavorites';
 import SectionAccount from './Profile/SectionAccount';
+import SectionOrders from './Profile/SectionOrders';
 
 const { Sider, Content } = Layout;
 
@@ -71,7 +73,7 @@ const UserProfile = () => {
     // 根据 URL 查询参数设置初始 tab
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
-    if (tab && ['profile', 'products', 'favorites'].includes(tab)) {
+    if (tab && ['profile', 'products', 'orders', 'favorites'].includes(tab)) {
       setSelectedKey(tab);
     }
 
@@ -172,17 +174,17 @@ const UserProfile = () => {
     { key: 'profile', icon: <UserOutlined />, label: '基 本 信 息' },
     { key: 'account', icon: <LockOutlined />, label: '账 户 信 息' },
     { key: 'products', icon: <ShoppingOutlined />, label: '商 品 管 理' },
+    { key: 'orders', icon: <OrderedListOutlined />, label: '订 单 处 理' },
     { key: 'favorites', icon: <HeartOutlined />, label: '商 品 收 藏' },
   ];
 
-  // 当 userInfo 更新时，同步到表单并重置“已修改”状态（统一使用 address）
   useEffect(() => {
     if (userInfo && Object.keys(userInfo).length > 0) {
       try {
         const merged = { ...userInfo };
         merged.address = userInfo.address || merged.address || '';
         delete merged.adress;
-        delete merged.location; // 不再单独展示所在地点
+        delete merged.location;
         basicForm.setFieldsValue(merged);
       } catch {}
       setIsBasicDirty(false);
@@ -223,6 +225,10 @@ const UserProfile = () => {
             <SectionProducts myProducts={myProducts} purchaseHistory={purchaseHistory} onDeleteProduct={handleDeleteProduct} onNavigate={navigate} />
           )}
 
+          {selectedKey === 'orders' && (
+            <SectionOrders userInfo={userInfo} onNavigate={navigate} />
+          )}
+
           {selectedKey === 'favorites' && (
             <SectionFavorites favorites={favorites} onRemoveFavorite={handleRemoveFavorite} onNavigate={navigate} />
           )}
@@ -230,8 +236,6 @@ const UserProfile = () => {
           {selectedKey === 'account' && (
             <SectionAccount userInfo={userInfo} setUserInfo={setUserInfo} />
           )}
-
-          {/* 旧编辑资料模态框已移除 */}
 
           {/* 更换头像 */}
           <Modal

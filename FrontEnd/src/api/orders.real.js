@@ -25,3 +25,8 @@ export async function submitReview(orderId, { rating, comment }) {
   return data;
 }
 
+export async function createOrder({ productId, quantity = 1 }) {
+  const { data } = await client.post('/orders', { productId, quantity });
+  return data;
+}
+

@@ -9,7 +9,6 @@ const { TextArea } = Input;
 const userFieldLabels = {
   id: '用户ID',
   username: '用户名',
-  name: '姓名',
   nickname: '昵称',
   role: '角色',
   school: '学校',
@@ -27,7 +26,7 @@ const userFieldLabels = {
   lastLoginAt: '最近登录时间'
 };
 
-const excludedFields = ['id', 'name', 'role', 'school', 'token', 'wechat', 'age', 'studentId', 'location', 'createdAt', 'email'];
+const excludedFields = ['id', 'role', 'school', 'token', 'wechat', 'age', 'studentId', 'location', 'createdAt', 'email'];
 const nonEditableKeys = ['id','username','token','createdAt','lastLoginAt','joinDate'];
 const preferredOrder = ['username', 'nickname'];
 
@@ -158,7 +157,6 @@ export default function SectionBasic({ userInfo, bannerKey, bannerBgUrl, basicFo
             <Col span={24}>
               <Space>
                 <Button type={isBasicDirty ? 'primary' : 'default'} disabled={!isBasicDirty} onClick={onSaveBasic}>保存</Button>
-                {!isBasicDirty && (<Text type="secondary">修改后保存键将亮起</Text>)}
               </Space>
             </Col>
           </Row>

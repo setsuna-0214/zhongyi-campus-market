@@ -57,26 +57,6 @@
     }
     ```
 
-### 忘记密码
-- `POST /auth/forgot-password`
-  - Request:
-    ```json
-    {
-      "email": "1234567@email.com",
-      "verificationCode": "123456",
-      "newPassword": "newpassword",
-      "confirmPassword": "newpassword"
-    }
-    ```
-  - Response:
-    ```json
-    {
-      "code": 200,
-      "message": "密码重置成功",
-      "data": {}
-    }
-    ```
-
 ### 获取验证码
 - `POST /auth/send-code`
   - Request:
@@ -94,86 +74,200 @@
     }
     ```
 
+### 忘记密码
+- `POST /auth/forgot-password`
+  - Request:
+    ```json
+    {
+      "username": "zhangsan",
+      "email": "1234567@email.com",
+      "verificationCode": "123456",
+      "newPassword": "newpassword",
+      "confirmPassword": "newpassword"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "message": "密码重置成功",
+      "data": {}
+    }
+    ```
+
 ### 认证说明
 认证通过后，前端将 `token` 存储在 `localStorage.authToken`，并将 `user` 存储在 `localStorage.authUser`。当未找到 `authToken` 时，前端会回退读取 `localStorage.authUser.token`。
 后续请求中，前端会在请求头自动附加 `Authorization: Bearer <token>`。Axios 基础配置包含 `baseURL` 与 `timeout: 10000` 毫秒。
 
 ## 商品 Products
 
+### 搜索商品
 - `GET /products`
   - Query Params:
-    - `keyword`、`category`、`location`、`status`
-    - `priceMin`、`priceMax`
-    - `sort` (枚举：`latest | price-low | price-high | popular`)
-    - `page`、`pageSize`
-  - Response（两种兼容形态之一）：
-    - `{ items: Product[], total: number }`
-    - `Product[]`
+    - `keyword` - 搜索关键词
+    - `category` - 商品分类（electronics/books/daily/other）
+    - `location` - 地点
+    - `status` - 状态（在售/已下架/全部）
+    - `priceMin` - 最低价格
+    - `priceMax` - 最高价格
+    - `sort` - 排序方式（latest/price-low/price-high/popular）
+    - `page` - 页码（默认1）
+    - `pageSize` - 每页数量（默认12）
+  - Response:
+    ```json
+    {
+      "items": [
+        {
+          "id": 1,
+          "title": "iPhone 14 Pro 128GB",
+          "price": 6999,
+          "originalPrice": 7999,
+          "images": ["/images/products/product-1.jpg"],
+          "category": "electronics",
+          "condition": "like-new",
+          "location": "北京大学",
+          "seller": {
+            "id": 1,
+            "name": "张同学",
+            "avatar": "/images/avatars/avatar-1.svg",
+            "rating": 4.8
+          },
+          "views": 156,
+          "likes": 23,
+          "publishTime": "2024-01-15T10:30:00Z",
+          "status": "在售",
+          "description": "九成新iPhone 14 Pro，128GB深空黑"
+        }
+      ],
+      "total": 100
+    }
+    ```
+  - 说明：也支持直接返回数组 `Product[]`，前端会自动兼容
 
+### 获取商品详情
 - `GET /products/:id`
-  - Response: `Product`
-
-- `GET /products/:id/related`
-  - Response（两种兼容形态之一）：
-    - `{ items: Product[] }`
-    - `Product[]`
-
-### Product 类型示例
-```
-{
-  id: 1,
-  title: "iPhone 14 Pro 128GB",
-  price: 6999,
-  originalPrice?: 7999,
-  images: ["/images/products/product-1.jpg"],
-  category: "electronics",
-  condition: "like-new",
-  location: "北京大学",
-  seller: { id: 1, name: "张同学", avatar: "/images/avatars/avatar-1.svg", rating?: 4.8 },
-  views?: 156,
-  likes?: 23,
-  publishTime?: "2024-01-15T10:30:00Z",
-  description?: "..."
-}
-```
-
-## 首页 Home
-
-- `GET /home/hot`
-  - Response（两种兼容形态之一）：
-    - `HomeProduct[]`
-    - `{ items: HomeProduct[] }`
-  - `HomeProduct` 示例：
+  - Response:
     ```json
     {
       "id": 1,
-      "title": "热销台灯",
-      "image": "/images/products/lamp.jpg",
-      "price": 59,
-      "publishedAt": "2024-01-15",
-      "seller": "张同学",
-      "location": "北京大学",
+      "title": "iPhone 14 Pro 128GB",
+      "price": 6999,
+      "originalPrice": 7999,
+      "images": ["/images/products/product-1.jpg", "/images/products/product-2.jpg"],
       "category": "electronics",
-      "status": "在售"
+      "condition": "like-new",
+      "location": "北京大学",
+      "seller": {
+        "id": 1,
+        "name": "张同学",
+        "avatar": "/images/avatars/avatar-1.svg",
+        "rating": 4.8
+      },
+      "views": 156,
+      "likes": 23,
+      "publishTime": "2024-01-15T10:30:00Z",
+      "status": "在售",
+      "description": "九成新iPhone 14 Pro，128GB深空黑，无磕碰，功能完好"
     }
     ```
+  - 说明：前端会自动将 `saleStatus` 字段映射为 `status`
 
+### 获取相关商品
+- `GET /products/:id/related`
+  - Response:
+    ```json
+    [
+      {
+        "id": 2,
+        "title": "iPhone 13 Pro 256GB",
+        "price": 5999,
+        "images": ["/images/products/product-3.jpg"],
+        "category": "electronics",
+        "location": "清华大学",
+        "seller": {
+          "id": 2,
+          "name": "李同学"
+        },
+        "status": "在售"
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: Product[] }`，前端会自动兼容
+
+## 首页 Home
+
+### 获取热门商品
+- `GET /home/hot`
+  - Response:
+    ```json
+    [
+      {
+        "id": 1,
+        "title": "热销台灯",
+        "image": "/images/products/lamp.jpg",
+        "price": 59,
+        "publishedAt": "2024-01-15",
+        "seller": "张同学",
+        "location": "北京大学",
+        "category": "electronics",
+        "status": "在售",
+        "views": 120
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: HomeProduct[] }`，前端会自动兼容
+
+### 获取最新发布
 - `GET /home/latest`
-  - Response（两种兼容形态之一）：
-    - `HomeProduct[]`
-    - `{ items: HomeProduct[] }`
+  - Response:
+    ```json
+    [
+      {
+        "id": 2,
+        "title": "全新耳机",
+        "image": "/images/products/headphone.jpg",
+        "price": 199,
+        "publishTime": "2024-01-16T08:30:00Z",
+        "seller": "李同学",
+        "location": "清华大学",
+        "category": "electronics",
+        "status": "在售",
+        "views": 45
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: HomeProduct[] }`，前端会自动兼容
 
 ## 收藏 Favorites
 
+### 获取收藏列表
 - `GET /favorites`
-  - Response（两种兼容形态之一）：
-    - `FavoriteItem[]`
-    - `{ items: FavoriteItem[] }`
+  - Response:
+    ```json
+    [
+      {
+        "id": 1,
+        "productId": 123,
+        "product": {
+          "id": 123,
+          "title": "iPhone 14 Pro",
+          "price": 6999,
+          "image": "/images/products/product-1.jpg",
+          "status": "在售"
+        },
+        "createdAt": "2024-01-15T10:30:00Z"
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: FavoriteItem[] }`，前端会自动兼容
 
+### 添加收藏
 - `POST /favorites`
   - Request:
     ```json
-    { "productId": 123 }
+    {
+      "productId": 123
+    }
     ```
   - Response:
     ```json
@@ -184,135 +278,399 @@
     }
     ```
 
+### 取消收藏
 - `DELETE /favorites/:id`
   - Response:
     ```json
-    { "success": true }
+    {
+      "success": true
+    }
     ```
 
-- 兼容端点（可选）：`DELETE /favorites/by-product/:productId`
+### 根据商品ID取消收藏（可选）
+- `DELETE /favorites/by-product/:productId`
+  - Response:
+    ```json
+    {
+      "success": true
+    }
+    ```
 
 ## 购物车 Cart
 
+### 添加到购物车
 - `POST /cart`
   - Request:
     ```json
-    { "productId": 123, "quantity": 1 }
+    {
+      "productId": 123,
+      "quantity": 1
+    }
     ```
   - Response:
     ```json
-    { "success": true }
+    {
+      "success": true
+    }
     ```
 
+### 批量添加到购物车
 - `POST /cart/batch`
   - Request:
     ```json
-    { "items": [ { "productId": 123, "quantity": 2 }, { "productId": 456, "quantity": 1 } ] }
+    {
+      "items": [
+        {
+          "productId": 123,
+          "quantity": 2
+        },
+        {
+          "productId": 456,
+          "quantity": 1
+        }
+      ]
+    }
     ```
   - Response:
     ```json
-    { "success": true }
+    {
+      "success": true
+    }
     ```
 
 ## 订单 Orders
 
+### 获取订单列表
 - `GET /orders`
   - Query Params:
-    - `status`、`keyword`、`startDate`、`endDate`
-  - Response（两种兼容形态之一）：
-    - `Order[]`
-    - `{ items: Order[] }`
+    - `status` - 订单状态
+    - `keyword` - 搜索关键词
+    - `startDate` - 开始日期
+    - `endDate` - 结束日期
+  - Response:
+    ```json
+    [
+      {
+        "id": 1,
+        "productId": 123,
+        "product": {
+          "id": 123,
+          "title": "iPhone 14 Pro",
+          "price": 6999,
+          "image": "/images/products/product-1.jpg"
+        },
+        "quantity": 1,
+        "totalPrice": 6999,
+        "status": "pending",
+        "createdAt": "2024-01-15T10:30:00Z"
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: Order[] }`，前端会自动兼容
 
+### 创建订单
+- `POST /orders`
+  - Request:
+    ```json
+    {
+      "productId": 123,
+      "quantity": 1
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "id": 1,
+      "productId": 123,
+      "quantity": 1,
+      "totalPrice": 6999,
+      "status": "pending",
+      "createdAt": "2024-01-15T10:30:00Z"
+    }
+    ```
+
+### 获取订单统计
 - `GET /orders/stats`
   - Response:
     ```json
-    { "total": 10, "pending": 3, "completed": 6, "cancelled": 1 }
+    {
+      "total": 10,
+      "pending": 3,
+      "completed": 6,
+      "cancelled": 1
+    }
     ```
 
+### 确认收货
 - `POST /orders/:id/confirm`
   - Response:
     ```json
-    { "success": true }
+    {
+      "success": true
+    }
     ```
 
+### 取消订单
 - `POST /orders/:id/cancel`
   - Response:
     ```json
-    { "success": true }
+    {
+      "success": true
+    }
     ```
 
+### 提交评价
 - `POST /orders/:id/review`
   - Request:
     ```json
-    { "rating": 5, "comment": "物品很好" }
+    {
+      "rating": 5,
+      "comment": "物品很好"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "success": true
+    }
     ```
 
 ## 用户 User
 
+### 获取当前用户信息
 - `GET /user/me`
-  - Response: `User`
+  - Response:
+    ```json
+    {
+      "id": 1,
+      "username": "张同学",
+      "email": "1234567@email.com",
+      "avatar": "/images/avatars/avatar-1.svg",
+      "phone": "13800138000",
+      "school": "北京大学",
+      "studentId": "2021001",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+    ```
 
+### 更新当前用户信息
 - `PUT /user/me`
-  - Request：`User` 
-  - Response: `User`
+  - Request:
+    ```json
+    {
+      "username": "张同学",
+      "phone": "13800138000",
+      "school": "北京大学",
+      "studentId": "2021001"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "id": 1,
+      "username": "张同学",
+      "email": "1234567@email.com",
+      "avatar": "/images/avatars/avatar-1.svg",
+      "phone": "13800138000",
+      "school": "北京大学",
+      "studentId": "2021001",
+      "createdAt": "2024-01-01T00:00:00Z"
+    }
+    ```
 
+### 上传头像
 - `POST /user/me/avatar`
   - Request：`multipart/form-data`，字段名 `avatar`
-  - Response：
+  - Response:
     ```json
-    { "avatarUrl": "/images/avatars/avatar-1.svg" }
+    {
+      "avatarUrl": "/images/avatars/avatar-1.svg"
+    }
     ```
 
+### 获取用户收藏集合
 - `GET /user/collections`
-  - Response：
+  - Response:
     ```json
-    { "published": [], "purchases": [], "favorites": [] }
+    {
+      "published": [],
+      "purchases": [],
+      "favorites": []
+    }
     ```
 
+### 获取我发布的商品
 - `GET /user/published`
-  - Response（两种兼容形态之一）：
-    - `Product[]`
-    - `{ items: Product[] }`
+  - Response:
+    ```json
+    [
+      {
+        "id": 1,
+        "title": "iPhone 14 Pro",
+        "price": 6999,
+        "image": "/images/products/product-1.jpg",
+        "status": "在售",
+        "views": 156,
+        "publishTime": "2024-01-15T10:30:00Z"
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: Product[] }`，前端会自动兼容
 
+### 获取我购买的商品
 - `GET /user/purchases`
-  - Response（两种兼容形态之一）：
-    - `Product[]`
-    - `{ items: Product[] }`
+  - Response:
+    ```json
+    [
+      {
+        "id": 2,
+        "title": "MacBook Pro",
+        "price": 12999,
+        "image": "/images/products/product-2.jpg",
+        "status": "已售出",
+        "purchaseTime": "2024-01-10T10:30:00Z"
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: Product[] }`，前端会自动兼容
 
+### 请求修改邮箱
 - `POST /user/me/email/change-request`
-  - Request：
+  - Request:
     ```json
-    { "newEmail": "new@email.com" }
+    {
+      "newEmail": "new@email.com"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "success": true,
+      "message": "验证码已发送"
+    }
     ```
 
+### 确认修改邮箱
 - `POST /user/me/email/change-confirm`
-  - Request：
+  - Request:
     ```json
-    { "newEmail": "new@email.com", "verificationCode": "123456" }
+    {
+      "newEmail": "new@email.com",
+      "verificationCode": "123456"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "success": true,
+      "message": "邮箱修改成功"
+    }
     ```
 
+### 修改密码
 - `POST /user/me/password`
-  - Request：
+  - Request:
     ```json
-    { "currentPassword": "old", "newPassword": "new", "verificationCode": "123456" }
+    {
+      "currentPassword": "oldpassword",
+      "newPassword": "newpassword",
+      "verificationCode": "123456"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "success": true,
+      "message": "密码修改成功"
+    }
     ```
 
 ## 聊天 Chat
 
+### 获取会话列表
 - `GET /chat/conversations`
-  - Response（两种兼容形态之一）：
-    - `Conversation[]`
-    - `{ items: Conversation[] }`
-
-- `GET /chat/conversations/:id/messages`
-  - Response（两种兼容形态之一）：
-    - `Message[]`
-    - `{ items: Message[] }`
-
-- `POST /chat/conversations/:id/messages`
-  - Request：
+  - Response:
     ```json
-    { "content": "你好", "type": "text" }
+    [
+      {
+        "id": 1,
+        "userId": 2,
+        "userName": "李同学",
+        "userAvatar": "/images/avatars/avatar-2.svg",
+        "lastMessage": "你好",
+        "lastMessageTime": "2024-01-15T10:30:00Z",
+        "unreadCount": 2,
+        "orderId": 123
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: Conversation[] }`，前端会自动兼容并去重
+
+### 创建会话
+- `POST /chat/conversations`
+  - Request:
+    ```json
+    {
+      "userId": 2,
+      "orderId": 123,
+      "productId": 456
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "id": 1,
+      "userId": 2,
+      "orderId": 123,
+      "createdAt": "2024-01-15T10:30:00Z"
+    }
+    ```
+
+### 获取会话消息
+- `GET /chat/conversations/:id/messages`
+  - Response:
+    ```json
+    [
+      {
+        "id": 1,
+        "conversationId": 1,
+        "senderId": 1,
+        "content": "你好",
+        "type": "text",
+        "createdAt": "2024-01-15T10:30:00Z"
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: Message[] }`，前端会自动兼容
+
+### 发送消息
+- `POST /chat/conversations/:id/messages`
+  - Request:
+    ```json
+    {
+      "content": "你好",
+      "type": "text"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "id": 1,
+      "conversationId": 1,
+      "senderId": 1,
+      "content": "你好",
+      "type": "text",
+      "createdAt": "2024-01-15T10:30:00Z"
+    }
+    ```
+
+### 删除会话
+- `DELETE /chat/conversations/:id`
+  - Response:
+    ```json
+    {
+      "success": true
+    }
     ```
 
 ## 返回形态约定
