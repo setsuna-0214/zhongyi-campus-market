@@ -22,7 +22,7 @@ import java.util.Map;
 @Service
 public class UserService {
     @Autowired
-    private static UserMapper userMapper;
+    private UserMapper userMapper;
 
     @Autowired
     private VerificationCodeService codeService;
@@ -41,7 +41,7 @@ public class UserService {
         return userMapper.findUserinfoById(user_id);
     }
     //更新用户信息
-    public static boolean ResetUserInfo(Integer user_id, @RequestBody SetInfoRequest body){
+    public boolean ResetUserInfo(Integer user_id, @RequestBody SetInfoRequest body){
         return userMapper.updateUserInfo(user_id,body.getAvatar(),body.getNickname(),body.getPhone(),body.getAddress()) == 1;
     }
 

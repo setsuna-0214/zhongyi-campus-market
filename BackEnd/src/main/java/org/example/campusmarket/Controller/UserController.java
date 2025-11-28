@@ -44,7 +44,7 @@ public class UserController {
     @PutMapping("/me")
     public Result SetUserInfo(HttpServletRequest request, @Valid @RequestBody SetInfoRequest body,Authentication authentication){
         Integer user_id = (Integer) authentication.getPrincipal();
-        boolean ok = UserService.ResetUserInfo(user_id,body);
+        boolean ok = userService.ResetUserInfo(user_id,body);
         return new Result(200,"修改完成",null);
     }
 

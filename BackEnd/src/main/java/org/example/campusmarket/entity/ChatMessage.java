@@ -3,13 +3,18 @@ package org.example.campusmarket.entity;
 import lombok.Data;
 import java.util.Date;
 
-@Data // 确保有lombok的@Data注解（自动生成get/set）
+/**
+ * 聊天消息实体（原生 MyBatis 版，移除所有 MP 注解）
+ */
+@Data // 仅保留 lombok 注解，无需 MP 的 @TableName
 public class ChatMessage {
-    private Long id; // 主键
-    private Long senderId; // 发送人ID
-    private Long receiverId; // 接收人ID
-    private String content; // 消息内容
-    private Date sendTime; // 发送时间
-    private Integer isRead; // 是否已读
-    private String msgId; // 新增：消息唯一ID（对应数据库的msg_id字段）
+    // 1. 主键类型统一为 Long（适配数据库自增主键，避免 Integer 长度不足）
+    private Long id;                // 主键ID
+    private Long conversationId;    // 会话ID（对应数据库 conversation_id）
+    private Long senderId;          // 发送者ID（对应数据库 sender_id）
+    private Long receiverId;        // 接收者ID（对应数据库 receiver_id）
+    private String content;         // 消息内容
+    private String type;            // 消息类型（text/image）
+    private Integer isRead;         // 是否已读（0-未读，1-已读）（对应数据库 is_read）
+    private Date createdAt;         // 创建时间（对应数据库 created_at）
 }

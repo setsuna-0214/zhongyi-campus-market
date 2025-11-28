@@ -1,35 +1,54 @@
 package org.example.campusmarket.Controller;
 
-import org.example.campusmarket.DTO.MessageDTO;
-import org.example.campusmarket.Service.ChatMessageService;
-import org.example.campusmarket.entity.ChatMessage;
+import org.example.campusmarket.DTO.ConversationDTO;
+import org.example.campusmarket.DTO.CreateConversationDTO;
+import org.example.campusmarket.DTO.CreateConversationResponseDTO;
+import org.example.campusmarket.Service.ChatConversationService;
 import org.example.campusmarket.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import java.util.List;
 
+/**
+ * 聊天会话控制器
+ */
 @RestController
-@RequestMapping("/api/chat")
-@CrossOrigin // 临时解决跨域（测试用）
-public class ChatController {
+@RequestMapping("/chat/conversations")
+@CrossOrigin(origins = "http://localhost:3000") // 允许前端跨域
+public class ChatConversationController {
 
     @Autowired
-    private ChatMessageService chatMessageService;
+    private ChatConversationService conversationService;
 
-    // WebSocket接口：接收前端发送的私聊消息（前端请求地址：/app/private/send）
-    @MessageMapping("/private/send")
-    public void handlePrivateMessage(@Payload MessageDTO dto) {
-        chatMessageService.sendPrivateMessage(dto);
+    // 获取会话列表
+    @GetMapping
+    public Result<List<ConversationDTO>> getConversationList() {
+        // 开发阶段临时返回1，生产需从Token解析
+        Integer currentUserId = getCurrentUserId();
+        List<ConversationDTO> list = conversationService.getConversationList(currentUserId);
+        return Result.success(list);
     }
 
-    // REST接口：查询历史聊天记录
-    @GetMapping("/history")
-    public Result getHistoryMessage(
-            @RequestParam(defaultValue = "1") Long userId1,
-            @RequestParam Long userId2) {
-        List<ChatMessage> history = chatMessageService.getHistoryMessage(userId1, userId2);
-        return Result.success(history);
+    // 创建会话
+    @PostMapping
+    public Result<CreateConversationResponseDTO> createConversation(
+            @Valid @RequestBody CreateConversationDTO dto) {
+        Integer currentUserId = getCurrentUserId();
+        CreateConversationResponseDTO response = conversationService.createConversation(currentUserId, dto);
+        return Result.success(response);
+    }
+
+    // 删除会话
+    @DeleteMapping("/{conversationId}")
+    public Result<Boolean> deleteConversation(@PathVariable Integer conversationId) {
+        Integer currentUserId = getCurrentUserId();
+        boolean success = conversationService.deleteConversation(currentUserId, conversationId);
+        return Result.success(success);
+    }
+
+    // 模拟获取当前用户ID（生产需替换为JWT解析）
+    private Integer getCurrentUserId() {
+        return 1; // 测试用
     }
 }

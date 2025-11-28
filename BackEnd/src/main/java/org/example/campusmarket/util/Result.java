@@ -2,25 +2,28 @@ package org.example.campusmarket.util;
 
 import lombok.Data;
 
+/**
+ * 统一返回结果
+ */
 @Data
-public class Result {
-    private int code; // 200=成功，400=失败
-    private String msg;
-    private Object data;
+public class Result<T> {
+    private int code;       // 响应码：200成功，500失败
+    private String msg;     // 响应信息
+    private T data;         // 响应数据
 
-    // 成功返回
-    public static Result success(Object data) {
-        Result result = new Result();
+    // 成功响应（带数据）
+    public static <T> Result<T> success(T data) {
+        Result<T> result = new Result<>();
         result.setCode(200);
         result.setMsg("操作成功");
         result.setData(data);
         return result;
     }
 
-    // 失败返回
-    public static Result fail(String msg) {
-        Result result = new Result();
-        result.setCode(400);
+    // 失败响应
+    public static <T> Result<T> fail(String msg) {
+        Result<T> result = new Result<>();
+        result.setCode(500);
         result.setMsg(msg);
         result.setData(null);
         return result;

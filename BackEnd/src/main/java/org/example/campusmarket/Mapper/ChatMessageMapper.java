@@ -1,25 +1,30 @@
 package org.example.campusmarket.Mapper;
 
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 import org.example.campusmarket.entity.ChatMessage;
-import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
-@Repository
+@Mapper
 public interface ChatMessageMapper {
 
-    // 插入消息：新增 msg_id 字段（关键！匹配数据库表和实体类）
-    @Insert("INSERT INTO chat_message (sender_id, receiver_id, content, send_time, is_read, msg_id) " +
-            "VALUES (#{senderId}, #{receiverId}, #{content}, #{sendTime}, #{isRead}, #{msgId})")
+    // 1. 根据会话ID查询消息列表（Service 调用的核心方法）
+    @Select("SELECT * FROM chat_message WHERE conversation_id = #{conversationId} ORDER BY created_at ASC")
+    List<ChatMessage> selectByConversationId(Long conversationId);
+
+    // 2. 插入消息（原生 MyBatis 插入，自增主键回填）
+    @Insert("INSERT INTO chat_message (conversation_id, sender_id, receiver_id, content, type, is_read, created_at) " +
+            "VALUES (#{conversationId}, #{senderId}, #{receiverId}, #{content}, #{type}, #{isRead}, #{createdAt})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(ChatMessage message);
 
-    // 查询历史消息：基于索引优化（无需改，因为查询不需要msg_id）
-    @Select("SELECT id, sender_id as senderId, receiver_id as receiverId, content, send_time as sendTime, is_read as isRead, msg_id as msgId " +
-            "FROM chat_message " +
-            "WHERE (sender_id = #{userId1} AND receiver_id = #{userId2}) " +
-            "   OR (sender_id = #{userId2} AND receiver_id = #{userId1}) " +
-            "ORDER BY send_time ASC") // 按发送时间升序
-    List<ChatMessage> selectHistory(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+    // 3. 其他可选方法（按需添加）
+    @Select("SELECT * FROM chat_message WHERE id = #{id}")
+    ChatMessage selectById(Long id);
+
+    @Update("UPDATE chat_message SET is_read = 1 WHERE id = #{id}")
+    int markAsRead(Long id);
+
+    @Delete("DELETE FROM chat_message WHERE id = #{id}")
+    int deleteById(Long id);
 }
