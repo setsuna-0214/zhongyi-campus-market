@@ -1,7 +1,7 @@
 package org.example.campusmarket.Controller;
 
 import org.example.campusmarket.DTO.MessageDTO;
-import org.example.campusmarket.Service.ChatService;
+import org.example.campusmarket.Service.ChatMessageService;
 import org.example.campusmarket.entity.ChatMessage;
 import org.example.campusmarket.util.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +16,12 @@ import java.util.List;
 public class ChatController {
 
     @Autowired
-    private ChatService chatService;
+    private ChatMessageService chatMessageService;
 
     // WebSocket接口：接收前端发送的私聊消息（前端请求地址：/app/private/send）
     @MessageMapping("/private/send")
     public void handlePrivateMessage(@Payload MessageDTO dto) {
-        chatService.sendPrivateMessage(dto);
+        chatMessageService.sendPrivateMessage(dto);
     }
 
     // REST接口：查询历史聊天记录
@@ -29,7 +29,7 @@ public class ChatController {
     public Result getHistoryMessage(
             @RequestParam(defaultValue = "1") Long userId1,
             @RequestParam Long userId2) {
-        List<ChatMessage> history = chatService.getHistoryMessage(userId1, userId2);
+        List<ChatMessage> history = chatMessageService.getHistoryMessage(userId1, userId2);
         return Result.success(history);
     }
 }
