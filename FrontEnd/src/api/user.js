@@ -15,3 +15,13 @@ export const getMyPurchases = impl.getMyPurchases;
 export const requestEmailChange = impl.requestEmailChange;
 export const confirmEmailChange = impl.confirmEmailChange;
 export const changePassword = impl.changePassword;
+export const getUser = impl.getUser;
+export const getUserPublished = impl.getUserPublished;
+
+// 关注功能
+export const getFollows = impl.getFollows;
+export const checkIsFollowing = impl.checkIsFollowing;
+export const followUser = impl.followUser;
+export const unfollowUser = impl.unfollowUser;
+
+export const searchUsers = impl.searchUsers;

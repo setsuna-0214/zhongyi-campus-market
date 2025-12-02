@@ -11,8 +11,9 @@ export async function getHotProducts() {
       image: resolveImageSrc({ product: p }),
       views: p.views,
       price: p.price,
-      publishedAt: new Date(p.publishTime).toLocaleDateString(),
-      seller: p.seller?.name || '卖家',
+      publishedAt: p.publishTime,
+      seller: p.seller?.nickname || '卖家',
+      sellerId: p.seller?.id,
       location: p.location,
       category: p.category,
       status: p.status || '在售'
@@ -31,7 +32,8 @@ export async function getLatestProducts() {
       publishTime: p.publishTime,
       price: p.price,
       publishedAt: new Date(p.publishTime).toLocaleDateString(),
-      seller: p.seller?.name || '卖家',
+      seller: p.seller?.nickname || '卖家',
+      sellerId: p.seller?.id,
       location: p.location,
       category: p.category,
       status: p.status || '在售'

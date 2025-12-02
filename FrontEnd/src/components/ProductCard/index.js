@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { FALLBACK_IMAGE } from '../../utils/images';
 import { Card, Tag, Avatar } from 'antd';
@@ -71,6 +72,7 @@ const ProductCard = ({
   status,
   location,
   sellerName,
+  sellerId,
   publishedAt,
   views,
   overlayType,
@@ -87,11 +89,19 @@ const ProductCard = ({
   imageAlt,
   imageHeight,
 }) => {
+  const navigate = useNavigate();
   const overlayClass = overlayType === 'publish-right' ? 'overlay-recent' : (overlayType === 'views-left' ? 'overlay-hot' : '');
 
   const [imageLoaded, setImageLoaded] = useState(false);
   const publishedAtDisplay = publishedAt ? (dateFormat === 'ymd' ? formatToYMD(publishedAt) : publishedAt) : '';
   const favoriteAtDisplay = favoriteAt ? formatToYMD(favoriteAt) : '';
+
+  const handleSellerClick = (e) => {
+    if (sellerId) {
+      e.stopPropagation();
+      navigate(`/users/${sellerId}`);
+    }
+  };
 
   return (
     <Card
@@ -171,7 +181,10 @@ const ProductCard = ({
               {publishedAtDisplay && <div className="home-product-published">{publishedAtDisplay}</div>}
             </div>
             <div className="home-product-bottom">
-              <div className="home-product-seller">
+              <div 
+                className={`home-product-seller ${sellerId ? 'clickable' : ''}`}
+                onClick={handleSellerClick}
+              >
                 <Avatar size={24} icon={<UserOutlined />} />
                 <span className="seller-name">{sellerName}</span>
               </div>
@@ -198,6 +211,7 @@ const areEqual = (prevProps, nextProps) => {
     prevProps.status === nextProps.status &&
     prevProps.location === nextProps.location &&
     prevProps.sellerName === nextProps.sellerName &&
+    prevProps.sellerId === nextProps.sellerId &&
     prevProps.publishedAt === nextProps.publishedAt &&
     prevProps.views === nextProps.views &&
     prevProps.overlayType === nextProps.overlayType &&

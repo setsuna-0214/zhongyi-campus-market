@@ -14,7 +14,6 @@ import {
   Checkbox,
   Typography,
   Alert,
-  Descriptions,
   Modal
 } from 'antd';
 import {
@@ -22,12 +21,11 @@ import {
   CheckCircleOutlined
 } from '@ant-design/icons';
 import './Publish.css';
-import { CATEGORY_CODE_TO_LABEL, getCategoryLabel } from '../../utils/labels';
+import { CATEGORY_CODE_TO_LABEL } from '../../utils/labels';
 
 const { TextArea } = Input;
 const { Option } = Select;
 const { Title, Text } = Typography;
-// 移除未使用的 Dragger
 
 const PublishProduct = () => {
   const navigate = useNavigate();
@@ -39,10 +37,6 @@ const PublishProduct = () => {
 
   // 商品分类数据
   const categories = Object.entries(CATEGORY_CODE_TO_LABEL).map(([value, label]) => ({ value, label }));
-
-  // 成色字段已移除
-
-  // 单页表单展示所有原步骤内容
 
   // 图片上传处理
   const handleImageChange = ({ fileList }) => {
@@ -73,7 +67,7 @@ const PublishProduct = () => {
       // 模拟API调用
       await new Promise(resolve => setTimeout(resolve, 2000));
       message.success('商品发布成功！');
-      navigate('/products');
+      navigate('/search?type=products');
     } catch (error) {
       message.error('发布失败，请重试');
     } finally {
@@ -210,13 +204,13 @@ const PublishProduct = () => {
                 >
                   <Checkbox.Group>
                     <Row>
-                      <Col span={8}>
+                      <Col span={12}>
                         <Checkbox value="campus">校内交易</Checkbox>
                       </Col>
-                      <Col span={8}>
+                      <Col span={12}>
                         <Checkbox value="express">快递邮寄</Checkbox>
                       </Col>
-                      <Col span={8}>
+                      <Col span={12}>
                         <Checkbox value="pickup">自提</Checkbox>
                       </Col>
                     </Row>
@@ -226,10 +220,10 @@ const PublishProduct = () => {
               <Col span={24}>
                 <Form.Item
                   name="location"
-                  label="交易地点"
-                  rules={[{ required: true, message: '请输入交易地点' }]}
+                  label="交易地址"
+                  rules={[{ required: true, message: '请输入交易地址' }]}
                 >
-                  <Input placeholder="请输入具体的交易地点或区域" />
+                  <Input placeholder="请输入具体的交易地址或区域" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -240,8 +234,6 @@ const PublishProduct = () => {
                 >
                   <Select placeholder="请选择联系方式">
                     <Option value="phone">电话联系</Option>
-                    <Option value="wechat">微信联系</Option>
-                    <Option value="qq">QQ联系</Option>
                     <Option value="platform">站内私信</Option>
                   </Select>
                 </Form.Item>
@@ -264,28 +256,6 @@ const PublishProduct = () => {
               showIcon
               style={{ marginBottom: 24 }}
             />
-            
-            <div className="publish-summary">
-              <Title level={4}>商品信息预览</Title>
-              <Descriptions bordered column={2}>
-                <Descriptions.Item label="商品标题">
-                  {form.getFieldValue('title') || '未填写'}
-                </Descriptions.Item>
-                <Descriptions.Item label="商品分类">
-                  {getCategoryLabel(form.getFieldValue('category')) || '未选择'}
-                </Descriptions.Item>
-                
-                <Descriptions.Item label="出售价格">
-                  ¥{form.getFieldValue('price') || '0'}
-                </Descriptions.Item>
-                <Descriptions.Item label="交易方式" span={2}>
-                  {form.getFieldValue('tradeMethod')?.join('、') || '未选择'}
-                </Descriptions.Item>
-                <Descriptions.Item label="商品描述" span={2}>
-                  {form.getFieldValue('description') || '未填写'}
-                </Descriptions.Item>
-              </Descriptions>
-            </div>
           </Card>
 
           <div className="step-actions">
@@ -295,7 +265,7 @@ const PublishProduct = () => {
               loading={loading}
               icon={<CheckCircleOutlined />}
             >
-              发布商品
+              确认发布
             </Button>
           </div>
         </Form>

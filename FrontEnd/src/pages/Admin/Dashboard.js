@@ -99,7 +99,7 @@ const mockDashboardData = {
   recentUsers: [
     {
       id: 1,
-      name: '新用户001',
+      nickname: '新用户001',
       email: 'user001@example.com',
       avatar: null,
       registerTime: '2024-01-15 11:30:00',
@@ -107,7 +107,7 @@ const mockDashboardData = {
     },
     {
       id: 2,
-      name: '新用户002',
+      nickname: '新用户002',
       email: 'user002@example.com',
       avatar: null,
       registerTime: '2024-01-15 10:45:00',
@@ -115,7 +115,7 @@ const mockDashboardData = {
     },
     {
       id: 3,
-      name: '新用户003',
+      nickname: '新用户003',
       email: 'user003@example.com',
       avatar: null,
       registerTime: '2024-01-15 09:20:00',
@@ -123,7 +123,7 @@ const mockDashboardData = {
     },
     {
       id: 4,
-      name: '新用户004',
+      nickname: '新用户004',
       email: 'user004@example.com',
       avatar: null,
       registerTime: '2024-01-15 08:15:00',
@@ -478,7 +478,7 @@ const AdminDashboard = () => {
                           }
                           title={
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <Text strong>{item.name}</Text>
+                              <Text strong>{item.nickname}</Text>
                               <Tag color={getStatusColor(item.status)} className="tag-pill tag-sm tag-bold">
                                 {getStatusText(item.status)}
                               </Tag>

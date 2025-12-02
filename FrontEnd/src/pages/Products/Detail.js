@@ -6,7 +6,6 @@ import {
   Button, 
   Tag, 
   Avatar, 
-  Rate, 
   Divider, 
   Image, 
   Carousel, 
@@ -19,6 +18,7 @@ import {
   List
 } from 'antd';
 import { 
+  UserOutlined,
   HeartOutlined, 
   HeartFilled,
   ShareAltOutlined,
@@ -37,6 +37,7 @@ import './Detail.css';
 import { getProduct, getRelatedProducts } from '../../api/products';
 import { getCategoryLabel, getStatusLabel, getStatusColor } from '../../utils/labels';
 import { getFavorites, addToFavorites, removeFavoriteByProductId } from '../../api/favorites';
+import { checkIsFollowing, followUser, unfollowUser } from '../../api/user';
 import { resolveImageSrc, FALLBACK_IMAGE } from '../../utils/images';
 
 const { TextArea } = Input;
@@ -49,6 +50,7 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [contactModalVisible, setContactModalVisible] = useState(false);
   const [messageModalVisible, setMessageModalVisible] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
@@ -97,6 +99,17 @@ const ProductDetail = () => {
     }
   }, [id]);
 
+  // 初始化关注状态
+  const initFollowState = useCallback(async () => {
+    if (!product?.seller?.id) return;
+    try {
+      const following = await checkIsFollowing(product.seller.id);
+      setIsFollowing(following);
+    } catch {
+      setIsFollowing(false);
+    }
+  }, [product]);
+
   // 处理收藏
   const handleFavorite = async () => {
     try {
@@ -126,6 +139,23 @@ const ProductDetail = () => {
       // 复制链接到剪贴板
       navigator.clipboard.writeText(window.location.href);
       message.success('链接已复制到剪贴板');
+    }
+  };
+
+  const handleFollow = async (e) => {
+    e.stopPropagation();
+    try {
+      if (isFollowing) {
+        await unfollowUser(product.seller.id);
+        setIsFollowing(false);
+        message.success('已取消关注');
+      } else {
+        await followUser(product.seller.id);
+        setIsFollowing(true);
+        message.success('关注成功');
+      }
+    } catch (error) {
+      message.error('操作失败');
     }
   };
 
@@ -216,6 +246,10 @@ const ProductDetail = () => {
     initFavoriteState();
   }, [initFavoriteState]);
 
+  useEffect(() => {
+    initFollowState();
+  }, [initFollowState]);
+
   if (loading || !product) {
     return <div className="loading-container">加载中...</div>;
   }
@@ -230,10 +264,10 @@ const ProductDetail = () => {
             <span onClick={() => navigate('/')}>首页</span>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <span onClick={() => navigate('/products')}>商品</span>
+            <span onClick={() => navigate('/search?type=products')}>商品</span>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <span onClick={() => navigate(`/products?category=${product.category}`)}>
+            <span onClick={() => navigate(`/search?type=products&category=${product.category}`)}>
               {getCategoryLabel(product.category)}
             </span>
           </Breadcrumb.Item>
@@ -381,49 +415,36 @@ const ProductDetail = () => {
 
               <Divider />
 
-              {/* 卖家信息 */}
-              <div className="seller-section">
-                <div className="seller-header">
-                  <h3>卖家信息</h3>
-                  <Button type="link" onClick={handleViewSeller}>
-                    查看详情 <RightOutlined />
-                  </Button>
+              {/* 卖家信息 - 简化版 */}
+              <div className="seller-simple-card" onClick={handleViewSeller} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Avatar size={48} src={product.seller.avatar} icon={<UserOutlined />} />
+                  <div className="seller-simple-info">
+                    <div className="seller-name-row">
+                      <span className="seller-nickname">{product.seller.nickname}</span>
+                      {product.seller.isVerified && (
+                        <Tooltip title="已认证用户">
+                          <SafetyCertificateOutlined className="verified-icon" />
+                        </Tooltip>
+                      )}
+                    </div>
+                    <span className="seller-label">卖家</span>
+                  </div>
                 </div>
-                
-                <div className="seller-info">
-                  <div className="seller-basic">
-                    <Avatar size={60} src={product.seller.avatar} />
-                    <div className="seller-details">
-                      <div className="seller-name">
-                        {product.seller.name}
-                        {product.seller.isVerified && (
-                          <Tooltip title="已认证用户">
-                            <SafetyCertificateOutlined className="verified-icon" />
-                          </Tooltip>
-                        )}
-                      </div>
-                      <Rate disabled defaultValue={product.seller.rating} allowHalf />
-                      <div className="seller-stats">
-                        <span>{product.seller.reviewCount} 评价</span>
-                        <span>{product.seller.totalSales} 成交</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="seller-metrics">
-                    <div className="metric">
-                      <span className="metric-label">回复率</span>
-                      <span className="metric-value">{product.seller.responseRate}%</span>
-                    </div>
-                    <div className="metric">
-                      <span className="metric-label">回复时间</span>
-                      <span className="metric-value">{product.seller.responseTime}</span>
-                    </div>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Button 
+                    type={isFollowing ? 'default' : 'primary'}
+                    shape="round"
+                    size="small"
+                    onClick={handleFollow}
+                  >
+                    {isFollowing ? '已关注' : '关注'}
+                  </Button>
+                  <RightOutlined className="seller-arrow" />
                 </div>
               </div>
 
-              <Divider />
+              <Divider style={{ margin: '16px 0' }} />
 
               {/* 购买按钮 */}
               <div className="purchase-buttons">

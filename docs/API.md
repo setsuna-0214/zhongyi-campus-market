@@ -296,48 +296,6 @@
     }
     ```
 
-## 购物车 Cart
-
-### 添加到购物车
-- `POST /cart`
-  - Request:
-    ```json
-    {
-      "productId": 123,
-      "quantity": 1
-    }
-    ```
-  - Response:
-    ```json
-    {
-      "success": true
-    }
-    ```
-
-### 批量添加到购物车
-- `POST /cart/batch`
-  - Request:
-    ```json
-    {
-      "items": [
-        {
-          "productId": 123,
-          "quantity": 2
-        },
-        {
-          "productId": 456,
-          "quantity": 1
-        }
-      ]
-    }
-    ```
-  - Response:
-    ```json
-    {
-      "success": true
-    }
-    ```
-
 ## 订单 Orders
 
 ### 获取订单列表
@@ -585,6 +543,69 @@
     }
     ```
 
+### 搜索用户
+- `GET /users/search`
+  - Query Params:
+    - `keyword` - 搜索关键词（昵称/用户名/学校）
+    - `page` - 页码
+    - `pageSize` - 每页数量
+  - Response:
+    ```json
+    {
+      "items": [
+        {
+          "id": 1,
+          "username": "张同学",
+          "nickname": "张同学",
+          "avatar": "/images/avatars/avatar-1.svg",
+          "school": "北京大学"
+        }
+      ],
+      "total": 10
+    }
+    ```
+
+### 获取关注列表
+- `GET /user/follows`
+  - Response:
+    ```json
+    [
+      {
+        "id": 2,
+        "username": "李同学",
+        "nickname": "李同学",
+        "avatar": "/images/avatars/avatar-2.svg"
+      }
+    ]
+    ```
+
+### 检查关注状态
+- `GET /user/follows/:id/check`
+  - Response:
+    ```json
+    {
+      "isFollowing": true
+    }
+    ```
+
+### 关注用户
+- `POST /user/follows/:id`
+  - Response:
+    ```json
+    {
+      "success": true
+    }
+    ```
+
+### 取消关注
+- `DELETE /user/follows/:id`
+  - Response:
+    ```json
+    {
+      "success": true
+    }
+    ```
+
 ## 聊天 Chat
 
 ### 获取会话列表
@@ -613,7 +634,9 @@
     {
       "userId": 2,
       "orderId": 123,
-      "productId": 456
+      "productId": 456,
+      "partnerName": "李同学",
+      "partnerAvatar": "/images/avatars/avatar-2.svg"
     }
     ```
   - Response:

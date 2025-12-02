@@ -50,7 +50,7 @@ export default function SectionOrders({ userInfo, onNavigate }) {
       renderItem={(order) => {
         const p = order.product || {};
         const amount = (Number(p.price) || 0) * (Number(p.quantity) || 1);
-        const counterpartName = role === 'purchase' ? (order.seller?.name || '卖家') : (order.buyer?.name || '买家');
+        const counterpartName = role === 'purchase' ? (order.seller?.nickname || '卖家') : (order.buyer?.nickname || '买家');
         const productId = p.id || p._id;
         return (
           <List.Item key={order.id || productId}>

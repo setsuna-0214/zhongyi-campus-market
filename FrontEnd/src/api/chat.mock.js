@@ -64,20 +64,20 @@ export async function sendMessage(conversationId, payload) {
   return message;
 }
 
-export async function createConversation({ userId, productId, orderId }) {
+export async function createConversation({ userId, productId, orderId, partnerName, partnerAvatar }) {
   ensureMockState();
   const prod = mockProducts.find(p => String(p.id) === String(productId));
   const image = resolveImageSrc({ product: prod });
   const conv = {
     id: `c_${Date.now()}`,
     userId: userId,
-    userName: prod?.seller?.name || '卖家',
-    userAvatar: prod?.seller?.avatar || '/images/avatars/avatar-1.svg',
+    userName: partnerName || prod?.seller?.nickname || '卖家',
+    userAvatar: partnerAvatar || prod?.seller?.avatar || '/images/avatars/avatar-1.svg',
     lastMessage: '',
     lastMessageTime: new Date().toLocaleString(),
     unreadCount: 0,
     orderId: orderId || null,
-    productName: prod?.title || String(productId),
+    productName: prod?.title || (productId ? String(productId) : undefined),
     productImage: image
   };
   try {

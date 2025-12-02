@@ -49,25 +49,41 @@ const formatToYMDHMS = (input) => {
   }
 };
 
-export default function SectionBasic({ userInfo, bannerKey, bannerBgUrl, basicForm, isBasicDirty, onBasicDirtyChange, onSaveBasic, onChangeBannerKey, onOpenAvatarModal, loading }) {
+export default function SectionBasic({ 
+  userInfo, 
+  bannerKey, 
+  bannerBgUrl, 
+  basicForm, 
+  isBasicDirty, 
+  onBasicDirtyChange, 
+  onSaveBasic, 
+  onChangeBannerKey, 
+  onOpenAvatarModal, 
+  loading,
+  isReadOnly = false 
+}) {
   return (
     <Card className="section-card" loading={loading}>
       <div className="avatar-banner" style={bannerBgUrl ? { backgroundImage: `url(${bannerBgUrl})` } : { backgroundImage: 'none', backgroundColor: '#fafafa' }}>
         <div className="avatar-wrapper">
           <div className="avatar-box">
             <Avatar size={120} src={userInfo.avatar} icon={<UserOutlined />} className="user-avatar" />
-            <Button shape="circle" size="small" type="default" icon={<CameraOutlined />} aria-label="更换头像" onClick={onOpenAvatarModal} className="avatar-edit-icon" />
+            {!isReadOnly && (
+              <Button shape="circle" size="small" type="default" icon={<CameraOutlined />} aria-label="更换头像" onClick={onOpenAvatarModal} className="avatar-edit-icon" />
+            )}
           </div>
         </div>
-        <Popover placement="topRight" trigger="click" content={(
-          <Form layout="inline">
-            <Form.Item label="头像背景图" style={{ marginBottom: 0 }}>
-              <Select size="middle" style={{ minWidth: 180 }} value={bannerKey} onChange={onChangeBannerKey} options={PROFILE_BANNER_OPTIONS.map(opt => ({ label: opt.label, value: opt.key }))} />
-            </Form.Item>
-          </Form>
-        )}>
-          <Button shape="circle" size="small" type="default" icon={<SettingOutlined />} aria-label="界面设置" className="banner-settings-icon" />
-        </Popover>
+        {!isReadOnly && (
+          <Popover placement="topRight" trigger="click" content={(
+            <Form layout="inline">
+              <Form.Item label="头像背景图" style={{ marginBottom: 0 }}>
+                <Select size="middle" style={{ minWidth: 180 }} value={bannerKey} onChange={onChangeBannerKey} options={PROFILE_BANNER_OPTIONS.map(opt => ({ label: opt.label, value: opt.key }))} />
+              </Form.Item>
+            </Form>
+          )}>
+            <Button shape="circle" size="small" type="default" icon={<SettingOutlined />} aria-label="界面设置" className="banner-settings-icon" />
+          </Popover>
+        )}
       </div>
       <div style={{ marginTop: 12 }}>
         <Form
@@ -91,7 +107,8 @@ export default function SectionBasic({ userInfo, bannerKey, bannerBgUrl, basicFo
               return keysOrdered.map((key) => {
                 const value = userInfo ? userInfo[key] : undefined;
                 const label = userFieldLabels[key] || key;
-                const isNonEditable = nonEditableKeys.includes(key);
+                // 在只读模式下，所有字段都视为不可编辑
+                const isNonEditable = isReadOnly || nonEditableKeys.includes(key);
                 const isBoolean = typeof value === 'boolean';
                 const isArray = Array.isArray(value);
                 const isObject = typeof value === 'object' && !isArray && value !== null;
@@ -117,9 +134,15 @@ export default function SectionBasic({ userInfo, bannerKey, bannerBgUrl, basicFo
                     <Col key={key} span={24} xs={24} sm={24} md={24}>
                       <div style={{ width: '100%' }}>
                         <Text strong>{label}</Text>
-                        <Form.Item name={key} style={{ marginTop: 8, marginBottom: 8 }}>
-                          <TextArea rows={4} />
-                        </Form.Item>
+                        {isReadOnly ? (
+                          <div style={{ marginTop: 8, marginBottom: 8, padding: '4px 11px', backgroundColor: 'rgba(0, 0, 0, 0.02)', border: '1px solid #d9d9d9', borderRadius: '6px', minHeight: '100px', whiteSpace: 'pre-wrap' }}>
+                            {value || '-'}
+                          </div>
+                        ) : (
+                          <Form.Item name={key} style={{ marginTop: 8, marginBottom: 8 }}>
+                            <TextArea rows={4} />
+                          </Form.Item>
+                        )}
                       </div>
                     </Col>
                   );
@@ -154,11 +177,13 @@ export default function SectionBasic({ userInfo, bannerKey, bannerBgUrl, basicFo
                 );
               });
             })()}
-            <Col span={24}>
-              <Space>
-                <Button type={isBasicDirty ? 'primary' : 'default'} disabled={!isBasicDirty} onClick={onSaveBasic}>保存</Button>
-              </Space>
-            </Col>
+            {!isReadOnly && (
+              <Col span={24}>
+                <Space>
+                  <Button type={isBasicDirty ? 'primary' : 'default'} disabled={!isBasicDirty} onClick={onSaveBasic}>保存</Button>
+                </Space>
+              </Col>
+            )}
           </Row>
         </Form>
       </div>

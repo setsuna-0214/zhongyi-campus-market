@@ -36,7 +36,7 @@
   backface-visibility: hidden;
 }
 
-/* 图片淡入过渡：初始轻微模糊与透明，加载后清晰呈现 */
+/* 图片淡入过渡 */
 .product-image {
   opacity: 0;
   filter: blur(6px);
@@ -258,12 +258,25 @@
 .home-product-seller {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  font-size: 12px;
+  color: #8c8c8c;
+  transition: color 0.2s ease;
 }
 
-.home-product-seller .seller-name {
-  font-size: 12px;
-  color: #595959;
+.home-product-seller.clickable {
+  cursor: pointer;
+}
+
+.home-product-seller.clickable:hover {
+  color: #1890ff;
+}
+
+.seller-name {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-product-location {

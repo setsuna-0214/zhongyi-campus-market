@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Layout, Avatar, Dropdown, Input, Button, Space } from 'antd';
-import { 
+import {
   UserOutlined,
   LogoutOutlined,
   SearchOutlined
@@ -13,12 +13,12 @@ const { Header: AntHeader } = Layout;
 
 const Header = () => {
   const navigate = useNavigate();
-  
+
   // 登录状态
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [headerKeyword, setHeaderKeyword] = useState('');
-  
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -54,15 +54,15 @@ const Header = () => {
     return () => { cancelled = true; };
   }, []);
 
-  
+
   const handleSearch = (value) => {
     const keyword = (value || '').trim();
     if (!keyword) {
-      navigate('/products');
+      navigate('/search');
       return;
     }
     const params = new URLSearchParams({ keyword }).toString();
-    navigate(`/products?${params}`);
+    navigate(`/search?${params}`);
   };
 
   const handleLogout = () => {
@@ -98,8 +98,8 @@ const Header = () => {
       <div className="header-content">
         {/* Logo */}
         <div className="logo" onClick={() => navigate('/')}>
+          <img src="/images/logo.png" alt="Logo" className="logo-icon" />
           <span className="logo-text">中易</span>
-          <span className="logo-subtitle">🤣🥰🤯</span>
         </div>
 
         {/* 搜索 */}
@@ -123,7 +123,7 @@ const Header = () => {
           </Space.Compact>
         </div>
 
-        
+
         {/* 右侧操作区 */}
         <div className="header-actions">
           {isLoggedIn ? (
@@ -133,8 +133,8 @@ const Header = () => {
               arrow
             >
               <button type="button" className="user-entry" aria-label="用户菜单">
-                <Avatar 
-                  size="large" 
+                <Avatar
+                  size="large"
                   icon={<UserOutlined />}
                   src={user?.avatar}
                 />

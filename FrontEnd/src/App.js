@@ -10,10 +10,11 @@ import Home from './pages/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import ForgotPassword from './pages/Auth/ForgotPassword';
-import ProductList from './pages/Products';
 import ProductDetail from './pages/Products/Detail';
 import PublishProduct from './pages/Products/Publish';
+import SearchPage from './pages/Search';
 import UserProfile from './pages/User/Profile';
+import SellerProfile from './pages/User/SellerProfile';
 import Chat from './pages/Chat';
 import AdminDashboard from './pages/Admin/Dashboard';
 import FloatingButtons from './components/FloatingButtons';
@@ -34,13 +35,12 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/products" element={<ProductList />} />
           <Route path="/products/:id" element={<ProductDetail />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/publish" element={<PublishProduct />} />
           <Route path="/profile" element={<UserProfile />} />
+          <Route path="/users/:id" element={<SellerProfile />} />
           <Route path="/chat" element={<Chat />} />
-          <Route path="/favorites" element={<Navigate to="/profile?tab=favorites" replace />} />
-          <Route path="/wishlist" element={<Navigate to="/profile?tab=favorites" replace />} />
           <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
