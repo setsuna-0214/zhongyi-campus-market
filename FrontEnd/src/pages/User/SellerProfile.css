@@ -1,0 +1,36 @@
+.read-only-profile {
+  position: relative;
+}
+
+.read-only-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 50px;
+  z-index: 10;
+  background: transparent;
+}
+
+.read-only-profile .avatar-edit-icon,
+.read-only-profile .banner-settings-icon,
+.read-only-profile .ant-btn-primary[type="submit"],
+.read-only-profile button[type="submit"] {
+  display: none !important;
+}
+
+.read-only-profile .ant-input,
+.read-only-profile .ant-input-textarea,
+.read-only-profile .ant-select-selector,
+.read-only-profile .ant-checkbox-wrapper {
+  pointer-events: none;
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  color: #333;
+  padding-left: 0;
+}
+
+.read-only-profile .ant-form-item-label > label {
+  color: #666;
+}

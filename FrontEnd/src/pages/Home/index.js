@@ -9,7 +9,7 @@ import {
   Skeleton,
   Card,
 } from 'antd';
-import { 
+import {
   RightOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -103,49 +103,13 @@ const Home = () => {
     }
 
     // 初始显示数量（首批）
-    const INITIAL_CHUNK = 8;
-    const CHUNK_SIZE = 8;
-    const STEP_DELAY = 60; // 每批次之间的延时
+    const INITIAL_CHUNK = 12;
 
-    // 仅在当前激活标签未显示内容时设置首批显示数量
     if (activeTab === 'hot') {
       setVisibleHotCount((c) => (c > 0 ? c : Math.min(INITIAL_CHUNK, hotProducts.length)));
     } else {
       setVisibleRecentCount((c) => (c > 0 ? c : Math.min(INITIAL_CHUNK, recentProducts.length)));
     }
-
-    const step = () => {
-      let progressed = false;
-      if (activeTab === 'hot') {
-        setVisibleHotCount((c) => {
-          if (c >= hotProducts.length) return c;
-          progressed = true;
-          return Math.min(c + CHUNK_SIZE, hotProducts.length);
-        });
-      } else {
-        setVisibleRecentCount((c) => {
-          if (c >= recentProducts.length) return c;
-          progressed = true;
-          return Math.min(c + CHUNK_SIZE, recentProducts.length);
-        });
-      }
-      if (progressed) {
-        chunkTimerRef.current = setTimeout(step, STEP_DELAY);
-      } else {
-        chunkTimerRef.current = null;
-      }
-    };
-
-    // 启动分批渲染（仅当前激活标签）
-    chunkTimerRef.current = setTimeout(step, STEP_DELAY);
-
-    // 清理
-    return () => {
-      if (chunkTimerRef.current) {
-        clearTimeout(chunkTimerRef.current);
-        chunkTimerRef.current = null;
-      }
-    };
   }, [loading, hotProducts, recentProducts, activeTab]);
 
   const bannerItems = [
@@ -153,7 +117,7 @@ const Home = () => {
       title: '欢迎来到中易校园交易平台',
       subtitle: '安全、便捷、高效的校园交易体验',
       image: '/images/carousel/banner1-Vjwxq.jpg',
-      action: () => navigate('/products')
+      action: () => navigate('/search?type=products')
     },
     {
       title: '发布你的闲置物品',
@@ -179,7 +143,8 @@ const Home = () => {
           category={product.category}
           status={product.status}
           location={product.location}
-          sellerName={product.seller}
+          sellerName={product.seller?.name || product.seller}
+          sellerId={product.sellerId || product.seller?.id}
           publishedAt={product.publishedAt}
           views={product.views}
           overlayType={'views-left'}
@@ -201,6 +166,7 @@ const Home = () => {
           status={product.status}
           location={product.location}
           sellerName={product.seller}
+          sellerId={product.sellerId || product.seller?.id}
           publishedAt={product.publishTime}
           views={product.views}
           overlayType={'publish-right'}
@@ -223,58 +189,58 @@ const Home = () => {
   return (
     <div className="home-page">
 
-      {/* 带轮播图背景的注册登录区域（未登录时显示） */}
+      {/* 带轮播图背景的注册登录区域*/}
       {!isLoggedIn && (
-      <section className="auth-carousel-section">
-        <Carousel 
-          autoplay 
-          autoplaySpeed={4000}
-          effect="fade" 
-          className="auth-carousel" 
-          dots={true}
-          dotPosition="bottom"
-          infinite={true}
-        >
-          {bannerItems.map((item, index) => (
-            <div key={index} className="auth-carousel-item">
-              <div className="auth-carousel-background">
-                <img src={item.image} alt={item.title} loading="lazy" decoding="async" fetchpriority="low" />
-                <div className="auth-carousel-overlay"></div>
-              </div>
-              <div className="auth-carousel-content">
-                <div className="auth-content-wrapper">
-                  <Title level={1} className="auth-main-title">
-                    {item.title}
-                  </Title>
-                  <Paragraph className="auth-main-subtitle">
-                    {item.subtitle}
-                  </Paragraph>
+        <section className="auth-carousel-section">
+          <Carousel
+            autoplay
+            autoplaySpeed={4000}
+            effect="fade"
+            className="auth-carousel"
+            dots={true}
+            dotPosition="bottom"
+            infinite={true}
+          >
+            {bannerItems.map((item, index) => (
+              <div key={index} className="auth-carousel-item">
+                <div className="auth-carousel-background">
+                  <img src={item.image} alt={item.title} loading="lazy" decoding="async" fetchpriority="low" />
+                  <div className="auth-carousel-overlay"></div>
+                </div>
+                <div className="auth-carousel-content">
+                  <div className="auth-content-wrapper">
+                    <Title level={1} className="auth-main-title">
+                      {item.title}
+                    </Title>
+                    <Paragraph className="auth-main-subtitle">
+                      {item.subtitle}
+                    </Paragraph>
+                  </div>
                 </div>
               </div>
+            ))}
+          </Carousel>
+          {/* 固定的注册、登录按钮区域 */}
+          <div className="auth-fixed-buttons">
+            <div className="auth-buttons-container">
+              <Button
+                type="primary"
+                size="large"
+                onClick={() => navigate('/register')}
+                className="auth-main-button register-button"
+              >
+                注册
+              </Button>
+              <Button
+                size="large"
+                onClick={() => navigate('/login')}
+                className="auth-main-button login-button"
+              >
+                登录
+              </Button>
             </div>
-          ))}
-        </Carousel>
-        {/* 固定的注册、登录按钮区域 */}
-        <div className="auth-fixed-buttons">
-          <div className="auth-buttons-container">
-            <Button 
-              type="primary" 
-              size="large" 
-              onClick={() => navigate('/register')}
-              className="auth-main-button register-button"
-            >
-              注册
-            </Button>
-            <Button 
-              size="large" 
-              onClick={() => navigate('/login')}
-              className="auth-main-button login-button"
-            >
-              登录
-            </Button>
           </div>
-        </div>
-      </section>
+        </section>
       )}
 
       <div className="home-content">
@@ -289,11 +255,11 @@ const Home = () => {
               <Row gutter={[16, 16]}>
                 {categories.map((category, index) => (
                   <Col xs={12} sm={8} md={6} lg={6} key={index}>
-                    <Card 
+                    <Card
                       className={`category-card category-${category.code}`}
                       style={{ background: getCategoryBackground(category.code) }}
                       hoverable
-                      onClick={() => navigate(`/products?category=${category.code}`)}
+                      onClick={() => navigate(`/search?type=products&category=${category.code}`)}
                     >
                       <div className="category-content">
                         <div className="category-icon">
@@ -347,9 +313,9 @@ const Home = () => {
               >
                 最新发布
               </Button>
-              <Button 
-                type="link" 
-                onClick={() => navigate(activeTab === 'hot' ? '/products' : '/products?sort=newest')}
+              <Button
+                type="link"
+                onClick={() => navigate(activeTab === 'hot' ? '/search?type=products' : '/search?type=products&sortBy=latest')}
                 icon={<RightOutlined />}
               >
                 查看更多
@@ -373,21 +339,33 @@ const Home = () => {
                 </Row>
               ) : (
                 <>
-                  <Row 
-                    gutter={[16, 16]} 
+                  <Row
+                    gutter={[16, 16]}
                     style={activeTab === 'hot' ? undefined : { display: 'none' }}
                     aria-hidden={activeTab !== 'hot'}
                   >
                     {hotCards}
                   </Row>
+                  {/* 当卡片数量多于初始显示数量时显示加载更多 */}
+                  {activeTab === 'hot' && hotProducts.length > visibleHotCount && (
+                    <div style={{ textAlign: 'center', marginTop: 24 }}>
+                      <Button onClick={() => setVisibleHotCount(prev => prev + 8)}>加载更多</Button>
+                    </div>
+                  )}
 
-                  <Row 
-                    gutter={[16, 16]} 
+                  <Row
+                    gutter={[16, 16]}
                     style={activeTab === 'recent' ? undefined : { display: 'none' }}
                     aria-hidden={activeTab !== 'recent'}
                   >
                     {recentCards}
                   </Row>
+                  {/* 当卡片数量多于初始显示数量时显示加载更多 */}
+                  {activeTab === 'recent' && recentProducts.length > visibleRecentCount && (
+                    <div style={{ textAlign: 'center', marginTop: 24 }}>
+                      <Button onClick={() => setVisibleRecentCount(prev => prev + 8)}>加载更多</Button>
+                    </div>
+                  )}
                 </>
               )}
             </Col>

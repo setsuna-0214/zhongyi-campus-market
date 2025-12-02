@@ -16,18 +16,21 @@ import { useNavigate, useLocation } from 'react-router-dom';
     CameraOutlined,
     LockOutlined,
     OrderedListOutlined,
+    TeamOutlined,
   } from '@ant-design/icons';
 import './Profile.css';
 import { PROFILE_BANNER_OPTIONS, DEFAULT_PROFILE_BANNER_KEY } from '../../config/profile';
-import { getCurrentUser, updateCurrentUser, uploadAvatar, getMyPublished, getMyPurchases } from '../../api/user';
+import { getCurrentUser, updateCurrentUser, uploadAvatar, getMyPublished, getMyPurchases, getFollows, unfollowUser } from '../../api/user';
 import { getFavorites, removeFromFavorites } from '../../api/favorites';
 import SectionBasic from './Profile/SectionBasic';
 import SectionProducts from './Profile/SectionProducts';
 import SectionFavorites from './Profile/SectionFavorites';
 import SectionAccount from './Profile/SectionAccount';
 import SectionOrders from './Profile/SectionOrders';
+import SectionFollows from './Profile/SectionFollows';
 
 const { Sider, Content } = Layout;
+
 
 const nonEditableKeys = ['id','username','token','createdAt','lastLoginAt','joinDate'];
 
@@ -38,9 +41,7 @@ const UserProfile = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
-  // 旧编辑资料模态已移除
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
-  // 新的基本信息编辑表单
   const [basicForm] = Form.useForm();
   const [isBasicDirty, setIsBasicDirty] = useState(false);
   const [selectedKey, setSelectedKey] = useState('profile');
@@ -57,8 +58,10 @@ const UserProfile = () => {
   // 收藏列表
   const [favorites, setFavorites] = useState([]);
 
+  // 关注列表
+  const [follows, setFollows] = useState([]);
 
-  // 初始化横幅背景图：优先用户信息，其次本地存储，最后默认
+
   useEffect(() => {
     const storedKey = localStorage.getItem('profileBannerKey');
     const preferred = userInfo?.profileBanner || storedKey || DEFAULT_PROFILE_BANNER_KEY;
@@ -70,23 +73,22 @@ const UserProfile = () => {
   }, [userInfo]);
 
   useEffect(() => {
-    // 根据 URL 查询参数设置初始 tab
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
-    if (tab && ['profile', 'products', 'orders', 'favorites'].includes(tab)) {
+    if (tab && ['profile', 'products', 'orders', 'favorites', 'follows'].includes(tab)) {
       setSelectedKey(tab);
     }
 
     (async () => {
       setLoading(true);
       try {
-        const [info, published, purchases, favs] = await Promise.all([
+        const [info, published, purchases, favs, followList] = await Promise.all([
           getCurrentUser(),
           getMyPublished(),
           getMyPurchases(),
-          getFavorites()
+          getFavorites(),
+          getFollows()
         ]);
-        // 归一化：仅保留 address，清理历史拼写与冗余字段
         const normalized = { ...(info || {}) };
         if (normalized.adress && !normalized.address) {
           normalized.address = normalized.adress;
@@ -94,12 +96,11 @@ const UserProfile = () => {
         if (!normalized.address && normalized.location) {
           normalized.address = normalized.location;
         }
-        delete normalized.adress;
-        delete normalized.location;
         setUserInfo(normalized);
         setMyProducts(Array.isArray(published) ? published : []);
         setPurchaseHistory(Array.isArray(purchases) ? purchases : []);
         setFavorites(Array.isArray(favs) ? favs : []);
+        setFollows(Array.isArray(followList) ? followList : []);
       } catch (err) {
         message.error(err?.message || '获取个人中心数据失败');
       } finally {
@@ -108,21 +109,16 @@ const UserProfile = () => {
     })();
   }, [location.search]);
 
-  // 保存基本信息（下方可编辑区域）
+  // 保存基本信息
   const handleBasicSave = async () => {
     const values = basicForm.getFieldsValue();
-    // 地址合并：仅使用 address，移除不应更新的字段
     const payload = { ...values };
     payload.address = payload.address || userInfo.address || '';
-    // 清理：移除 location 与非可编辑字段，避免被更新
-    delete payload.location;
     nonEditableKeys.forEach(k => { if (k in payload) delete payload[k]; });
     setLoading(true);
     try {
       const updated = await updateCurrentUser(payload);
-      // 更新本地状态，确保 location 不再使用，仅保留 address
       const nextUser = { ...userInfo, ...updated };
-      delete nextUser.location;
       setUserInfo(nextUser);
       setIsBasicDirty(false);
       message.success('基本信息已保存');
@@ -145,7 +141,7 @@ const UserProfile = () => {
     } catch (error) {
       message.error('头像上传失败');
     }
-    return false; // 阻止默认上传行为
+    return false;
   };
 
   // 删除商品
@@ -169,6 +165,17 @@ const UserProfile = () => {
     }
   };
 
+  // 取消关注
+  const handleUnfollow = async (sellerId) => {
+    try {
+      await unfollowUser(sellerId);
+      setFollows(follows.filter(item => item.id !== sellerId));
+      message.success('已取消关注');
+    } catch (error) {
+      message.error('操作失败');
+    }
+  };
+
 
   const menuItems = [
     { key: 'profile', icon: <UserOutlined />, label: '基 本 信 息' },
@@ -176,6 +183,7 @@ const UserProfile = () => {
     { key: 'products', icon: <ShoppingOutlined />, label: '商 品 管 理' },
     { key: 'orders', icon: <OrderedListOutlined />, label: '订 单 处 理' },
     { key: 'favorites', icon: <HeartOutlined />, label: '商 品 收 藏' },
+    { key: 'follows', icon: <TeamOutlined />, label: '我 的 关 注' },
   ];
 
   useEffect(() => {
@@ -231,6 +239,10 @@ const UserProfile = () => {
 
           {selectedKey === 'favorites' && (
             <SectionFavorites favorites={favorites} onRemoveFavorite={handleRemoveFavorite} onNavigate={navigate} />
+          )}
+
+          {selectedKey === 'follows' && (
+            <SectionFollows follows={follows} onUnfollow={handleUnfollow} />
           )}
 
           {selectedKey === 'account' && (

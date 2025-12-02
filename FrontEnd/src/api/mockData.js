@@ -5,30 +5,42 @@ import { FALLBACK_IMAGE } from '../utils/images';
 export const mockSellers = [
   {
     id: 's1',
-    name: '张同学',
+    username: 'zhang_student',
+    nickname: '张同学',
     avatar: '/images/avatars/avatar-1.svg',
-    rating: 4.8,
-    dealCount: 128,
-    school: 'XX大学',
-    intro: '数码类好物，诚信交易'
+    school: '中山大学',
+    bio: '数码类好物，诚信交易，支持面交',
+    phone: '138****1234',
+    address: '珠海校区',
+    joinDate: '2023-09-01',
+    gender: '男',
+    lastLoginAt: '2025-11-05T10:00:00.000Z'
   },
   {
     id: 's2',
-    name: '李同学',
+    username: 'li_study',
+    nickname: '李同学',
     avatar: '/images/avatars/avatar-1.svg',
-    rating: 4.9,
-    dealCount: 156,
-    school: 'YY学院',
-    intro: '教材资料齐全，价格实惠'
+    school: '中山大学',
+    bio: '教材资料齐全，价格实惠，祝大家考试顺利',
+    phone: '139****5678',
+    address: '广州校区',
+    joinDate: '2024-02-15',
+    gender: '女',
+    lastLoginAt: '2025-11-04T15:30:00.000Z'
   },
   {
     id: 's3',
-    name: '王同学',
+    username: 'wang_life',
+    nickname: '王同学',
     avatar: '/images/avatars/avatar-1.svg',
-    rating: 4.7,
-    dealCount: 102,
-    school: 'ZZ大学',
-    intro: '生活好物，九成新'
+    school: '中山大学',
+    bio: '生活好物，九成新，毕业清仓',
+    phone: '137****9012',
+    address: '深圳校区',
+    joinDate: '2023-11-20',
+    gender: '保密',
+    lastLoginAt: '2025-11-01T09:20:00.000Z'
   }
 ];
 
@@ -248,32 +260,21 @@ export const mockProducts = [
 ];
 
 
-// 调试用户信息
-const nowYMDHMS = (() => {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mm = String(d.getMinutes()).padStart(2, '0');
-  const ss = String(d.getSeconds()).padStart(2, '0');
-  return `${y}-${m}-${day} ${hh}:${mm}:${ss}`;
-})();
-
+// 模拟当前登录用户
 export const mockUserDebug = {
-  id: '1',
-  username: '1',
+  id: 'u1',
+  username: 'student_01',
+  nickname: '张三',
+  email: 'zhangsan@example.com',
   avatar: '/images/avatars/avatar-1.svg',
   phone: '13800000000',
-  email: 'debug@example.com',
   address: '珠海校区 - 榕园9号',
   token: 'debug-token',
-  nickname: '调试用户',
   bio: '这是用于调试的用户，包含完整字段以便测试展示。',
   joinDate: '2023-09-01',
   role: 'user',
   gender: '男',
-  lastLoginAt: nowYMDHMS
+  lastLoginAt: new Date().toISOString()
 };
 
 // 收藏示例（为调试用户）

@@ -124,7 +124,8 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
                   category={item.category || (Array.isArray(item.tags) ? item.tags[0] : '')}
                   status={item.status}
                   location={item.location}
-                  sellerName={item.seller?.name}
+                  sellerName={item.seller?.nickname}
+                  sellerId={item.seller?.id || item.sellerId}
                   publishedAt={item.publishedAt || item.publishTime || item.createdAt}
                   favoriteAt={item.addTime}
                   views={item.sales}
@@ -148,7 +149,7 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
           </Row>
         ) : (
           <Empty description="还没有收藏任何商品" image={Empty.PRESENTED_IMAGE_SIMPLE}>
-            <Button type="primary" onClick={() => onNavigate('/products')}>去逛逛</Button>
+            <Button type="primary" onClick={() => onNavigate('/search?type=products')}>去逛逛</Button>
           </Empty>
         )}
       </Card>

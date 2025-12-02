@@ -364,21 +364,6 @@ const Chat = () => {
                       })()}
                     </Text>
                   </div>
-                  
-                  {conversation.productName && (
-                    <div className="product-info">
-                      <Image
-                        src={conversation.productImage}
-                        alt={conversation.productName}
-                        width={20}
-                        height={20}
-                        preview={false}
-                      />
-                      <Text type="secondary" style={{ fontSize: 12 }} ellipsis>
-                        {conversation.productName}
-                      </Text>
-                    </div>
-                  )}
                 </div>
               </div>
             ))
@@ -404,11 +389,6 @@ const Chat = () => {
                 <Avatar src={currentConversation.userAvatar} size={40} />
                 <div className="user-details">
                   <Text strong>{currentConversation.userName}</Text>
-                  {currentConversation.productName && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      关于：{currentConversation.productName}
-                    </Text>
-                  )}
                 </div>
               </div>
               

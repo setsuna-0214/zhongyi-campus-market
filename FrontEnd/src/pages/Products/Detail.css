@@ -129,45 +129,57 @@
 /* 购买卡片 */
 .purchase-card {
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
   position: static;
   top: auto;
+  border: 1px solid #f0f0f0;
+  padding: 24px;
 }
 
 .product-header {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .detail-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #262626;
-  margin: 0 0 12px 0;
-  line-height: 1.4;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 16px 0;
+  line-height: 1.3;
+  letter-spacing: -0.5px;
 }
 
 .product-meta {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+  margin-bottom: 8px;
 }
 
 /* 价格区域 */
 .price-section {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
 }
 
 .current-price {
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 36px;
+  font-weight: 800;
   color: #ff4757;
   line-height: 1;
+  letter-spacing: -1px;
 }
 
 .price-note {
-  font-size: 12px;
+  font-size: 13px;
   color: #52c41a;
-  margin-top: 4px;
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  padding: 2px 8px;
+  border-radius: 4px;
+  transform: translateY(-2px);
 }
 
 /* 位置和时间 */
@@ -186,86 +198,63 @@
   font-size: 14px;
 }
 
-/* 卖家信息 */
-.seller-section {
-  margin: 16px 0;
-}
-
-.seller-header {
+/* 卖家信息 - 简化版 */
+.seller-simple-card {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  margin: 8px 0;
 }
 
-.seller-header h3 {
-  margin: 0;
-  color: #262626;
-  font-size: 16px;
-  font-weight: 600;
+.seller-simple-card:hover {
+  background-color: #f0f2f5;
+  transform: translateY(-1px);
 }
 
-.seller-info {
+.seller-simple-info {
+  flex: 1;
+  margin-left: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  justify-content: center;
 }
 
-.seller-basic {
-  display: flex;
-  gap: 12px;
-}
-
-.seller-details {
-  flex: 1;
-}
-
-.seller-name {
+.seller-name-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.seller-nickname {
   font-size: 16px;
-  font-weight: 500;
-  color: #262626;
-  margin-bottom: 4px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.seller-label {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.seller-arrow {
+  color: #d1d5db;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+
+.seller-simple-card:hover .seller-arrow {
+  color: #6b7280;
 }
 
 .verified-icon {
   color: #52c41a;
   font-size: 14px;
-}
-
-.seller-stats {
-  display: flex;
-  gap: 16px;
-  font-size: 12px;
-  color: #8c8c8c;
-  margin-top: 4px;
-}
-
-.seller-metrics {
-  display: flex;
-  justify-content: space-around;
-  background: #f8f9fa;
-  padding: 12px;
-  border-radius: 8px;
-}
-
-.metric {
-  text-align: center;
-}
-
-.metric-label {
-  display: block;
-  font-size: 12px;
-  color: #8c8c8c;
-  margin-bottom: 4px;
-}
-
-.metric-value {
-  font-size: 14px;
-  font-weight: 500;
-  color: #262626;
 }
 
 /* 购买按钮 */
