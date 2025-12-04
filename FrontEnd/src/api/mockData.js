@@ -467,5 +467,5 @@ export function ensureMockState() {
 }
 
 export function isMockEnabled() {
-  return String(process.env.REACT_APP_USE_MOCK || 'true') === 'true';
+  return String(import.meta.env.VITE_USE_MOCK || 'true') === 'true';
 }
