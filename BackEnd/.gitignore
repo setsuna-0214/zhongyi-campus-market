@@ -4,6 +4,12 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### 敏感配置文件 ###
+**/application-local.properties
+**/application-prod.properties
+*.env
+.env.*
+
 ### STS ###
 .apt_generated
 .classpath

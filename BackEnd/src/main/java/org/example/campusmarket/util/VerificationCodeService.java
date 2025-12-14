@@ -88,7 +88,7 @@ public class VerificationCodeService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);       // 发件人
         message.setTo(email);        // 收件人
-        message.setSubject(subject); // 主题
+        message.setSubject(String.format("中易校园二手交易平台")); // 主题
         // 邮件正文：包含验证码与有效期提示
         message.setText(String.format("您的注册验证码是：%s（%d分钟内有效）。如非本人操作请忽略本邮件。", code, ttlSeconds / 60));
 
