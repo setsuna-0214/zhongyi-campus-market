@@ -58,10 +58,13 @@ const Header = () => {
   const handleSearch = (value) => {
     const keyword = (value || '').trim();
     if (!keyword) {
-      navigate('/search');
+      navigate('/search?type=products');
       return;
     }
-    const params = new URLSearchParams({ keyword }).toString();
+    const params = new URLSearchParams({ 
+      type: 'products',
+      keyword 
+    }).toString();
     navigate(`/search?${params}`);
   };
 

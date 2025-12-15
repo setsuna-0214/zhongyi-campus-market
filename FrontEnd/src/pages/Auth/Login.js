@@ -32,11 +32,18 @@ const Login = () => {
         email: values.username, // 支持邮箱或用户名登录
         password: values.password,
       });
-      if (res?.token) {
-        localStorage.setItem('authToken', res.token);
+      
+      // 后端返回格式: { code: 200, message: "登录成功", data: { token, user } }
+      if (res?.code !== 200) {
+        throw new Error(res?.message || '登录失败');
       }
-      if (res?.user) {
-        localStorage.setItem('authUser', JSON.stringify(res.user));
+      
+      const { token, user } = res.data || {};
+      if (token) {
+        localStorage.setItem('authToken', token);
+      }
+      if (user) {
+        localStorage.setItem('authUser', JSON.stringify(user));
       }
       message.success('登录成功！');
       window.location.href = '/';

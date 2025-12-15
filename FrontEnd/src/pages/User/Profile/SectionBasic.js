@@ -11,7 +11,6 @@ const userFieldLabels = {
   username: '用户名',
   nickname: '昵称',
   role: '角色',
-  school: '学校',
   phone: '电话',
   email: '邮箱',
   address: '地址',
@@ -20,13 +19,11 @@ const userFieldLabels = {
   avatar: '头像',
   bio: '个人简介',
   gender: '性别',
-  department: '学院/系',
-  grade: '年级',
   createdAt: '创建时间',
-  lastLoginAt: '最近登录时间'
+  lastLoginAt: '最近登录时间',
 };
 
-const excludedFields = ['id', 'role', 'school', 'token', 'wechat', 'age', 'studentId', 'location', 'createdAt', 'email'];
+const excludedFields = ['id', 'username', 'role', 'token', 'phone', 'email', 'address', 'joinDate', 'token', 'avatar', 'bio', 'gender', 'createdAt', 'lastLoginAt'];
 const nonEditableKeys = ['id','username','token','createdAt','lastLoginAt','joinDate'];
 const preferredOrder = ['username', 'nickname'];
 

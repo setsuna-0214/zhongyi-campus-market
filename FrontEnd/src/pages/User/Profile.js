@@ -115,6 +115,33 @@ const UserProfile = () => {
     const payload = { ...values };
     payload.address = payload.address || userInfo.address || '';
     nonEditableKeys.forEach(k => { if (k in payload) delete payload[k]; });
+
+    // 验证手机号格式（如果填写了）
+    if (payload.phone && !/^1\d{10}$/.test(payload.phone)) {
+      message.error('手机号格式不正确，请输入11位手机号');
+      return;
+    }
+
+    // 验证并转换生日格式
+    if (payload.birthday) {
+      // 支持多种格式：YYYYMMDD, YYYY-MM-DD, YYYY/MM/DD
+      const birthdayStr = String(payload.birthday).replace(/[\/\-]/g, '');
+      if (!/^\d{8}$/.test(birthdayStr)) {
+        message.error('生日格式不正确，请使用 YYYY-MM-DD 或 YYYYMMDD 格式');
+        return;
+      }
+      // 转换为 YYYY-MM-DD 格式
+      payload.birthday = `${birthdayStr.slice(0, 4)}-${birthdayStr.slice(4, 6)}-${birthdayStr.slice(6, 8)}`;
+    }
+
+    // 转换性别为数字
+    if (payload.gender !== undefined && payload.gender !== null) {
+      const genderMap = { '男': 1, '女': 2, '保密': 0 };
+      if (typeof payload.gender === 'string') {
+        payload.gender = genderMap[payload.gender] ?? 0;
+      }
+    }
+
     setLoading(true);
     try {
       const updated = await updateCurrentUser(payload);
@@ -123,7 +150,7 @@ const UserProfile = () => {
       setIsBasicDirty(false);
       message.success('基本信息已保存');
     } catch (error) {
-      message.error('保存失败，请重试');
+      message.error(error.message || '保存失败，请重试');
     } finally {
       setLoading(false);
     }

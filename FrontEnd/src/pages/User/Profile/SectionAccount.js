@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Row, Col, Space, Typography, Form, Input, Button } from 'antd';
+import { Card, Row, Col, Space, Typography, Form, Input, Button, message } from 'antd';
 import { sendCode } from '../../../api/auth';
 import { requestEmailChange, confirmEmailChange, changePassword } from '../../../api/user';
 
@@ -34,8 +34,14 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
                         const { newEmail } = emailForm.getFieldsValue();
                         if (!newEmail) return;
                         setEmailCodeLoading(true);
-                        await sendCode({ email: newEmail });
+                        const res = await sendCode({ email: newEmail });
+                        if (res?.code !== 200) {
+                          throw new Error(res?.message || '发送验证码失败');
+                        }
                         await requestEmailChange({ newEmail });
+                        message.success('验证码已发送');
+                      } catch (error) {
+                        message.error(error?.message || '发送验证码失败');
                       } finally {
                         setEmailCodeLoading(false);
                       }
@@ -47,8 +53,15 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
                     const { newEmail, verificationCode } = await emailForm.validateFields();
                     setEmailChanging(true);
                     const resp = await confirmEmailChange({ newEmail, verificationCode });
+                    if (resp?.success === false) {
+                      throw new Error(resp?.message || '修改邮箱失败');
+                    }
                     const nextEmail = newEmail || resp?.user?.email;
                     setUserInfo({ ...userInfo, email: nextEmail });
+                    message.success('邮箱修改成功');
+                    emailForm.resetFields();
+                  } catch (error) {
+                    message.error(error?.message || '修改邮箱失败');
                   } finally {
                     setEmailChanging(false);
                   }
@@ -78,9 +91,18 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
                     </Form.Item>
                     <Button onClick={async () => {
                       try {
-                        if (!userInfo.email) return;
+                        if (!userInfo.email) {
+                          message.error('请先绑定邮箱');
+                          return;
+                        }
                         setPwdCodeLoading(true);
-                        await sendCode({ email: userInfo.email });
+                        const res = await sendCode({ email: userInfo.email });
+                        if (res?.code !== 200) {
+                          throw new Error(res?.message || '发送验证码失败');
+                        }
+                        message.success('验证码已发送');
+                      } catch (error) {
+                        message.error(error?.message || '发送验证码失败');
                       } finally {
                         setPwdCodeLoading(false);
                       }
@@ -88,12 +110,21 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
                   </Space.Compact>
                 </Form.Item>
                 <Button type="primary" onClick={async () => {
-                  const { currentPassword, newPassword, confirmPassword, verificationCode } = await pwdForm.validateFields();
-                  if (newPassword !== confirmPassword) return;
                   try {
+                    const { currentPassword, newPassword, confirmPassword, verificationCode } = await pwdForm.validateFields();
+                    if (newPassword !== confirmPassword) {
+                      message.error('两次输入的密码不一致');
+                      return;
+                    }
                     setPwdChanging(true);
-                    await changePassword({ currentPassword, newPassword, verificationCode });
+                    const resp = await changePassword({ currentPassword, newPassword, verificationCode });
+                    if (resp?.success === false) {
+                      throw new Error(resp?.message || '修改密码失败');
+                    }
+                    message.success('密码修改成功');
                     pwdForm.resetFields(['currentPassword','newPassword','confirmPassword','verificationCode']);
+                  } catch (error) {
+                    message.error(error?.message || '修改密码失败');
                   } finally {
                     setPwdChanging(false);
                   }

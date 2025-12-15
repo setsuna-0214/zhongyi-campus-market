@@ -35,3 +35,10 @@ export async function getRelatedProducts(id) {
   return Array.isArray(data) ? data : (data.items || []);
 }
 
+export async function createProduct(formData) {
+  const { data } = await client.post('/products', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return data;
+}
+
