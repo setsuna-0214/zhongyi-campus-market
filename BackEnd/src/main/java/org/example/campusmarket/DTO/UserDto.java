@@ -20,7 +20,7 @@ public class UserDto {
         @Size(min = 1, max = 20)
         private String nickname;
 
-        @Size(max = 100)
+        @Size(max = 500)
         private String bio;
 
         @Size(min = 11, max = 11)
@@ -38,6 +38,12 @@ public class UserDto {
         //学号
         @Size(max = 50)
         private String studentId;
+
+        //生日 (格式: YYYY-MM-DD)
+        private String birthday;
+
+        //性别 (0: 保密, 1: 男, 2: 女)
+        private Integer gender;
     }
 
     @Data

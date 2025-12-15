@@ -9,8 +9,12 @@ import java.util.List;
 @Mapper
 public interface ProductMapper {
     // 根据ID查询商品基本信息
-    @Select("SELECT pro_id, pro_name, price, picture FROM products WHERE pro_id = #{id}")
+    @Select("SELECT pro_id, pro_name, price, picture, is_seal, saler_id FROM products WHERE pro_id = #{id}")
     Product findProductBasicById(@Param("id") Integer id);
+    
+    // 更新商品状态（锁定/解锁）
+    @Update("UPDATE products SET is_seal = #{isSeal} WHERE pro_id = #{productId}")
+    int updateProductStatus(@Param("productId") Integer productId, @Param("isSeal") boolean isSeal);
 
     // 综合搜索商品列表
     // 支持多条件过滤：关键词、分类、位置、状态、价格范围

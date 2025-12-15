@@ -13,7 +13,7 @@ public interface OrdersMapper {
     //插入订单
 
     @Insert("""
-    INSERT INTO orders (user_id, pro_id, quantity, total_price, status, created_at)
+    INSERT INTO orders (user_id, product_id, quantity, total_price, status, created_at)
     VALUES (#{userId}, #{productId}, #{quantity}, #{totalPrice}, #{status}, #{createdAt})
     """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
@@ -24,19 +24,29 @@ public interface OrdersMapper {
     //查询用户订单列表，支持按状态、关键词与时间范围进行可选过滤。当参数为 null 或空字符串时，对应过滤条件不会加入 WHERE 子句。
     @Select({
             "<script>",
-            "SELECT o.id, o.user_id, o.pro_id AS productId, o.quantity, o.total_price, o.status, o.created_at",
+            "SELECT o.id, o.user_id AS userId, o.product_id AS productId, o.quantity, o.total_price AS totalPrice, o.status, o.created_at AS createdAt, o.rating, o.comment",
             "FROM orders o",
             "<where>",
             "  o.user_id = #{userId}",
             "  <if test=\"status != null and status != ''\">AND o.status = #{status}</if>",
             "  <if test=\"startDate != null and startDate != ''\">AND o.created_at &gt;= #{startDate}</if>",
             "  <if test=\"endDate != null and endDate != ''\">AND o.created_at &lt;= #{endDate}</if>",
-            "  <if test=\"keyword != null and keyword != ''\">AND EXISTS (SELECT 1 FROM products p WHERE p.pro_id = o.pro_id AND (p.pro_name LIKE CONCAT('%',#{keyword},'%') OR p.discription LIKE CONCAT('%',#{keyword},'%')))</if>",
+            "  <if test=\"keyword != null and keyword != ''\">AND EXISTS (SELECT 1 FROM products p WHERE p.pro_id = o.product_id AND (p.pro_name LIKE CONCAT('%',#{keyword},'%') OR p.discription LIKE CONCAT('%',#{keyword},'%')))</if>",
             "</where>",
             "ORDER BY o.created_at DESC",
             "</script>"
     })
-
+    @Results({
+            @Result(property = "id", column = "id"),
+            @Result(property = "userId", column = "userId"),
+            @Result(property = "productId", column = "productId"),
+            @Result(property = "quantity", column = "quantity"),
+            @Result(property = "totalPrice", column = "totalPrice"),
+            @Result(property = "status", column = "status"),
+            @Result(property = "createdAt", column = "createdAt"),
+            @Result(property = "rating", column = "rating"),
+            @Result(property = "comment", column = "comment")
+    })
     List<Order> getOrderList(@Param("userId") Integer userId,
                            @Param("status") String status,
                            @Param("keyword") String keyword,

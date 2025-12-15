@@ -51,6 +51,7 @@ public class OrdersService {
 
     /**
      * 创建订单：按商品价格 × 购买数量计算总价，状态默认 pending。
+     * 创建订单时会锁定商品（设置 is_seal = true），防止其他用户购买。
      *
      * @param userId 当前用户 ID
      * @param req    创建订单请求，包含 productId 与 quantity
@@ -60,30 +61,83 @@ public class OrdersService {
         if (userId == null || req == null || req.getProductId() == null || req.getQuantity() == null || req.getQuantity() <= 0) {
             return null;
         }
+        
+        // 查询商品信息
         Product product = productMapper.findProductBasicById(req.getProductId());
         if (product == null) {
-            return null;
+            throw new IllegalArgumentException("商品不存在");
         }
+        
+        // 验证：用户不能购买自己发布的商品
+        if (product.getSaler_id() != null && product.getSaler_id().equals(userId)) {
+            throw new IllegalArgumentException("不能购买自己发布的商品");
+        }
+        
+        // 验证：商品必须是未售出状态（is_seal = false）
+        if (product.is_seal()) {
+            throw new IllegalArgumentException("商品已售出或已被锁定");
+        }
+        
+        // 锁定商品（设置 is_seal = true）
+        int lockResult = productMapper.updateProductStatus(req.getProductId(), true);
+        if (lockResult != 1) {
+            throw new IllegalArgumentException("商品锁定失败，可能已被其他用户购买");
+        }
+        
+        // 创建订单
         BigDecimal unitPrice = parsePriceToBigDecimal(product.getPrice());
         BigDecimal totalPrice = unitPrice.multiply(BigDecimal.valueOf(req.getQuantity()));
         Order order = new Order(null, userId, req.getProductId(), req.getQuantity(), totalPrice, "pending", LocalDateTime.now(), null, null);
         int insertCount = ordersMapper.insertOrder(order);
         if (insertCount != 1 || order.getId() == null) {
+            // 如果订单创建失败，解锁商品
+            productMapper.updateProductStatus(req.getProductId(), false);
             return null;
         }
+        
         OrderDto.ProductSummary productSummary = new OrderDto.ProductSummary(product.getPro_id(), product.getPro_name(), unitPrice.intValue(), product.getPicture());
         return new OrderDto.Response(order.getId(), order.getProductId(), productSummary, order.getQuantity(), totalPrice.intValue(), order.getStatus(), order.getCreatedAt());
     }
 
 
-    // 确认收货，更新订单状态为 completed
+    /**
+     * 确认收货，更新订单状态为 completed
+     * 商品保持锁定状态（is_seal = true），表示已售出
+     */
     public boolean confirmOrder(Integer userId, Integer id) {
-        return ordersMapper.updateStatus(id, userId, "completed") == 1;
+        // 更新订单状态
+        int result = ordersMapper.updateStatus(id, userId, "completed");
+        // 商品保持锁定状态，不需要额外操作
+        return result == 1;
     }
 
-    // 取消订单，更新订单状态为 cancelled
+    /**
+     * 取消订单，更新订单状态为 cancelled
+     * 解锁商品（设置 is_seal = false），允许其他用户购买
+     */
     public boolean cancelOrder(Integer userId, Integer id) {
-        return ordersMapper.updateStatus(id, userId, "cancelled") == 1;
+        // 先查询订单信息，获取商品ID
+        List<Order> orders = ordersMapper.getOrderList(userId, null, null, null, null);
+        Order targetOrder = null;
+        for (Order order : orders) {
+            if (order.getId().equals(id)) {
+                targetOrder = order;
+                break;
+            }
+        }
+        
+        if (targetOrder == null) {
+            return false;
+        }
+        
+        // 更新订单状态为 cancelled
+        int result = ordersMapper.updateStatus(id, userId, "cancelled");
+        if (result == 1) {
+            // 解锁商品，允许其他用户购买
+            productMapper.updateProductStatus(targetOrder.getProductId(), false);
+            return true;
+        }
+        return false;
     }
 
     // 提交订单评价，校验评分范围并写入评论

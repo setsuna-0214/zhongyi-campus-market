@@ -11,6 +11,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
@@ -32,7 +37,32 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // 允许的前端地址
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:3001",
+            "http://localhost:3000",
+            "http://127.0.0.1:3001",
+            "http://127.0.0.1:3000"
+        ));
+        // 允许的 HTTP 方法
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        // 允许的请求头
+        configuration.setAllowedHeaders(List.of("*"));
+        // 允许携带凭证（如 Cookie、Authorization）
+        configuration.setAllowCredentials(true);
+        // 预检请求缓存时间（秒）
+        configuration.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain apiSecurity(HttpSecurity http, JwtAuthFilter jwtAuthFilter, AuthenticationEntryPoint entryPoint) throws Exception {
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.csrf(csrf -> csrf.disable());
         http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(eh -> eh.authenticationEntryPoint(entryPoint));

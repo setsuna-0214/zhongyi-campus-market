@@ -15,9 +15,9 @@ public interface AuthMapper {
     User findByEmail(@Param("email") String email);
     
 
-    // 插入用户
+    // 插入用户（role 使用数据库默认值 'user'）
     @Insert("INSERT INTO users (username, email, password) VALUES (#{username}, #{email}, #{password})")
-    @Options(useGeneratedKeys = true, keyProperty = "id")
+    @Options(useGeneratedKeys = true, keyProperty = "user_id")
     int insertUser(User user);
 
     //通过邮箱查询用户并修改密码

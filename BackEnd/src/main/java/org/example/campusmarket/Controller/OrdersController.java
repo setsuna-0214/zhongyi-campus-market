@@ -41,10 +41,16 @@ public class OrdersController {
     // 创建订单
     @PostMapping
     public Result createOrder(@RequestBody OrderDto.CreateRequest req, Authentication authentication) {
-        Integer userId = (Integer) authentication.getPrincipal();
-        OrderDto.Response created = ordersService.createOrder(userId, req);
-        if (created == null) return new Result(400, "创建订单失败", null);
-        return new Result(200, "创建订单成功", created);
+        try {
+            Integer userId = (Integer) authentication.getPrincipal();
+            OrderDto.Response created = ordersService.createOrder(userId, req);
+            if (created == null) return new Result(400, "创建订单失败", null);
+            return new Result(200, "创建订单成功", created);
+        } catch (IllegalArgumentException e) {
+            return new Result(400, e.getMessage(), null);
+        } catch (Exception e) {
+            return new Result(500, "创建订单失败，请稍后重试", null);
+        }
     }
 
 

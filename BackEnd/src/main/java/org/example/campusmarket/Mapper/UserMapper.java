@@ -26,6 +26,9 @@ public interface UserMapper {
             "  <if test='address != null'>address = #{address},</if>",
             "  <if test='school != null'>school = #{school},</if>",
             "  <if test='studentId != null'>student_id = #{studentId},</if>",
+            "  <if test='bio != null'>bio = #{bio},</if>",
+            "  <if test='birthday != null'>birthday = #{birthday},</if>",
+            "  <if test='gender != null'>gender = #{gender},</if>",
             "</set>",
             "WHERE user_id = #{userId}",
             "</script>"
@@ -36,7 +39,10 @@ public interface UserMapper {
                        @Param("phone") String phone,
                        @Param("address") String address,
                        @Param("school") String school,
-                       @Param("studentId") String studentId);
+                       @Param("studentId") String studentId,
+                       @Param("bio") String bio,
+                       @Param("birthday") String birthday,
+                       @Param("gender") Integer gender);
 
 
     //更新密码
@@ -56,12 +62,12 @@ public interface UserMapper {
     """)
     List<Product> findPublishedProducts(@Param("userId") Integer userId);
 
-    //查找用户已购买商品
+    //查找用户已购买商品（从订单表查询，排除自己发布的商品）
     @Select("""
-    SELECT p.pro_id, p.pro_name, p.price, p.is_seal, p.discription, p.picture, p.saler_id
-    FROM buy_products bp
-    JOIN products p ON p.pro_id = bp.pro_id
-    WHERE bp.user_id = #{userId}
+    SELECT DISTINCT p.pro_id, p.pro_name, p.price, p.is_seal, p.discription, p.picture, p.saler_id
+    FROM orders o
+    JOIN products p ON p.pro_id = o.product_id
+    WHERE o.user_id = #{userId} AND p.saler_id != #{userId}
     ORDER BY p.pro_id DESC
     """)
     List<Product> findPurchasedProducts(@Param("userId") Integer userId);
@@ -127,12 +133,12 @@ public interface UserMapper {
 
     //查询关注列表
     @Select("""
-        SELECT u.user_id as id, u.username, ui.nickname, ui.avatar
+        SELECT ui.user_id as id, u.username, ui.nickname, ui.avatar
         FROM user_follows uf
         JOIN users u ON uf.followee_id = u.user_id
         LEFT JOIN userinfo ui ON u.user_id = ui.user_id
         WHERE uf.follower_id = #{userId}
-        ORDER BY uf.created_at DESC
+        ORDER BY uf.id DESC
         """)
     List<UserDto.FollowItem> findFollowList(@Param("userId") Integer userId);
 

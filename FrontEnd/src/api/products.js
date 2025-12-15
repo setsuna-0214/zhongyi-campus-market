@@ -12,3 +12,4 @@ export const getRelatedProducts = impl.getRelatedProducts;
 export const createProduct = impl.createProduct;
 export const updateProduct = impl.updateProduct;
 export const updateProductStatus = impl.updateProductStatus;
+
