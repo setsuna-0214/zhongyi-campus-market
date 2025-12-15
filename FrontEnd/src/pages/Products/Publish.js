@@ -22,6 +22,7 @@ import {
 } from '@ant-design/icons';
 import './Publish.css';
 import { CATEGORY_CODE_TO_LABEL } from '../../utils/labels';
+import { createProduct } from '../../api/products';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -41,6 +42,8 @@ const PublishProduct = () => {
   // 图片上传处理
   const handleImageChange = ({ fileList }) => {
     setImageList(fileList);
+    // 同步更新表单字段，使验证能够识别到图片
+    form.setFieldsValue({ images: fileList.length > 0 ? fileList : undefined });
   };
 
   const handlePreview = async (file) => {
@@ -61,15 +64,36 @@ const PublishProduct = () => {
   };
 
   // 表单提交
-  const handleSubmit = async (_values) => {
+  const handleSubmit = async (values) => {
     setLoading(true);
     try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      message.success('商品发布成功！');
-      navigate('/search?type=products');
+      // 构建 FormData
+      const formData = new FormData();
+      formData.append('pro_name', values.title);
+      formData.append('price', String(values.price));
+      formData.append('category', values.category || 'other');
+      formData.append('discription', values.description || '');
+      
+      // 添加图片文件
+      if (imageList && imageList.length > 0) {
+        imageList.forEach((file) => {
+          if (file.originFileObj) {
+            formData.append('images', file.originFileObj);
+          }
+        });
+      }
+
+      // 调用真实 API
+      const result = await createProduct(formData);
+      
+      if (result?.code === 200) {
+        message.success('商品发布成功！');
+        navigate('/user?tab=products');
+      } else {
+        message.error(result?.message || '发布失败，请重试');
+      }
     } catch (error) {
-      message.error('发布失败，请重试');
+      message.error(error.message || '发布失败，请重试');
     } finally {
       setLoading(false);
     }
@@ -89,7 +113,12 @@ const PublishProduct = () => {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
+          onFinishFailed={(errorInfo) => {
+            console.log('表单验证失败:', errorInfo);
+            message.error('请填写所有必填项');
+          }}
           className="publish-form"
+          scrollToFirstError
         >
           <Card title="商品信息" className="step-card">
             <Row gutter={24}>

@@ -40,7 +40,11 @@ const Register = () => {
         return;
       }
       setLoading(true);
-      await sendCode({ email });
+      const res = await sendCode({ email });
+      // 后端返回格式: { code: 200, message: "验证码发送成功", data: {} }
+      if (res?.code !== 200) {
+        throw new Error(res?.message || '发送验证码失败');
+      }
       message.success('验证码已发送到您的邮箱');
       setCountdown(60);
     } catch (error) {
@@ -53,12 +57,17 @@ const Register = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      await register({
+      const res = await register({
         username: values.username,
         email: values.email,
         password: values.password,
+        confirmPassword: values.confirmPassword,
         verificationCode: values.verificationCode,
       });
+      // 后端返回格式: { code: 200, message: "注册成功", data: {} }
+      if (res?.code !== 200) {
+        throw new Error(res?.message || '注册失败');
+      }
       message.success('注册成功！请登录您的账户');
       navigate('/login');
     } catch (error) {

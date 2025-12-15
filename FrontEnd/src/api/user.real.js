@@ -2,7 +2,10 @@ import client from './client';
 
 export async function getCurrentUser() {
   const { data } = await client.get('/user/me');
-  const normalized = { ...(data || {}) };
+  // 后端返回格式: { code: 200, message: "成功", data: userInfo }
+  // 需要提取 data.data 才是真正的用户信息
+  const userInfo = data?.data || data;
+  const normalized = { ...(userInfo || {}) };
   delete normalized.adress;
   delete normalized.location;
   if ('verified' in normalized) delete normalized.verified;
@@ -11,7 +14,9 @@ export async function getCurrentUser() {
 
 export async function updateCurrentUser(payload) {
   const { data } = await client.put('/user/me', payload);
-  const normalized = { ...(data || {}) };
+  // 后端返回格式: { code: 200, message: "修改完成", data: updatedUserInfo }
+  const userInfo = data?.data || data;
+  const normalized = { ...(userInfo || {}) };
   if ('verified' in normalized) delete normalized.verified;
   if ('adress' in normalized) delete normalized.adress;
   if ('location' in normalized) delete normalized.location;
@@ -34,12 +39,16 @@ export async function uploadAvatar(file) {
 
 export async function getMyPublished() {
   const { data } = await client.get('/user/published');
-  return Array.isArray(data) ? data : (data.items || []);
+  // 后端返回格式: { code: 200, message: "成功", data: [...] }
+  const items = data?.data || data;
+  return Array.isArray(items) ? items : (items?.items || []);
 }
 
 export async function getMyPurchases() {
   const { data } = await client.get('/user/purchases');
-  return Array.isArray(data) ? data : (data.items || []);
+  // 后端返回格式: { code: 200, message: "成功", data: [...] }
+  const items = data?.data || data;
+  return Array.isArray(items) ? items : (items?.items || []);
 }
 
 export async function getUser(id) {
@@ -67,10 +76,12 @@ export async function changePassword({ currentPassword, newPassword, verificatio
   return data;
 }
 
-// 关注功能 (API 假设)
+// 关注功能
 export async function getFollows() {
   const { data } = await client.get('/user/follows');
-  return Array.isArray(data) ? data : [];
+  // 后端返回格式: { code: 200, message: "成功", data: [...] }
+  const items = data?.data || data;
+  return Array.isArray(items) ? items : [];
 }
 
 export async function checkIsFollowing(sellerId) {
@@ -89,6 +100,11 @@ export async function unfollowUser(sellerId) {
 }
 
 export async function searchUsers(params) {
-  const { data } = await client.get('/users/search', { params });
-  return data;
+  const { data } = await client.get('/user/search', { params });
+  // 后端返回格式: { code: 200, message: "搜索成功", data: { items: [...], total: 10 } }
+  const result = data?.data || data;
+  return {
+    items: result?.items || [],
+    total: result?.total || 0
+  };
 }

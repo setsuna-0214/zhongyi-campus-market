@@ -49,3 +49,9 @@ export async function getRelatedProducts(id) {
   return sameCategory.slice(0, 4);
 }
 
+export async function createProduct(_formData) {
+  // Mock: 模拟创建商品，返回假的商品ID
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return { code: 200, message: '商品发布成功', data: 'mock-product-id' };
+}
+

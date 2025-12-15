@@ -36,7 +36,11 @@ const ForgotPassword = () => {
         return;
       }
       setLoading(true);
-      await sendCode({ email });
+      const res = await sendCode({ email });
+      // 后端返回格式: { code: 200, message: "验证码发送成功", data: {} }
+      if (res?.code !== 200) {
+        throw new Error(res?.message || '发送验证码失败');
+      }
       message.success('验证码已发送到您的邮箱');
       setCountdown(60);
     } catch (error) {
@@ -53,13 +57,17 @@ const ForgotPassword = () => {
         message.error('两次输入的密码不一致');
         return;
       }
-      await forgotPassword({
+      const res = await forgotPassword({
         username: values.username,
         email: values.email,
         verificationCode: values.verificationCode,
         newPassword: values.newPassword,
         confirmPassword: values.confirmPassword,
       });
+      // 后端返回格式: { code: 200, message: "密码重置成功", data: {} }
+      if (res?.code !== 200) {
+        throw new Error(res?.message || '重置密码失败');
+      }
       message.success('密码重置成功！请使用新密码登录');
       navigate('/login');
     } catch (error) {

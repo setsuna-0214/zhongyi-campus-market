@@ -13,7 +13,8 @@ import {
   List,
   Avatar,
   Button,
-  Card
+  Card,
+  Input
 } from 'antd';
 import { 
   UserOutlined,
@@ -51,7 +52,7 @@ const SearchPage = () => {
   const [filters, setFilters] = useState({
     keyword: searchParams.get('keyword') || '',
     category: normalizedCategory,
-    priceRange: [0, 10000],
+    priceRange: [0, 999999],
     location: searchParams.get('location') || '',
     sortBy: searchParams.get('sortBy') || 'latest',
     status: searchParams.get('status') || '在售'
@@ -67,7 +68,7 @@ const SearchPage = () => {
         const parts = priceRangeParamUrl.split(',').map(n => Number(n));
         if (parts.length === 2 && parts.every(n => Number.isFinite(n))) return parts;
       }
-      return [0, 10000];
+      return [0, 999999];
     })();
 
     const nextFilters = {
@@ -252,8 +253,23 @@ const SearchPage = () => {
               </Radio.Group>
             </Col>
             
-            {searchType === 'products' && (
-              <Col flex="auto">
+            <Col flex="auto">
+              <Input.Search
+                placeholder={searchType === 'products' ? '搜索商品名称或描述' : '搜索用户昵称'}
+                value={filters.keyword}
+                onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))}
+                onSearch={(value) => handleFilterChange('keyword', value)}
+                style={{ maxWidth: 400 }}
+                enterButton="搜索"
+                size="large"
+                allowClear
+              />
+            </Col>
+          </Row>
+          
+          {searchType === 'products' && (
+            <Row gutter={[16, 16]} align="middle" style={{ marginTop: 16 }}>
+              <Col flex="auto">(
                 <Space size="middle" className="filter-controls" wrap>
                   <Select
                     placeholder="商品分类"
@@ -294,7 +310,7 @@ const SearchPage = () => {
                     <span>价格：</span>
                     <InputNumber
                       min={0}
-                      max={10000}
+                      max={999999}
                       value={filters.priceRange[0]}
                       onChange={(value) => {
                         const min = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
@@ -307,10 +323,10 @@ const SearchPage = () => {
                     <span>~</span>
                     <InputNumber
                       min={0}
-                      max={10000}
+                      max={999999}
                       value={filters.priceRange[1]}
                       onChange={(value) => {
-                        const max = typeof value === 'number' && !Number.isNaN(value) ? value : 10000;
+                        const max = typeof value === 'number' && !Number.isNaN(value) ? value : 999999;
                         const min = filters.priceRange[0];
                         handleFilterChange('priceRange', [min, max]);
                       }}
@@ -320,8 +336,8 @@ const SearchPage = () => {
                   </Space>
                 </Space>
               </Col>
-            )}
-          </Row>
+            </Row>
+          )}
         </div>
 
         {/* 结果列表 */}
