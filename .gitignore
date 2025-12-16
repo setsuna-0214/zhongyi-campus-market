@@ -9,6 +9,7 @@ Desktop.ini
 .vscode/
 .idea/
 *.iml
+.kiro/
 
 # Logs
 logs/

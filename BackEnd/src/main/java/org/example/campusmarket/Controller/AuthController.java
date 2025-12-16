@@ -31,8 +31,7 @@ public class AuthController {
             return new Result(400,"邮箱不能为空",null);
         }
         try {
-            authService.SendRegisterCode(email);
-            return new Result(200,"验证码发送成功",null);
+            return authService.SendRegisterCode(email);
         }catch (IllegalStateException e){
             return new Result(429,"发送过于频繁，请稍后再试",null);
         }

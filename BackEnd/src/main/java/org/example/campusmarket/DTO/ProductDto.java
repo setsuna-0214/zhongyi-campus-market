@@ -109,4 +109,13 @@ public class ProductDto {
         // 符合条件的总记录数 (Total Count)，用于前端计算总页数
         private Long total;
     }
+
+    // 商品状态更新请求
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StatusUpdateRequest {
+        // 商品状态，如 "在售", "已下架", "已售出"
+        private String status;
+    }
 }

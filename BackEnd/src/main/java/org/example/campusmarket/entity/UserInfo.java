@@ -1,34 +1,26 @@
 package org.example.campusmarket.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserInfo {
-    @JsonProperty("id")
-    private int user_id;
+    private Integer user_id;
     private String username;
     private String nickname;
     private String avatar;
     private String email;
     private String phone;
-
-    //分为admin管理员和user普通用户
-    private String role;
-
-    //简介
+    private String address;
     private String bio;
-
-    //学校名称
-    private String school;
-
-    //学号
-    private String studentId;
-
-    //注册时间
-    @JsonProperty("createdAt")
+    private String role;
+    private Integer gender;
     private LocalDateTime created_at;
-
+    private LocalDateTime updated_at;
+    private LocalDateTime last_login_at;
 }

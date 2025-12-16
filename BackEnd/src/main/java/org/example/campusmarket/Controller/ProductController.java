@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Arrays;
 
-// 商品模块控制器，处理所有与商品相关的 HTTP 请求
-// Base URL: /products
 @RestController
 @RequestMapping("/products")
 public class ProductController {
@@ -49,7 +47,11 @@ public class ProductController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int pageSize
     ) {
-        return productService.searchProducts(keyword, category, location, status, priceMin, priceMax, sort, page, pageSize);
+        // 标准化分类参数（支持中文自动转换）
+        String normalizedCategory = (category != null && !category.trim().isEmpty()) 
+            ? normalizeCategory(category) 
+            : null;
+        return productService.searchProducts(keyword, normalizedCategory, location, status, priceMin, priceMax, sort, page, pageSize);
     }
 
     // 获取商品详情接口
@@ -62,6 +64,39 @@ public class ProductController {
     @GetMapping("/{id}/related")
     public List<ProductDto.ProductDetail> getRelatedProducts(@PathVariable Integer id) {
         return productService.getRelatedProducts(id);
+    }
+
+    // 有效的商品分类代码
+    private static final java.util.Set<String> VALID_CATEGORIES = java.util.Set.of(
+        "electronics", "books", "daily", "other"
+    );
+    
+    // 中文分类到英文代码的映射
+    private static final java.util.Map<String, String> CATEGORY_CN_TO_CODE = java.util.Map.of(
+        "数码电子", "electronics",
+        "图书教材", "books",
+        "生活用品", "daily",
+        "日常用品", "daily",
+        "其他物品", "other",
+        "其他", "other"
+    );
+    
+    /**
+     * 标准化分类代码
+     * 如果传入中文分类，自动转换为英文代码
+     */
+    private String normalizeCategory(String category) {
+        if (category == null || category.trim().isEmpty()) {
+            return "other";
+        }
+        String trimmed = category.trim();
+        // 如果已经是有效的英文代码，直接返回
+        if (VALID_CATEGORIES.contains(trimmed)) {
+            return trimmed;
+        }
+        // 尝试从中文转换
+        String code = CATEGORY_CN_TO_CODE.get(trimmed);
+        return code != null ? code : "other";
     }
 
     /**
@@ -79,6 +114,7 @@ public class ProductController {
     public Result createProduct(
             @RequestParam("pro_name") String pro_name,
             @RequestParam("price") String price,
+            @RequestParam(value = "category", required = false, defaultValue = "other") String category,
             @RequestParam(value = "discription", required = false) String discription,
             @RequestParam(value = "images", required = false) MultipartFile[] images,
             Authentication authentication) {
@@ -87,13 +123,17 @@ public class ProductController {
             // 从认证信息获取当前用户ID
             Integer saler_id = (Integer) authentication.getPrincipal();
             
-            log.info("收到创建商品请求 - name: {}, price: {}, saler_id: {}, imageCount: {}", 
-                     pro_name, price, saler_id, images != null ? images.length : 0);
+            // 标准化分类代码（支持中文自动转换）
+            String normalizedCategory = normalizeCategory(category);
+            
+            log.info("收到创建商品请求 - name: {}, price: {}, category: {} -> {}, saler_id: {}, imageCount: {}", 
+                     pro_name, price, category, normalizedCategory, saler_id, images != null ? images.length : 0);
 
             // 构建商品对象
             Product product = new Product();
             product.setPro_name(pro_name);
             product.setPrice(price);
+            product.setCategory(normalizedCategory);
             product.setDiscription(discription);
             product.setSaler_id(saler_id);
             product.set_seal(false);
@@ -181,6 +221,34 @@ public class ProductController {
         } catch (Exception e) {
             log.error("商品删除失败 - id: {}, error: {}", id, e.getMessage(), e);
             return new Result(500, "商品删除失败，请稍后重试", null);
+        }
+    }
+
+    /**
+     * 更新商品状态接口
+     * PATCH /products/{id}/status
+     * 
+     * @param id 商品ID
+     * @param request 包含 status 字段的请求体
+     * @return 更新结果
+     */
+    @PatchMapping("/{id}/status")
+    public Result updateProductStatus(
+            @PathVariable Integer id,
+            @RequestBody ProductDto.StatusUpdateRequest request) {
+        try {
+            String status = request.getStatus();
+            log.info("收到更新商品状态请求 - id: {}, status: {}", id, status);
+            
+            productService.updateProductStatus(id, status);
+            return new Result(200, "商品状态更新成功", null);
+            
+        } catch (IllegalArgumentException e) {
+            log.warn("商品状态更新参数错误 - error: {}", e.getMessage());
+            return new Result(400, e.getMessage(), null);
+        } catch (Exception e) {
+            log.error("商品状态更新失败 - id: {}, error: {}", id, e.getMessage(), e);
+            return new Result(500, "商品状态更新失败，请稍后重试", null);
         }
     }
 }

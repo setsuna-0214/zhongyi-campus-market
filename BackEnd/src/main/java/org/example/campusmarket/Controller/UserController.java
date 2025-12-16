@@ -170,36 +170,47 @@ public class UserController {
 
     //关注用户
     @PostMapping("/follows/{id}")
-    public UserDto.FollowOperationResponse FollowUser(@PathVariable("id") Integer followeeId, Authentication authentication) {
+    public Result FollowUser(@PathVariable("id") Integer followeeId, Authentication authentication) {
         Integer followerId = (Integer) authentication.getPrincipal();
         try {
             boolean success = userService.followUser(followerId, followeeId);
-            return new UserDto.FollowOperationResponse(success);
+            if (success) {
+                return new Result(200, "关注成功", null);
+            } else {
+                return new Result(400, "关注失败", null);
+            }
+        } catch (IllegalArgumentException e) {
+            return new Result(400, e.getMessage(), null);
         } catch (Exception e) {
-            return new UserDto.FollowOperationResponse(false);
+            return new Result(500, "关注失败: " + e.getMessage(), null);
         }
     }
 
     //取消关注用户
     @DeleteMapping("/follows/{id}")
-    public UserDto.FollowOperationResponse UnfollowUser(@PathVariable("id") Integer followeeId, Authentication authentication) {
+    public Result UnfollowUser(@PathVariable("id") Integer followeeId, Authentication authentication) {
         Integer followerId = (Integer) authentication.getPrincipal();
         try {
             boolean success = userService.unfollowUser(followerId, followeeId);
-            return new UserDto.FollowOperationResponse(success);
+            if (success) {
+                return new Result(200, "取消关注成功", null);
+            } else {
+                return new Result(400, "取消关注失败", null);
+            }
         } catch (Exception e) {
-            return new UserDto.FollowOperationResponse(false);
+            return new Result(500, "取消关注失败: " + e.getMessage(), null);
         }
     }
 
     //获取关注列表
     @GetMapping("/follows")
-    public List<UserDto.FollowItem> GetFollowList(Authentication authentication) {
+    public Result GetFollowList(Authentication authentication) {
         Integer userId = (Integer) authentication.getPrincipal();
         try {
-            return userService.getFollowList(userId);
+            List<UserDto.FollowItem> followList = userService.getFollowList(userId);
+            return new Result(200, "成功", followList);
         } catch (Exception e) {
-            return Collections.emptyList();
+            return new Result(500, "查询失败", Collections.emptyList());
         }
     }
 

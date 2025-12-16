@@ -13,12 +13,13 @@ public class AuthDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LoginRequest {
-        @Email
+        // 邮箱和用户名二选一，允许为空，但如果提供了邮箱则必须是有效格式
+        @Email(message = "邮箱格式不正确")
         private String email;
 
         private String username;
 
-        @NotBlank
+        @NotBlank(message = "密码不能为空")
         private String password;
     }
 

@@ -9,8 +9,31 @@ import java.util.List;
 @Mapper
 public interface ProductMapper {
     // 根据ID查询商品基本信息
-    @Select("SELECT pro_id, pro_name, price, picture FROM products WHERE pro_id = #{id}")
+    @Select("SELECT pro_id, pro_name, price, picture, is_seal, saler_id FROM products WHERE pro_id = #{id}")
     Product findProductBasicById(@Param("id") Integer id);
+    
+    // 更新商品状态（锁定/解锁）- 布尔值版本
+    @Update("UPDATE products SET is_seal = #{isSeal} WHERE pro_id = #{productId}")
+    int updateProductSealStatus(@Param("productId") Integer productId, @Param("isSeal") boolean isSeal);
+
+    // 更新商品状态（字符串版本）- 支持 "在售", "已下架", "已售出"
+    @Update("""
+        <script>
+        UPDATE products SET is_seal = 
+            <choose>
+                <when test="status == '在售'">0</when>
+                <when test="status == '已下架'">1</when>
+                <when test="status == '已售出'">1</when>
+                <otherwise>0</otherwise>
+            </choose>
+        WHERE pro_id = #{productId}
+        </script>
+    """)
+    int updateProductStatus(@Param("productId") Integer productId, @Param("status") String status);
+
+    // 增加商品浏览量
+    @Update("UPDATE products SET view_count = view_count + 1 WHERE pro_id = #{productId}")
+    int incrementViewCount(@Param("productId") Integer productId);
 
     // 综合搜索商品列表
     // 支持多条件过滤：关键词、分类、位置、状态、价格范围
@@ -29,7 +52,7 @@ public interface ProductMapper {
             p.created_at as publishTime,
             p.discription as description,
             CASE WHEN p.is_seal = 1 THEN '已下架' ELSE '在售' END as status,
-            COALESCE(f.cnt,0) + COALESCE(b.cnt,0) as views,
+            COALESCE(p.view_count, 0) as views,
             COALESCE(f.cnt,0) as likes,
             
             ui.user_id as tempSellerId,
@@ -40,7 +63,6 @@ public interface ProductMapper {
         FROM products p
         LEFT JOIN userinfo ui ON p.saler_id = ui.user_id
         LEFT JOIN (SELECT pro_id, COUNT(*) as cnt FROM fav_products GROUP BY pro_id) f ON f.pro_id = p.pro_id
-        LEFT JOIN (SELECT pro_id, COUNT(*) as cnt FROM buy_products GROUP BY pro_id) b ON b.pro_id = p.pro_id
         <where>
             <if test="keyword != null and keyword != ''">
                 AND (p.pro_name LIKE CONCAT('%', #{keyword}, '%') OR p.discription LIKE CONCAT('%', #{keyword}, '%'))
@@ -59,15 +81,15 @@ public interface ProductMapper {
                 </choose>
             </if>
             <if test="priceMin != null">
-                AND CAST(p.price AS DECIMAL(10,2)) &gt;= #{priceMin}
+                AND p.price &gt;= #{priceMin}
             </if>
             <if test="priceMax != null">
-                AND CAST(p.price AS DECIMAL(10,2)) &lt;= #{priceMax}
+                AND p.price &lt;= #{priceMax}
             </if>
         </where>
         <choose>
-            <when test="sort == 'price-low'">ORDER BY CAST(p.price AS DECIMAL(10,2)) ASC</when>
-            <when test="sort == 'price-high'">ORDER BY CAST(p.price AS DECIMAL(10,2)) DESC</when>
+            <when test="sort == 'price-low'">ORDER BY p.price ASC</when>
+            <when test="sort == 'price-high'">ORDER BY p.price DESC</when>
             <when test="sort == 'popular'">ORDER BY views DESC</when>
             <otherwise>ORDER BY p.pro_id DESC</otherwise>
         </choose>
@@ -128,10 +150,10 @@ public interface ProductMapper {
                 </choose>
             </if>
             <if test="priceMin != null">
-                AND CAST(p.price AS DECIMAL(10,2)) &gt;= #{priceMin}
+                AND p.price &gt;= #{priceMin}
             </if>
             <if test="priceMax != null">
-                AND CAST(p.price AS DECIMAL(10,2)) &lt;= #{priceMax}
+                AND p.price &lt;= #{priceMax}
             </if>
         </where>
         </script>
@@ -200,7 +222,7 @@ public interface ProductMapper {
     @Insert("""
         INSERT INTO products (pro_name, price, category, 
                              discription, picture, saler_id, is_seal, created_at)
-        VALUES (#{pro_name}, #{price}, '其他', 
+        VALUES (#{pro_name}, #{price}, #{category}, 
                 #{discription}, #{picture}, #{saler_id}, 0, NOW())
     """)
     @Options(useGeneratedKeys = true, keyProperty = "pro_id", keyColumn = "pro_id")
@@ -220,4 +242,40 @@ public interface ProductMapper {
         WHERE pro_id = #{pro_id}
     """)
     void updateProduct(Product product);
+
+    // 批量更新商品浏览量（增量更新）
+    @Update("UPDATE products SET view_count = COALESCE(view_count, 0) + #{delta} WHERE pro_id = #{productId}")
+    int updateViewCountDelta(@Param("productId") Integer productId, @Param("delta") long delta);
+
+    // 查询所有商品的ID和浏览量（用于启动时加载到Redis）
+    @Select("SELECT pro_id, COALESCE(view_count, 0) as view_count FROM products")
+    @Results({
+        @Result(property = "pro_id", column = "pro_id"),
+        @Result(property = "viewCount", column = "view_count")
+    })
+    List<ProductViewCount> getAllProductViewCounts();
+
+    /**
+     * 商品浏览量数据传输对象
+     */
+    class ProductViewCount {
+        private Integer pro_id;
+        private Long viewCount;
+
+        public Integer getPro_id() {
+            return pro_id;
+        }
+
+        public void setPro_id(Integer pro_id) {
+            this.pro_id = pro_id;
+        }
+
+        public Long getViewCount() {
+            return viewCount;
+        }
+
+        public void setViewCount(Long viewCount) {
+            this.viewCount = viewCount;
+        }
+    }
 }
