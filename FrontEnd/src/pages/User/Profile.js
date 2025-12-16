@@ -32,7 +32,7 @@ import SectionFollows from './Profile/SectionFollows';
 const { Sider, Content } = Layout;
 
 
-const nonEditableKeys = ['id','username','token','createdAt','lastLoginAt','joinDate'];
+
 
 const UserProfile = () => {
   const [bannerKey, setBannerKey] = useState(DEFAULT_PROFILE_BANNER_KEY);
@@ -89,13 +89,13 @@ const UserProfile = () => {
           getFavorites(),
           getFollows()
         ]);
-        const normalized = { ...(info || {}) };
-        if (normalized.adress && !normalized.address) {
-          normalized.address = normalized.adress;
-        }
-        if (!normalized.address && normalized.location) {
-          normalized.address = normalized.location;
-        }
+        // 统一字段：id, username, nickname, email, avatar, phone, address, bio, joinDate, gender, lastLoginAt
+        // 后端未返回的字段显示为空
+        const allowedFields = ['id', 'username', 'nickname', 'email', 'avatar', 'phone', 'address', 'bio', 'joinDate', 'gender', 'lastLoginAt', 'token', 'profileBanner'];
+        const normalized = {};
+        allowedFields.forEach(key => {
+          normalized[key] = info?.[key] ?? '';
+        });
         setUserInfo(normalized);
         setMyProducts(Array.isArray(published) ? published : []);
         setPurchaseHistory(Array.isArray(purchases) ? purchases : []);
@@ -113,8 +113,10 @@ const UserProfile = () => {
   const handleBasicSave = async () => {
     const values = basicForm.getFieldsValue();
     const payload = { ...values };
-    payload.address = payload.address || userInfo.address || '';
-    nonEditableKeys.forEach(k => { if (k in payload) delete payload[k]; });
+    // 删除不可编辑的字段
+    ['id', 'username', 'email', 'token', 'createdAt', 'lastLoginAt', 'joinDate'].forEach(k => { 
+      if (k in payload) delete payload[k]; 
+    });
 
     // 验证手机号格式（如果填写了）
     if (payload.phone && !/^1\d{10}$/.test(payload.phone)) {
@@ -216,11 +218,7 @@ const UserProfile = () => {
   useEffect(() => {
     if (userInfo && Object.keys(userInfo).length > 0) {
       try {
-        const merged = { ...userInfo };
-        merged.address = userInfo.address || merged.address || '';
-        delete merged.adress;
-        delete merged.location;
-        basicForm.setFieldsValue(merged);
+        basicForm.setFieldsValue(userInfo);
       } catch {}
       setIsBasicDirty(false);
     }

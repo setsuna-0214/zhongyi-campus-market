@@ -3,6 +3,13 @@ import { getStatusLabel } from '../utils/labels';
 
 export async function searchProducts({ keyword, category, priceRange, location, sortBy, status, page = 1, pageSize = 12 }) {
   let items = [...mockProducts];
+  
+  // 默认过滤掉已售出的商品（除非明确搜索已售出）
+  const normalizeStatus = (p) => p.status || p.saleStatus || p.state || '';
+  if (status !== '已售出') {
+    items = items.filter(p => getStatusLabel(normalizeStatus(p)) !== '已售出');
+  }
+  
   if (keyword) {
     const kw = String(keyword).toLowerCase();
     items = items.filter(p => (p.title || '').toLowerCase().includes(kw) || (p.description || '').toLowerCase().includes(kw));
@@ -14,7 +21,6 @@ export async function searchProducts({ keyword, category, priceRange, location, 
     items = items.filter(p => (p.location || '').includes(location));
   }
   if (status && status !== '全部') {
-    const normalizeStatus = (p) => p.status || p.saleStatus || p.state || '';
     items = items.filter(p => getStatusLabel(normalizeStatus(p)) === status);
   }
   if (Array.isArray(priceRange) && priceRange.length === 2) {
@@ -53,5 +59,22 @@ export async function createProduct(_formData) {
   // Mock: 模拟创建商品，返回假的商品ID
   await new Promise(resolve => setTimeout(resolve, 1000));
   return { code: 200, message: '商品发布成功', data: 'mock-product-id' };
+}
+
+export async function updateProduct(id, _formData) {
+  // Mock: 模拟更新商品
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  return { code: 200, message: '商品更新成功', data: { id } };
+}
+
+export async function updateProductStatus(id, status) {
+  // Mock: 模拟更新商品状态
+  await new Promise(resolve => setTimeout(resolve, 500));
+  // 在mock数据中更新状态（仅影响当前会话）
+  const product = mockProducts.find(p => p.id === id);
+  if (product) {
+    product.status = status;
+  }
+  return { code: 200, message: status === '在售' ? '商品已重新上架' : '商品已下架', data: { id, status } };
 }
 

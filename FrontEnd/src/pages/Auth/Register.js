@@ -16,7 +16,7 @@ import {
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
-import { register, sendCode } from '../../api/auth';
+import { register, sendCode, checkUsernameExists, checkEmailExists } from '../../api/auth';
 
 const { Title, Text } = Typography;
 
@@ -25,6 +25,8 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [countdown, setCountdown] = useState(0);
+  const [usernameStatus, setUsernameStatus] = useState({ validating: false, error: '' });
+  const [emailStatus, setEmailStatus] = useState({ validating: false, error: '' });
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -32,14 +34,98 @@ const Register = () => {
     return () => clearInterval(timer);
   }, [countdown]);
 
+  // 检查用户名是否已存在（防抖）
+  const checkUsername = async (username) => {
+    if (!username || username.length < 3) {
+      setUsernameStatus({ validating: false, error: '' });
+      return;
+    }
+    // 验证格式：必须以字母开头，只能包含字母、数字、下划线和连字符
+    if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(username)) {
+      setUsernameStatus({ validating: false, error: '' });
+      return;
+    }
+    setUsernameStatus({ validating: true, error: '' });
+    try {
+      const res = await checkUsernameExists(username);
+      if (res?.data?.exists) {
+        setUsernameStatus({ validating: false, error: '该用户名已被注册' });
+      } else {
+        setUsernameStatus({ validating: false, error: '' });
+      }
+    } catch {
+      setUsernameStatus({ validating: false, error: '' });
+    }
+  };
+
+  // 检查邮箱是否已存在（防抖）
+  const checkEmail = async (email) => {
+    if (!email) {
+      setEmailStatus({ validating: false, error: '' });
+      return;
+    }
+    // 验证邮箱格式
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailStatus({ validating: false, error: '' });
+      return;
+    }
+    setEmailStatus({ validating: true, error: '' });
+    try {
+      const res = await checkEmailExists(email);
+      if (res?.data?.exists) {
+        setEmailStatus({ validating: false, error: '该邮箱已被注册' });
+      } else {
+        setEmailStatus({ validating: false, error: '' });
+      }
+    } catch {
+      setEmailStatus({ validating: false, error: '' });
+    }
+  };
+
+  // 防抖处理
+  const usernameTimerRef = React.useRef(null);
+  const emailTimerRef = React.useRef(null);
+
+  const handleUsernameChange = (e) => {
+    const value = e.target.value;
+    if (usernameTimerRef.current) clearTimeout(usernameTimerRef.current);
+    usernameTimerRef.current = setTimeout(() => checkUsername(value), 500);
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    if (emailTimerRef.current) clearTimeout(emailTimerRef.current);
+    emailTimerRef.current = setTimeout(() => checkEmail(value), 500);
+  };
+
   const sendVerificationCode = async () => {
     try {
+      const username = form.getFieldValue('username');
       const email = form.getFieldValue('email');
+      
+      // 验证用户名
+      if (!username) {
+        message.error('请先输入用户名');
+        return;
+      }
+      // 验证邮箱
       if (!email) {
         message.error('请先输入邮箱地址');
         return;
       }
+      // 检查是否有重复错误
+      if (usernameStatus.error) {
+        message.error(usernameStatus.error);
+        return;
+      }
+      if (emailStatus.error) {
+        message.error(emailStatus.error);
+        return;
+      }
+      
       setLoading(true);
+      
+      // 发送验证码
       const res = await sendCode({ email });
       // 后端返回格式: { code: 200, message: "验证码发送成功", data: {} }
       if (res?.code !== 200) {
@@ -83,24 +169,38 @@ const Register = () => {
         <Form.Item
           name="username"
           label="用户名"
+          validateStatus={usernameStatus.validating ? 'validating' : (usernameStatus.error ? 'error' : undefined)}
+          help={usernameStatus.error || undefined}
+          hasFeedback={usernameStatus.validating || !!usernameStatus.error}
           rules={[
             { required: true, message: '请输入用户名' },
             { min: 3, max: 20, message: '用户名长度为3-20个字符' },
-            { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能包含字母、数字和下划线' },
+            { pattern: /^[a-zA-Z][a-zA-Z0-9_-]*$/, message: '用户名必须以字母开头，只能包含字母、数字、下划线和连字符' },
           ]}
         >
-          <Input prefix={<UserOutlined />} placeholder="请输入用户名" />
+          <Input 
+            prefix={<UserOutlined />} 
+            placeholder="请输入用户名" 
+            onChange={handleUsernameChange}
+          />
         </Form.Item>
 
         <Form.Item
           name="email"
           label="邮箱"
+          validateStatus={emailStatus.validating ? 'validating' : (emailStatus.error ? 'error' : undefined)}
+          help={emailStatus.error || undefined}
+          hasFeedback={emailStatus.validating || !!emailStatus.error}
           rules={[
             { required: true, message: '请输入邮箱' },
             { type: 'email', message: '请输入有效的邮箱地址' },
           ]}
         >
-          <Input prefix={<MailOutlined />} placeholder="请输入邮箱" />
+          <Input 
+            prefix={<MailOutlined />} 
+            placeholder="请输入邮箱" 
+            onChange={handleEmailChange}
+          />
         </Form.Item>
 
         <Form.Item

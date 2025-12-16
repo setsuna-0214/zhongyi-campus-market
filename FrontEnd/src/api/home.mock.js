@@ -1,8 +1,17 @@
 import { mockProducts } from './mockData';
 import { resolveImageSrc } from '../utils/images';
+import { getStatusLabel } from '../utils/labels';
+
+// 过滤掉已售出的商品
+const filterAvailableProducts = (products) => {
+  return products.filter(p => {
+    const status = p.status || p.saleStatus || p.state || '在售';
+    return getStatusLabel(status) !== '已售出';
+  });
+};
 
 export async function getHotProducts() {
-  const hot = [...mockProducts]
+  const hot = filterAvailableProducts([...mockProducts])
     .sort((a, b) => (b.views || 0) - (a.views || 0))
     .slice(0, 12)
     .map(p => ({
@@ -22,7 +31,7 @@ export async function getHotProducts() {
 }
 
 export async function getLatestProducts() {
-  const latest = [...mockProducts]
+  const latest = filterAvailableProducts([...mockProducts])
     .sort((a, b) => new Date(b.publishTime) - new Date(a.publishTime))
     .slice(0, 12)
     .map(p => ({

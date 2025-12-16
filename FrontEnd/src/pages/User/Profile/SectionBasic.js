@@ -6,26 +6,28 @@ import { PROFILE_BANNER_OPTIONS } from '../../../config/profile';
 const { Text } = Typography;
 const { TextArea } = Input;
 
+// 统一字段：id, username, nickname, email, avatar, phone, address, bio, joinDate, gender, lastLoginAt
 const userFieldLabels = {
   id: '用户ID',
   username: '用户名',
   nickname: '昵称',
-  role: '角色',
-  phone: '电话',
   email: '邮箱',
+  phone: '电话',
   address: '地址',
-  joinDate: '加入日期',
-  token: 'Token',
-  avatar: '头像',
   bio: '个人简介',
+  joinDate: '加入日期',
   gender: '性别',
-  createdAt: '创建时间',
-  lastLoginAt: '最近登录时间',
+  lastLoginAt: '最近登录',
+  avatar: '头像',
+  token: 'Token',
 };
 
-const excludedFields = ['id', 'username', 'role', 'token', 'phone', 'email', 'address', 'joinDate', 'token', 'avatar', 'bio', 'gender', 'createdAt', 'lastLoginAt'];
-const nonEditableKeys = ['id','username','token','createdAt','lastLoginAt','joinDate'];
-const preferredOrder = ['username', 'nickname'];
+// 不显示的字段
+const excludedFields = ['id', 'token', 'avatar', 'profileBanner'];
+// 不可编辑的字段
+const nonEditableKeys = ['id', 'username', 'email', 'token', 'joinDate', 'lastLoginAt'];
+// 字段显示顺序
+const preferredOrder = ['username', 'nickname', 'phone', 'email', 'address', 'gender', 'bio', 'joinDate', 'lastLoginAt'];
 
 const formatToYMDHMS = (input) => {
   if (!input) return '';
@@ -111,10 +113,7 @@ export default function SectionBasic({
                 const isObject = typeof value === 'object' && !isArray && value !== null;
                 const rawStr = (() => {
                   if (value === null || value === undefined || value === '') return '-';
-                  if (key === 'address') {
-                    return String(userInfo?.address || value || '-');
-                  }
-                  if (key === 'lastLoginAt') {
+                  if (key === 'lastLoginAt' || key === 'joinDate') {
                     return formatToYMDHMS(value);
                   }
                   if (isBoolean) return value ? '是' : '否';

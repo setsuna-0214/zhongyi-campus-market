@@ -75,7 +75,25 @@ const SellerProfile = () => {
 
   const noOp = () => {};
 
+  // 获取当前登录用户ID
+  const getCurrentUserId = () => {
+    try {
+      const raw = localStorage.getItem('authUser');
+      if (raw) {
+        const user = JSON.parse(raw);
+        return user?.id;
+      }
+    } catch {}
+    return null;
+  };
+
   const handleFollow = async () => {
+    // 检查是否关注自己
+    const currentUserId = getCurrentUserId();
+    if (currentUserId && String(currentUserId) === String(id)) {
+      message.warning('不能关注自己');
+      return;
+    }
     try {
       if (isFollowing) {
         await unfollowUser(id);

@@ -100,6 +100,53 @@
   bottom: 8px;
 }
 
+/* 操作按钮徽标（编辑/删除） */
+.action-badge {
+  position: absolute;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  backdrop-filter: saturate(160%) blur(2px);
+  color: #ffffff;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.action-badge:hover {
+  background: rgba(0, 0, 0, 0.65);
+  transform: scale(1.1);
+}
+
+.action-badge:active {
+  transform: scale(0.95);
+}
+
+.action-badge .anticon {
+  font-size: 14px;
+}
+
+/* 编辑按钮 - 左下角 */
+.action-badge-left {
+  left: 8px;
+}
+
+/* 删除按钮 - 右下角 */
+.action-badge-right {
+  right: 8px;
+}
+
+.action-badge-right:hover {
+  background: rgba(255, 77, 79, 0.75);
+}
+
 /* 浏览量徽标 */
 .views-badge {
   display: inline-flex;

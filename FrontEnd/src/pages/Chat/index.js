@@ -184,7 +184,7 @@ const Chat = () => {
       category: p.category,
       status: p.status,
       location: p.location,
-      sellerName: typeof p.seller === 'string' ? p.seller : (p.seller?.name || '卖家'),
+      sellerName: typeof p.seller === 'string' ? p.seller : (p.seller?.nickname || p.seller?.username || '卖家'),
       publishedAt: p.publishTime || p.publishedAt || p.createdAt,
       views: p.views,
       imageSrc: resolveImageSrc({ product: p }),

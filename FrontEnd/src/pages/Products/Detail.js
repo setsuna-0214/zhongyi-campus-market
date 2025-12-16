@@ -34,7 +34,7 @@ import {
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import './Detail.css';
-import { getProduct, getRelatedProducts } from '../../api/products';
+import { getProduct, getRelatedProducts, updateProductStatus } from '../../api/products';
 import { getCategoryLabel, getStatusLabel, getStatusColor } from '../../utils/labels';
 import { getFavorites, addToFavorites, removeFavoriteByProductId } from '../../api/favorites';
 import { checkIsFollowing, followUser, unfollowUser } from '../../api/user';
@@ -63,8 +63,8 @@ const ProductDetail = () => {
     const raw = product?.status;
     const s = String(raw || '').toLowerCase();
     if (['available', 'selling', 'on_sale'].includes(s) || raw === '在售') return 'available';
-    if (['sold', 'sold_out'].includes(s) || raw === '已下架') return 'unavailable';
-    if (['unavailable', 'off_shelf', 'inactive'].includes(s) || raw === '已下架') return 'unavailable';
+    if (s === 'sold' || raw === '已售出') return 'sold'; // 已售出状态
+    if (['sold_out', 'unavailable', 'off_shelf', 'inactive'].includes(s) || raw === '已下架') return 'unavailable';
     return s || '';
   }, [product]);
 
@@ -142,8 +142,26 @@ const ProductDetail = () => {
     }
   };
 
+  // 获取当前登录用户ID
+  const getCurrentUserId = () => {
+    try {
+      const raw = localStorage.getItem('authUser');
+      if (raw) {
+        const user = JSON.parse(raw);
+        return user?.id;
+      }
+    } catch {}
+    return null;
+  };
+
   const handleFollow = async (e) => {
     e.stopPropagation();
+    // 检查是否关注自己
+    const currentUserId = getCurrentUserId();
+    if (currentUserId && String(currentUserId) === String(product.seller.id)) {
+      message.warning('不能关注自己');
+      return;
+    }
     try {
       if (isFollowing) {
         await unfollowUser(product.seller.id);
@@ -182,6 +200,12 @@ const ProductDetail = () => {
   const [createdOrderId, setCreatedOrderId] = useState(null);
 
   const handleBuyNow = () => {
+    // 检查是否购买自己的商品
+    const currentUserId = getCurrentUserId();
+    if (currentUserId && String(currentUserId) === String(product.seller.id)) {
+      message.warning('不能购买自己发布的商品');
+      return;
+    }
     setPurchaseConfirmVisible(true);
   };
 
@@ -320,17 +344,6 @@ const ProductDetail = () => {
                   <p key={index}>{line}</p>
                 ))}
               </div>
-              
-              {product.tags && product.tags.length > 0 && (
-                <div className="product-tags">
-                  <h4>商品标签</h4>
-                  <Space wrap>
-                    {product.tags.map((tag, index) => (
-                      <Tag key={index} color="blue" className="tag-pill tag-sm tag-bold">{tag}</Tag>
-                    ))}
-                  </Space>
-                </div>
-              )}
             </Card>
 
           {/* 商品规格 */}
@@ -397,10 +410,28 @@ const ProductDetail = () => {
 
               <div className="price-section">
                 <div className="current-price">¥{product.price}</div>
-                <div className="price-note">价格可议</div>
+                <div className="price-note">{product.negotiable ? '价格可议' : '不议价'}</div>
               </div>
 
-              
+              {/* 交易方式 */}
+              {product.tradeMethod && (
+                <div className="trade-method-section" style={{ marginTop: 12 }}>
+                  <span style={{ color: '#666', marginRight: 8 }}>交易方式：</span>
+                  <Space size={[4, 4]} wrap>
+                    {(Array.isArray(product.tradeMethod) ? product.tradeMethod : product.tradeMethod.split(',')).map((method, index) => {
+                      const methodLabels = {
+                        'campus': '校内交易（自提）',
+                        'express': '快递邮寄'
+                      };
+                      return (
+                        <Tag key={index} color="cyan">
+                          {methodLabels[method.trim()] || method.trim()}
+                        </Tag>
+                      );
+                    })}
+                  </Space>
+                </div>
+              )}
 
               <div className="location-time">
                 <div className="location">
@@ -491,7 +522,7 @@ const ProductDetail = () => {
                       <div className="related-info">
                         <div className="related-title">{item.title}</div>
                         <div className="related-price">¥{item.price}</div>
-                        <div className="related-seller">{typeof item.seller === 'string' ? item.seller : (item.seller?.name || '卖家')}</div>
+                        <div className="related-seller">{typeof item.seller === 'string' ? item.seller : (item.seller?.nickname || item.seller?.username || '卖家')}</div>
                       </div>
                     </div>
                   ))}
@@ -540,6 +571,14 @@ const ProductDetail = () => {
             const resp = await createOrder({ productId: id, quantity: 1 });
             const oid = resp?.id || resp?.orderId || null;
             setCreatedOrderId(oid);
+            // 购买成功后将商品状态更新为"已售出"
+            try {
+              await updateProductStatus(id, '已售出');
+              // 更新本地商品状态
+              setProduct(prev => prev ? { ...prev, status: '已售出' } : prev);
+            } catch {
+              // 状态更新失败不影响购买流程
+            }
             setPurchaseConfirmVisible(false);
             setPurchaseResultVisible(true);
           } catch (err) {
