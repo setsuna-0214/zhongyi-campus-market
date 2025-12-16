@@ -69,6 +69,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/home/**", "/products/**").permitAll()
+                .requestMatchers("/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/user/me/avatar").authenticated()
                 .requestMatchers("/user/**", "/favorites/**", "/orders/**", "/cart/**").authenticated()
                 .anyRequest().permitAll()

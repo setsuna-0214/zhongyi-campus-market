@@ -9,6 +9,30 @@ import java.util.List;
 
 @Mapper
 public interface HomeMapper {
+    // 根据商品ID列表查询商品信息（用于 Redis 热门排行榜）
+    // ids：商品ID列表
+    // 返回按传入ID顺序排列的商品列表
+    @Select("""
+    <script>
+    SELECT p.pro_id AS id,
+           p.pro_name AS title,
+           p.picture AS image,
+           p.price AS price,
+           ui.nickname AS seller,
+           ui.address AS location,
+           p.category AS category,
+           CASE WHEN p.is_seal THEN '已售' ELSE '在售' END AS status,
+           COALESCE(p.view_count, 0) AS views
+    FROM products p
+    LEFT JOIN userinfo ui ON ui.user_id = p.saler_id
+    WHERE p.pro_id IN
+    <foreach item="id" collection="ids" open="(" separator="," close=")">
+        #{id}
+    </foreach>
+    </script>
+    """)
+    List<HomeProductRow> findByIds(@Param("ids") List<Integer> ids);
+
     // 查询热门商品列表
     // limit：返回条目数量上限
     // 逻辑说明：

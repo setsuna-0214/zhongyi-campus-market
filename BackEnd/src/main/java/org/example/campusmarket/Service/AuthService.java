@@ -36,9 +36,14 @@ public class AuthService {
         this.codeService = codeService;
     }
 
-    //验证码发送服务
-    public void SendRegisterCode(String email){
+    //验证码发送服务（发送前检查邮箱是否已被注册）
+    public Result SendRegisterCode(String email){
+        // 检查邮箱是否已被注册
+        if (authMapper.findByEmail(email) != null) {
+            return new Result(400, "该邮箱已被注册", null);
+        }
         codeService.sendCode(email);
+        return new Result(200, "验证码发送成功", null);
     }
 
     //注册方法
@@ -110,6 +115,9 @@ public class AuthService {
         safeUser.setEmail(user.getEmail());
         safeUser.setRole(user.getRole());
 
+        // 更新最后登录时间
+        userInfoMapper.updateLastLoginAt(user.getUser_id());
+
         //签发token
         String token = TokenUtil.GenerateToken(safeUser.getUser_id(),safeUser.getUsername(),null,jwtSecret,jwtExpSeconds);
         Map<String, Object> data = new HashMap<>();
@@ -133,6 +141,10 @@ public class AuthService {
         safeUser.setUsername(user.getUsername());
         safeUser.setEmail(user.getEmail());
         safeUser.setRole(user.getRole());
+
+        // 更新最后登录时间
+        userInfoMapper.updateLastLoginAt(user.getUser_id());
+
         String token = TokenUtil.GenerateToken(safeUser.getUser_id(),safeUser.getUsername(),null,jwtSecret,jwtExpSeconds);
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);

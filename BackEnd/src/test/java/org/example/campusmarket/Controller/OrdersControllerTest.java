@@ -42,7 +42,7 @@ class OrdersControllerTest {
     @WithMockUserId(1)
     void testGetOrderList() throws Exception {
         OrderDto.Response order = new OrderDto.Response(
-                1, 100, null, 2, 200, "pending", LocalDateTime.now()
+                1, 100, null, 2, 200, "pending", LocalDateTime.now(), LocalDateTime.now(), null, null
         );
         when(ordersService.getOrderList(eq(1), isNull(), isNull(), isNull(), isNull()))
                 .thenReturn(Arrays.asList(order));
@@ -59,7 +59,7 @@ class OrdersControllerTest {
     @WithMockUserId(1)
     void testCreateOrder_Success() throws Exception {
         OrderDto.Response created = new OrderDto.Response(
-                1, 100, null, 2, 200, "pending", LocalDateTime.now()
+                1, 100, null, 2, 200, "pending", LocalDateTime.now(), LocalDateTime.now(), null, null
         );
         when(ordersService.createOrder(eq(1), any(OrderDto.CreateRequest.class)))
                 .thenReturn(created);

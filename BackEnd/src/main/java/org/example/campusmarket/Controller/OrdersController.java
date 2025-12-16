@@ -17,6 +17,9 @@ public class OrdersController {
     @Autowired
     private OrdersService ordersService;
 
+    @Autowired
+    private org.example.campusmarket.Service.ImageService imageService;
+
     /**
      * 查询当前用户订单列表（支持可选过滤）。
      * @param status       可选订单状态（pending/completed/cancelled），为空则不按状态过滤
@@ -93,5 +96,46 @@ public class OrdersController {
         Integer userId = (Integer) authentication.getPrincipal();
         boolean ok = ordersService.reviewOrder(userId, id, req);
         return new OrderDto.SuccessResponse(ok);
+    }
+
+    /**
+     * 获取订单详情
+     * GET /orders/{id}
+     */
+    @GetMapping("/{id}")
+    public Result getOrderDetail(@PathVariable("id") Integer id) {
+        OrderDto.DetailResponse detail = ordersService.getOrderDetail(id);
+        if (detail == null) {
+            return new Result(404, "订单不存在", null);
+        }
+        return new Result(200, "成功", detail);
+    }
+
+    /**
+     * 更新订单状态（包含卖家留言和图片）
+     * PATCH /orders/{id}/status
+     */
+    @PatchMapping("/{id}/status")
+    public Result updateOrderStatus(@PathVariable("id") Integer id, @RequestBody OrderDto.StatusUpdateRequest req) {
+        boolean ok = ordersService.updateOrderStatus(id, req.getStatus(), req.getSellerMessage(), req.getSellerImages());
+        if (ok) {
+            return new Result(200, "更新成功", null);
+        }
+        return new Result(400, "更新失败", null);
+    }
+
+    /**
+     * 上传订单图片
+     * POST /orders/{id}/images
+     */
+    @PostMapping("/{id}/images")
+    public Result uploadOrderImages(@PathVariable("id") Integer id, @RequestParam("image") org.springframework.web.multipart.MultipartFile image) {
+        try {
+            // 调用图片服务上传
+            String url = imageService.uploadImage(image, "orders");
+            return new Result(200, "上传成功", java.util.Map.of("url", url));
+        } catch (Exception e) {
+            return new Result(400, "上传失败: " + e.getMessage(), null);
+        }
     }
 }

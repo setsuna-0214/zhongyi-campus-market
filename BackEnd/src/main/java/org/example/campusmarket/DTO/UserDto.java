@@ -31,17 +31,6 @@ public class UserDto {
 
         private String avatar;
 
-        //学校名称
-        @Size(max = 100)
-        private String school;
-
-        //学号
-        @Size(max = 50)
-        private String studentId;
-
-        //生日 (格式: YYYY-MM-DD)
-        private String birthday;
-
         //性别 (0: 保密, 1: 男, 2: 女)
         private Integer gender;
     }
@@ -83,7 +72,6 @@ public class UserDto {
         private String username;
         private String nickname;
         private String avatar;
-        private String school;
     }
 
     @Data

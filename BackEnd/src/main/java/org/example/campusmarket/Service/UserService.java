@@ -46,7 +46,7 @@ public class UserService {
     }
     //更新用户信息
     public boolean ResetUserInfo(Integer user_id, @RequestBody UserDto.SetInfoRequest body){
-        return userMapper.updateUserInfo(user_id,body.getAvatar(),body.getNickname(),body.getPhone(),body.getAddress(),body.getSchool(),body.getStudentId(),body.getBio(),body.getBirthday(),body.getGender()) == 1;
+        return userMapper.updateUserInfo(user_id,body.getAvatar(),body.getNickname(),body.getPhone(),body.getAddress(),body.getBio(),body.getGender()) == 1;
     }
 
     //更新密码

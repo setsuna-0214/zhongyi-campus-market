@@ -24,10 +24,7 @@ public interface UserMapper {
             "  <if test='nickname != null'>nickname = #{nickname},</if>",
             "  <if test='phone != null'>phone = #{phone},</if>",
             "  <if test='address != null'>address = #{address},</if>",
-            "  <if test='school != null'>school = #{school},</if>",
-            "  <if test='studentId != null'>student_id = #{studentId},</if>",
             "  <if test='bio != null'>bio = #{bio},</if>",
-            "  <if test='birthday != null'>birthday = #{birthday},</if>",
             "  <if test='gender != null'>gender = #{gender},</if>",
             "</set>",
             "WHERE user_id = #{userId}",
@@ -38,10 +35,7 @@ public interface UserMapper {
                        @Param("nickname") String nickname,
                        @Param("phone") String phone,
                        @Param("address") String address,
-                       @Param("school") String school,
-                       @Param("studentId") String studentId,
                        @Param("bio") String bio,
-                       @Param("birthday") String birthday,
                        @Param("gender") Integer gender);
 
 
@@ -89,13 +83,12 @@ public interface UserMapper {
     //搜索用户（支持关键词模糊匹配）
     @Select({
             "<script>",
-            "SELECT user_id as id, username, nickname, avatar, school",
+            "SELECT user_id as id, username, nickname, avatar",
             "FROM userinfo",
             "<where>",
             "  <if test='keyword != null and keyword != \"\"'>",
             "    (username LIKE CONCAT('%', #{keyword}, '%')",
-            "    OR nickname LIKE CONCAT('%', #{keyword}, '%')",
-            "    OR school LIKE CONCAT('%', #{keyword}, '%'))",
+            "    OR nickname LIKE CONCAT('%', #{keyword}, '%'))",
             "  </if>",
             "</where>",
             "ORDER BY user_id DESC",
@@ -113,8 +106,7 @@ public interface UserMapper {
             "<where>",
             "  <if test='keyword != null and keyword != \"\"'>",
             "    (username LIKE CONCAT('%', #{keyword}, '%')",
-            "    OR nickname LIKE CONCAT('%', #{keyword}, '%')",
-            "    OR school LIKE CONCAT('%', #{keyword}, '%'))",
+            "    OR nickname LIKE CONCAT('%', #{keyword}, '%'))",
             "  </if>",
             "</where>",
             "</script>"

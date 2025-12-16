@@ -20,9 +20,7 @@ public class UserInfo {
     private String bio;
     private String role;
     private Integer gender;
-    private String birthday;
-    private String school;
-    private String student_id;
     private LocalDateTime created_at;
     private LocalDateTime updated_at;
+    private LocalDateTime last_login_at;
 }

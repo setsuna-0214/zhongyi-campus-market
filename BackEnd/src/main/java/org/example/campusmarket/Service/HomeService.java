@@ -3,47 +3,148 @@ package org.example.campusmarket.Service;
 import org.example.campusmarket.DTO.HomeDto;
 import org.example.campusmarket.Mapper.HomeMapper;
 import org.example.campusmarket.entity.HomeProductRow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class HomeService {
+    private static final Logger log = LoggerFactory.getLogger(HomeService.class);
+
     @Autowired
     private HomeMapper homeMapper; // 首页相关查询的 Mapper（执行热门/最新 SQL）
 
+    @Autowired
+    private ProductHotnessService productHotnessService; // 商品热度服务
+
     // 获取热门商品列表
     // limit：返回的最大条目数
+    // 使用 Redis 热门排行榜获取热门商品ID，然后查询商品详情
+    // 如果 Redis 排行榜中商品数量不足，从数据库补充未被浏览过的商品
+    // Requirements: 2.1, 2.3
     public List<HomeDto.HomeProduct> getHotProducts(Integer limit) {
-        // rows：数据库查询到的原始行（字段仍为字符串/原始类型）
-        List<HomeProductRow> rows = homeMapper.listHot(limit);
-        // items：转换后的返回数据，字段对齐前端需求
+        // 1. 从 Redis 获取热门商品ID列表
+        List<Integer> hotProductIds = productHotnessService.getHotRanking(limit);
+        
+        // 如果 Redis 排行榜为空，降级到原有的数据库查询
+        if (hotProductIds == null || hotProductIds.isEmpty()) {
+            log.debug("Redis 热门排行榜为空，降级到数据库查询");
+            return getHotProductsFromDatabase(limit);
+        }
+        
+        // 2. 根据ID列表查询商品详情
+        List<HomeProductRow> rows = homeMapper.findByIds(hotProductIds);
+        
+        if (rows == null || rows.isEmpty()) {
+            log.warn("根据热门ID列表查询商品为空，降级到数据库查询");
+            return getHotProductsFromDatabase(limit);
+        }
+        
+        // 3. 将查询结果按照热门排行榜顺序排序
+        Map<Integer, HomeProductRow> rowMap = new HashMap<>();
+        for (HomeProductRow row : rows) {
+            rowMap.put(row.getId(), row);
+        }
+        
+        // 4. 批量获取实时浏览量
+        Map<Integer, Long> viewCounts = productHotnessService.getViewCounts(hotProductIds);
+        
+        // 5. 按照热门排行榜顺序构建返回列表
         List<HomeDto.HomeProduct> items = new ArrayList<>();
-        // rows 为空时直接返回空列表，避免 NullPointerException
+        for (Integer productId : hotProductIds) {
+            HomeProductRow r = rowMap.get(productId);
+            if (r != null) {
+                Integer priceInt = parsePriceToInt(r.getPrice());
+                // 使用 Redis 中的实时浏览量
+                Long viewCount = viewCounts.getOrDefault(productId, 0L);
+                items.add(new HomeDto.HomeProduct(
+                        r.getId(),
+                        r.getTitle(),
+                        r.getImage(),
+                        priceInt,
+                        "",
+                        null,
+                        r.getSeller(),
+                        r.getLocation(),
+                        r.getCategory(),
+                        r.getStatus(),
+                        viewCount.intValue()
+                ));
+            }
+        }
+        
+        // 6. 如果 Redis 排行榜中商品数量不足，从数据库补充
+        // Requirements: 2.3 - 当 Hot_Ranking 中不存在请求的商品数量时，返回所有可用的热门商品
+        if (items.size() < limit) {
+            int remaining = limit - items.size();
+            log.debug("Redis 热门排行榜商品数量不足，需要从数据库补充 {} 个商品", remaining);
+            
+            // 从数据库获取更多商品（排除已经在列表中的商品）
+            List<HomeProductRow> dbRows = homeMapper.listHot(limit + items.size());
+            if (dbRows != null) {
+                // 收集已有商品的ID
+                java.util.Set<Integer> existingIds = new java.util.HashSet<>();
+                for (HomeDto.HomeProduct item : items) {
+                    existingIds.add(item.getId());
+                }
+                
+                // 补充不在列表中的商品
+                for (HomeProductRow r : dbRows) {
+                    if (items.size() >= limit) break;
+                    if (!existingIds.contains(r.getId())) {
+                        Integer priceInt = parsePriceToInt(r.getPrice());
+                        // 未被浏览过的商品，浏览量为 0
+                        items.add(new HomeDto.HomeProduct(
+                                r.getId(),
+                                r.getTitle(),
+                                r.getImage(),
+                                priceInt,
+                                "",
+                                null,
+                                r.getSeller(),
+                                r.getLocation(),
+                                r.getCategory(),
+                                r.getStatus(),
+                                r.getViews() != null ? r.getViews() : 0
+                        ));
+                        existingIds.add(r.getId());
+                    }
+                }
+            }
+        }
+        
+        log.debug("最终返回 {} 个热门商品", items.size());
+        return items;
+    }
+    
+    // 从数据库获取热门商品（降级方法）
+    private List<HomeDto.HomeProduct> getHotProductsFromDatabase(Integer limit) {
+        List<HomeProductRow> rows = homeMapper.listHot(limit);
+        List<HomeDto.HomeProduct> items = new ArrayList<>();
         if (rows == null) return items;
-        // 遍历每一行，逐条转换为 HomeProduct
         for (HomeProductRow r : rows) {
-            // priceInt：将字符串价格安全转换为整数
             Integer priceInt = parsePriceToInt(r.getPrice());
-            // 构造 HomeProduct，填充各字段
             items.add(new HomeDto.HomeProduct(
-                    r.getId(),           // id：商品唯一标识
-                    r.getTitle(),        // title：商品标题
-                    r.getImage(),        // image：商品图片
-                    priceInt,            // price：整数价格
-                    "",                 // publishedAt：热门接口无需真实日期，留空字符串
-                    null,                // publishTime：热门接口无发布时间，置为 null
-                    r.getSeller(),       // seller：卖家昵称
-                    r.getLocation(),     // location：卖家地址/学校
-                    r.getCategory(),     // category：类目（当前可能为 null）
-                    r.getStatus(),       // status：在售/已售
-                    r.getViews()         // views：热度值
+                    r.getId(),
+                    r.getTitle(),
+                    r.getImage(),
+                    priceInt,
+                    "",
+                    null,
+                    r.getSeller(),
+                    r.getLocation(),
+                    r.getCategory(),
+                    r.getStatus(),
+                    r.getViews()
             ));
         }
-        // 返回转换后的列表
         return items;
     }
 

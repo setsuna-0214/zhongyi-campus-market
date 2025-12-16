@@ -15,6 +15,10 @@ public interface UserInfoMapper {
     @Select("SELECT * FROM userinfo WHERE user_id = #{userId}")
     UserInfo findByUserId(@Param("userId") Integer userId);
     
+    // 根据用户ID查询用户信息（别名方法，兼容不同调用方式）
+    @Select("SELECT * FROM userinfo WHERE user_id = #{id}")
+    UserInfo findById(@Param("id") Integer id);
+    
     // 更新用户信息
     @Update("UPDATE userinfo SET " +
             "nickname = #{nickname}, " +
@@ -23,12 +27,13 @@ public interface UserInfoMapper {
             "address = #{address}, " +
             "bio = #{bio}, " +
             "gender = #{gender}, " +
-            "birthday = #{birthday}, " +
-            "school = #{school}, " +
-            "student_id = #{student_id}, " +
             "updated_at = NOW() " +
             "WHERE user_id = #{user_id}")
     int updateUserInfo(UserInfo userInfo);
+    
+    // 更新用户最后登录时间
+    @Update("UPDATE userinfo SET last_login_at = NOW() WHERE user_id = #{userId}")
+    int updateLastLoginAt(@Param("userId") Integer userId);
     
     // 更新邮箱（保持 users 和 userinfo 表一致）
     @Update("UPDATE userinfo SET email = #{newEmail}, updated_at = NOW() WHERE user_id = #{userId}")

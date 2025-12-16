@@ -64,7 +64,7 @@ class UserServiceTest {
         testUserInfo.setNickname("测试用户");
         testUserInfo.setAvatar("http://example.com/avatar.jpg");
         testUserInfo.setPhone("13800138000");
-        testUserInfo.setSchool("北京大学");
+        testUserInfo.setGender(0);
     }
 
     // ==================== 用户信息查询测试 ====================

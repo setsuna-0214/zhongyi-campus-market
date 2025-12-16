@@ -17,6 +17,8 @@ public class Product {
     
     private String  price;
     
+    private String  category;
+    
     //物品是否售出
     private boolean is_seal;
 
