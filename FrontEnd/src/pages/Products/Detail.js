@@ -35,7 +35,7 @@ import {
 import { useParams, useNavigate } from 'react-router-dom';
 import './Detail.css';
 import { getProduct, getRelatedProducts, updateProductStatus } from '../../api/products';
-import { getCategoryLabel, getStatusLabel, getStatusColor } from '../../utils/labels';
+import { getCategoryLabel, getStatusLabel, getStatusColor, getTradeMethodLabel, parseTradeMethod } from '../../utils/labels';
 import { getFavorites, addToFavorites, removeFavoriteByProductId } from '../../api/favorites';
 import { checkIsFollowing, followUser, unfollowUser } from '../../api/user';
 import { resolveImageSrc, FALLBACK_IMAGE } from '../../utils/images';
@@ -156,6 +156,10 @@ const ProductDetail = () => {
 
   const handleFollow = async (e) => {
     e.stopPropagation();
+    if (!product?.seller?.id) {
+      message.warning('卖家信息不完整');
+      return;
+    }
     // 检查是否关注自己
     const currentUserId = getCurrentUserId();
     if (currentUserId && String(currentUserId) === String(product.seller.id)) {
@@ -202,7 +206,7 @@ const ProductDetail = () => {
   const handleBuyNow = () => {
     // 检查是否购买自己的商品
     const currentUserId = getCurrentUserId();
-    if (currentUserId && String(currentUserId) === String(product.seller.id)) {
+    if (currentUserId && product?.seller?.id && String(currentUserId) === String(product.seller.id)) {
       message.warning('不能购买自己发布的商品');
       return;
     }
@@ -239,7 +243,9 @@ const ProductDetail = () => {
 
   // 查看卖家信息
   const handleViewSeller = () => {
-    navigate(`/users/${product.seller.id}`);
+    if (product?.seller?.id) {
+      navigate(`/users/${product.seller.id}`);
+    }
   };
 
   // 格式化为 年-月-日 时:分:秒
@@ -303,7 +309,7 @@ const ProductDetail = () => {
           <Col xs={24} lg={14}>
             <Card className="product-images-card">
               <Carousel autoplay dots={{ className: 'custom-dots' }}>
-                {product.images.map((image, index) => (
+                {(product.images || []).map((image, index) => (
                   <div key={index} className="carousel-item">
                     <Image
                       src={image}
@@ -340,7 +346,7 @@ const ProductDetail = () => {
             {/* 商品详情 */}
             <Card title="商品详情" className="product-description-card">
               <div className="description-content">
-                {product.description.split('\n').map((line, index) => (
+                {(product.description || '').split('\n').map((line, index) => (
                   <p key={index}>{line}</p>
                 ))}
               </div>
@@ -418,17 +424,11 @@ const ProductDetail = () => {
                 <div className="trade-method-section" style={{ marginTop: 12 }}>
                   <span style={{ color: '#666', marginRight: 8 }}>交易方式：</span>
                   <Space size={[4, 4]} wrap>
-                    {(Array.isArray(product.tradeMethod) ? product.tradeMethod : product.tradeMethod.split(',')).map((method, index) => {
-                      const methodLabels = {
-                        'campus': '校内交易（自提）',
-                        'express': '快递邮寄'
-                      };
-                      return (
-                        <Tag key={index} color="cyan">
-                          {methodLabels[method.trim()] || method.trim()}
-                        </Tag>
-                      );
-                    })}
+                    {parseTradeMethod(product.tradeMethod).map((method, index) => (
+                      <Tag key={index} color="cyan">
+                        {getTradeMethodLabel(method.trim()) || method.trim()}
+                      </Tag>
+                    ))}
                   </Space>
                 </div>
               )}
@@ -449,11 +449,11 @@ const ProductDetail = () => {
               {/* 卖家信息 - 简化版 */}
               <div className="seller-simple-card" onClick={handleViewSeller} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Avatar size={48} src={product.seller.avatar} icon={<UserOutlined />} />
+                  <Avatar size={48} src={product.seller?.avatar} icon={<UserOutlined />} />
                   <div className="seller-simple-info">
                     <div className="seller-name-row">
-                      <span className="seller-nickname">{product.seller.nickname}</span>
-                      {product.seller.isVerified && (
+                      <span className="seller-nickname">{product.seller?.nickname || '卖家'}</span>
+                      {product.seller?.isVerified && (
                         <Tooltip title="已认证用户">
                           <SafetyCertificateOutlined className="verified-icon" />
                         </Tooltip>

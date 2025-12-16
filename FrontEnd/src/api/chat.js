@@ -11,3 +11,5 @@ export const listMessages = impl.listMessages;
 export const sendMessage = impl.sendMessage;
 export const createConversation = impl.createConversation;
 export const deleteConversation = impl.deleteConversation;
+export const uploadChatImage = impl.uploadChatImage;
+export const markConversationAsRead = impl.markConversationAsRead;

@@ -46,13 +46,17 @@ export async function getMyPurchases() {
 }
 
 export async function getUser(id) {
-  const { data } = await client.get(`/users/${id}`);
-  return data;
+  const { data } = await client.get(`/user/${id}`);
+  // 后端返回格式: { code: 200, message: "成功", data: userInfo }
+  const userInfo = data?.data || data;
+  return userInfo || {};
 }
 
 export async function getUserPublished(userId) {
-  const { data } = await client.get(`/users/${userId}/published`);
-  return Array.isArray(data) ? data : (data.items || []);
+  const { data } = await client.get(`/user/${userId}/published`);
+  // 后端返回格式: { code: 200, message: "成功", data: [...] }
+  const items = data?.data || data;
+  return Array.isArray(items) ? items : (items?.items || []);
 }
 
 export async function requestEmailChange({ newEmail }) {
@@ -80,7 +84,9 @@ export async function getFollows() {
 
 export async function checkIsFollowing(sellerId) {
   const { data } = await client.get(`/user/follows/${sellerId}/check`);
-  return !!data.isFollowing;
+  // 后端返回格式: { code: 200, data: { isFollowing: true } } 或 { isFollowing: true }
+  const result = data?.data || data;
+  return !!(result?.isFollowing);
 }
 
 export async function followUser(sellerId) {
@@ -94,7 +100,7 @@ export async function unfollowUser(sellerId) {
 }
 
 export async function searchUsers(params) {
-  const { data } = await client.get('/users/search', { params });
+  const { data } = await client.get('/user/search', { params });
   // 后端返回格式: { code: 200, message: "搜索成功", data: { items: [...], total: 10 } }
   const result = data?.data || data;
   return {

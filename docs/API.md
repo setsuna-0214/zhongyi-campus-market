@@ -441,6 +441,9 @@
       "createdAt": "2024-01-15T10:30:00Z"
     }
     ```
+  - 说明：
+    - 前端会预检查是否存在同一商品的未完成订单（`pending_seller` 或 `pending_buyer` 状态），如有则拒绝创建
+    - 建议后端也实现此检查，返回错误信息：`{ "code": 400, "message": "您已对该商品下过订单，请勿重复下单" }`
 
 ### 获取订单统计
 - `GET /orders/stats`
@@ -465,6 +468,17 @@
 
 ### 取消订单
 - `POST /orders/:id/cancel`
+  - 说明：仅买家可以取消订单，且只能在买家确认收货前取消（即 `pending_seller` 或 `pending_buyer` 状态）
+  - Response:
+    ```json
+    {
+      "success": true
+    }
+    ```
+
+### 删除订单
+- `DELETE /orders/:id`
+  - 说明：仅可删除已取消（`cancelled`）状态的订单，删除后无法恢复
   - Response:
     ```json
     {
@@ -514,7 +528,12 @@
       "sellerImages": ["/images/order/img1.jpg"]
     }
     ```
-  - 说明：status 可选值：`pending`（待处理）、`seller_processed`（卖家已处理）、`completed`（已完成）、`cancelled`（已取消）
+  - 说明：status 可选值：
+    - `pending_seller`（待卖家处理）- 订单创建后的初始状态
+    - `pending_buyer`（待买家确认）- 卖家已处理，等待买家确认收货
+    - `completed`（已完成）- 买家已确认收货
+    - `cancelled`（已取消）- 订单已取消
+  - 兼容旧状态值：`pending` 映射为 `pending_seller`，`seller_processed` 映射为 `pending_buyer`
 
 ### 更新订单状态
 - `PATCH /orders/:id/status`
@@ -706,8 +725,40 @@
     }
     ```
 
+### 获取指定用户信息
+- `GET /user/:id`
+  - Response:
+    ```json
+    {
+      "id": 1,
+      "username": "张同学",
+      "nickname": "张同学",
+      "avatar": "/images/avatars/avatar-1.svg",
+      "joinDate": "2024-01-01",
+      "bio": "个人简介内容"
+    }
+    ```
+
+### 获取指定用户发布的商品
+- `GET /user/:id/published`
+  - Response:
+    ```json
+    [
+      {
+        "id": 1,
+        "title": "iPhone 14 Pro",
+        "price": 6999,
+        "image": "/images/products/product-1.jpg",
+        "status": "在售",
+        "views": 156,
+        "publishTime": "2024-01-15T10:30:00Z"
+      }
+    ]
+    ```
+  - 说明：也支持返回 `{ items: Product[] }`，前端会自动兼容
+
 ### 搜索用户
-- `GET /users/search`
+- `GET /user/search`
   - Query Params:
     - `keyword` - 搜索关键词（昵称/用户名/学校）
     - `page` - 页码

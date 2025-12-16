@@ -111,3 +111,35 @@ export async function deleteConversation(conversationId) {
   return { success: true };
 }
 
+/**
+ * Mock 图片上传 - 将图片转为 Base64 URL 返回
+ * @param {File} file - 图片文件
+ * @returns {Promise<string>} - 图片 URL (Base64)
+ */
+export async function uploadChatImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = () => reject(new Error('图片读取失败'));
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * 标记会话为已读
+ * @param {string} conversationId - 会话ID
+ * @returns {Promise<{success: boolean}>}
+ */
+export async function markConversationAsRead(conversationId) {
+  ensureMockState();
+  try {
+    const raw = localStorage.getItem('mock_conversations');
+    const convs = raw ? JSON.parse(raw) : initialConversations;
+    const updated = convs.map(c => 
+      c.id === conversationId ? { ...c, unreadCount: 0 } : c
+    );
+    localStorage.setItem('mock_conversations', JSON.stringify(updated));
+  } catch {}
+  return { success: true };
+}
+

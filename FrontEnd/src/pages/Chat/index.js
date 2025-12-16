@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Input, 
   Button, 
@@ -23,10 +23,11 @@ import {
 } from '@ant-design/icons';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import './index.css';
-import { listConversations, listMessages, sendMessage, createConversation, deleteConversation } from '../../api/chat';
+import { listConversations, listMessages, sendMessage, createConversation, deleteConversation, uploadChatImage, markConversationAsRead } from '../../api/chat';
 import { getProduct } from '../../api/products';
 import { resolveImageSrc } from '../../utils/images';
 import ProductCard from '../../components/ProductCard';
+import * as websocket from '../../api/websocket';
 
 const { TextArea } = Input;
 const { Text, Title } = Typography;
@@ -44,6 +45,53 @@ const Chat = () => {
   const [, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [sharedProduct, setSharedProduct] = useState(null);
+
+  // WebSocket 消息处理
+  const handleWebSocketMessage = useCallback((data) => {
+    if (data.type === 'new_message') {
+      const newMsg = data.message;
+      // 标记为对方发送的消息
+      newMsg.isOwn = false;
+      
+      // 如果当前正在查看这个会话，添加消息到列表
+      setCurrentConversation(current => {
+        if (current && (current.id === data.conversationId || current.id === newMsg.conversationId)) {
+          setMessages(prev => {
+            // 避免重复添加
+            if (prev.some(m => m.id === newMsg.id)) return prev;
+            return [...prev, newMsg];
+          });
+        }
+        return current;
+      });
+      
+      // 更新会话列表
+      setConversations(prev => prev.map(conv => {
+        if (conv.id === data.conversationId || conv.partnerId === newMsg.senderId) {
+          return {
+            ...conv,
+            lastMessage: newMsg.type === 'image' ? '[图片]' : newMsg.content,
+            lastMessageTime: newMsg.timestamp || new Date().toLocaleString(),
+            unreadCount: (conv.unreadCount || 0) + 1
+          };
+        }
+        return conv;
+      }));
+      
+      // 播放提示音（可选）
+      // new Audio('/notification.mp3').play().catch(() => {});
+    }
+  }, []);
+
+  // 连接 WebSocket
+  useEffect(() => {
+    websocket.connect();
+    websocket.addListener('chat-page', handleWebSocketMessage);
+    
+    return () => {
+      websocket.removeListener('chat-page');
+    };
+  }, [handleWebSocketMessage]);
 
   // 从后端拉取会话与消息
   // 初始化数据
@@ -74,27 +122,37 @@ const Chat = () => {
           } catch {}
         }
         if (sellerId || orderId) {
+          // 查找现有会话：partnerId 是对方用户ID，orderId 是订单ID
           let target = (list || []).find(conv => 
-            conv.userId?.toString() === sellerId || conv.orderId === orderId
+            (sellerId && conv.partnerId?.toString() === sellerId) || 
+            (orderId && conv.orderId?.toString() === orderId)
           );
           if (!target && sellerId) {
             try {
-              const conv = await createConversation({ userId: sellerId, productId, orderId });
-              setConversations(prev => {
-                const exists = prev.some(c => String(c.userId) === String(conv.userId) && c.orderId === conv.orderId);
-                return exists ? prev : [conv, ...prev];
+              // 创建新会话时，userId 参数是对方用户ID
+              const conv = await createConversation({ 
+                userId: parseInt(sellerId, 10), 
+                productId: productId ? parseInt(productId, 10) : null, 
+                orderId: orderId ? parseInt(orderId, 10) : null 
               });
-              target = conv;
-              const msgs = await listMessages(conv.id);
-              setMessages(Array.isArray(msgs) ? msgs : []);
-            } catch {}
-          }
-          if (target) {
-            setCurrentConversation(target);
-            if (!messages || messages.length === 0) {
-              const msgs = await listMessages(target.id);
-              setMessages(Array.isArray(msgs) ? msgs : []);
+              if (conv && conv.id) {
+                setConversations(prev => {
+                  const exists = prev.some(c => c.id === conv.id);
+                  return exists ? prev : [conv, ...prev];
+                });
+                target = conv;
+                const msgs = await listMessages(conv.id);
+                setMessages(Array.isArray(msgs) ? msgs : []);
+              }
+            } catch (err) {
+              console.error('创建会话失败:', err);
             }
+          }
+          if (target && target.id) {
+            setCurrentConversation(target);
+            // 只有当消息列表为空时才加载消息
+            const msgs = await listMessages(target.id);
+            setMessages(Array.isArray(msgs) ? msgs : []);
           }
         }
       } catch (err) {
@@ -124,7 +182,7 @@ const Chat = () => {
       message.error(err?.message || '获取消息失败');
     }
     
-    // 标记为已读
+    // 标记为已读（同时更新本地状态和后端/mock数据）
     setConversations(prev => 
       prev.map(conv => 
         conv.id === conversation.id 
@@ -132,6 +190,12 @@ const Chat = () => {
           : conv
       )
     );
+    // 调用API标记已读，确保数据持久化
+    try {
+      await markConversationAsRead(conversation.id);
+    } catch {
+      // 标记已读失败不影响用户体验
+    }
   };
 
   // 发送消息
@@ -221,28 +285,54 @@ const Chat = () => {
 
   // 上传图片
   const handleImageUpload = async (file) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const imageMessage = {
-        id: Date.now(),
-        senderId: 'current',
-        senderName: '我',
-        content: e.target.result,
-        type: 'image',
-        timestamp: new Date().toLocaleString(),
-        isOwn: true
-      };
-      setMessages(prev => [...prev, imageMessage]);
-      try {
-        await sendMessage(currentConversation.id, {
-          type: 'image',
-          content: e.target.result
-        });
-      } catch (err) {
-        message.error(err?.message || '发送图片失败');
-      }
+    if (!currentConversation) {
+      message.error('请先选择一个对话');
+      return false;
+    }
+    
+    // 显示上传中的占位消息
+    const tempId = Date.now();
+    const tempMessage = {
+      id: tempId,
+      senderId: 'current',
+      senderName: '我',
+      content: '', // 占位
+      type: 'image',
+      timestamp: new Date().toLocaleString(),
+      isOwn: true,
+      uploading: true
     };
-    reader.readAsDataURL(file);
+    setMessages(prev => [...prev, tempMessage]);
+    
+    try {
+      // 1. 先上传图片获取 URL
+      const imageUrl = await uploadChatImage(file);
+      
+      // 2. 更新本地消息显示
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId 
+          ? { ...msg, content: imageUrl, uploading: false }
+          : msg
+      ));
+      
+      // 3. 发送图片消息到服务器
+      await sendMessage(currentConversation.id, {
+        type: 'image',
+        content: imageUrl
+      });
+      
+      // 4. 更新会话列表
+      setConversations(prev => prev.map(conv => 
+        conv.id === currentConversation.id
+          ? { ...conv, lastMessage: '[图片]', lastMessageTime: new Date().toLocaleString() }
+          : conv
+      ));
+    } catch (err) {
+      // 上传失败，移除占位消息
+      setMessages(prev => prev.filter(msg => msg.id !== tempId));
+      message.error(err?.message || '发送图片失败');
+    }
+    
     return false; // 阻止默认上传行为
   };
 

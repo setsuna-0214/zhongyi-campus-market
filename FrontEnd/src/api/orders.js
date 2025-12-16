@@ -15,3 +15,4 @@ export const createOrder = impl.createOrder;
 export const getOrderDetail = impl.getOrderDetail;
 export const updateOrderStatus = impl.updateOrderStatus;
 export const uploadOrderImages = impl.uploadOrderImages;
+export const deleteOrder = impl.deleteOrder;

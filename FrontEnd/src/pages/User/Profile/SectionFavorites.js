@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Card, Row, Col, Button, Space, Select, Input, Checkbox, Empty, Pagination, Popconfirm, Typography } from 'antd';
+import { useMemo, useState } from 'react';
+import { Card, Row, Col, Button, Space, Select, Input, Checkbox, Empty, Pagination, Typography } from 'antd';
 import ProductCard from '../../../components/ProductCard';
 import { resolveImageSrc } from '../../../utils/images';
 
@@ -124,7 +124,7 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
                   category={item.category || (Array.isArray(item.tags) ? item.tags[0] : '')}
                   status={item.status}
                   location={item.location}
-                  sellerName={item.seller?.nickname}
+                  sellerName={item.seller?.nickname || item.seller?.username || item.seller?.name || item.sellerName || '卖家'}
                   sellerId={item.seller?.id || item.sellerId}
                   publishedAt={item.publishedAt || item.publishTime || item.createdAt}
                   favoriteAt={item.addTime}
@@ -138,12 +138,11 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
                   unavailable={!item.isAvailable}
                   unavailableText={'暂时缺货'}
                   imageHeight={200}
+                  showDeleteButton
+                  onDelete={() => onRemoveFavorite(item.id)}
+                  deleteButtonText="取消收藏"
+                  deleteConfirmText="确定要取消收藏吗？"
                 />
-                <div className="card-actions">
-                  <Popconfirm title="确定要取消收藏吗？" onConfirm={() => onRemoveFavorite(item.id)}>
-                    <Button type="link" danger>取消收藏</Button>
-                  </Popconfirm>
-                </div>
               </Col>
             ))}
           </Row>

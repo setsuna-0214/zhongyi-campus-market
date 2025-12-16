@@ -21,7 +21,8 @@ import {
   CheckCircleOutlined,
   ArrowLeftOutlined
 } from '@ant-design/icons';
-import { getOrderDetail, updateOrderStatus, uploadOrderImages } from '../../api/orders';
+import { getOrderDetail, updateOrderStatus, uploadOrderImages, cancelOrder } from '../../api/orders';
+import { canCancelOrder } from '../../utils/labels';
 import { resolveImageSrc, FALLBACK_IMAGE } from '../../utils/images';
 import './OrderProcess.css';
 
@@ -170,6 +171,24 @@ const OrderProcess = () => {
       loadOrder();
     } catch (error) {
       message.error(error.message || '操作失败');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // 买家取消订单
+  const handleCancelOrder = async () => {
+    if (!canCancelOrder(order?.status)) {
+      message.warning('该订单状态无法取消');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await cancelOrder(orderId);
+      message.success('订单已取消');
+      loadOrder();
+    } catch (error) {
+      message.error(error.message || '取消订单失败');
     } finally {
       setSubmitting(false);
     }
@@ -361,13 +380,41 @@ const OrderProcess = () => {
             <div className="buyer-confirm-section">
               <Text>请确认您已收到商品或服务，确认后订单将完成。</Text>
               <Divider />
+              <Space>
+                <Button
+                  type="primary"
+                  size="large"
+                  loading={submitting}
+                  onClick={handleBuyerConfirm}
+                >
+                  确认订单
+                </Button>
+                <Button
+                  danger
+                  size="large"
+                  loading={submitting}
+                  onClick={handleCancelOrder}
+                >
+                  取消订单
+                </Button>
+              </Space>
+            </div>
+          </Card>
+        )}
+
+        {/* 买家取消订单区域（待卖家处理时） */}
+        {userRole === 'buyer' && currentStep === 1 && (
+          <Card title="订单操作" className="order-action-card">
+            <div className="buyer-cancel-section">
+              <Text type="secondary">订单正在等待卖家处理，如需取消请点击下方按钮。</Text>
+              <Divider />
               <Button
-                type="primary"
+                danger
                 size="large"
                 loading={submitting}
-                onClick={handleBuyerConfirm}
+                onClick={handleCancelOrder}
               >
-                确认订单
+                取消订单
               </Button>
             </div>
           </Card>

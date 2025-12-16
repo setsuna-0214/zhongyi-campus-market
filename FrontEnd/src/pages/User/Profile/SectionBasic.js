@@ -1,7 +1,7 @@
-import React from 'react';
 import { Card, Avatar, Button, Form, Input, Select, Checkbox, Row, Col, Space, Typography, Popover, Segmented } from 'antd';
 import { UserOutlined, CameraOutlined, SettingOutlined } from '@ant-design/icons';
 import { PROFILE_BANNER_OPTIONS } from '../../../config/profile';
+import { GENDER_OPTIONS } from '../../../utils/labels';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -156,7 +156,7 @@ export default function SectionBasic({
                           <Segmented
                             className="gender-highlight-segmented"
                             size="middle"
-                            options={[{ label: '男', value: '男' },{ label: '女', value: '女' },{ label: '保密', value: '保密' }]}
+                            options={GENDER_OPTIONS}
                             value={basicForm.getFieldValue('gender') ?? (value ?? '保密')}
                             onChange={(val) => basicForm.setFieldsValue({ gender: val })}
                           />

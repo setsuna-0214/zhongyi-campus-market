@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Layout, Menu, message, Form, Button } from 'antd';
 import { UserOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { getUser, getUserPublished, checkIsFollowing, followUser, unfollowUser } from '../../api/user';
+import { toGenderLabel } from '../../utils/labels';
 import SectionBasic from './Profile/SectionBasic';
 import SectionProducts from './Profile/SectionProducts';
 import './Profile.css';
@@ -36,7 +37,12 @@ const SellerProfile = () => {
           getUserPublished(id),
           checkIsFollowing(id)
         ]);
-        setUserInfo(userData || {});
+        
+        // 规范化用户信息
+        const normalizedUser = userData || {};
+        // 将后端返回的数字性别转换为字符串
+        normalizedUser.gender = toGenderLabel(normalizedUser.gender);
+        setUserInfo(normalizedUser);
         setMyProducts(Array.isArray(userProducts) ? userProducts : []);
         setIsFollowing(following);
         

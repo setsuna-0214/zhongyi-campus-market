@@ -3,6 +3,20 @@ import client from './client';
 // 标准化收藏数据，将后端返回的字段映射为前端组件期望的字段
 function normalizeFavoriteItem(item) {
   const product = item.product || {};
+  
+  // 处理卖家信息 - 支持多种后端返回格式
+  let seller = product.seller || item.seller;
+  if (!seller && (product.sellerId || item.sellerId)) {
+    seller = { id: product.sellerId || item.sellerId };
+  }
+  // 如果 seller 是字符串（卖家名称），转换为对象
+  if (typeof seller === 'string') {
+    seller = { nickname: seller };
+  }
+  
+  // 提取卖家名称
+  const sellerName = seller?.nickname || seller?.username || seller?.name || product.sellerName || item.sellerName || '';
+  
   return {
     id: item.id,
     productId: item.productId || product.id,
@@ -15,8 +29,9 @@ function normalizeFavoriteItem(item) {
     isAvailable: product.status ? product.status === '在售' : (item.isAvailable ?? true),
     addTime: item.createdAt || item.addTime,
     location: product.location || item.location || '',
-    seller: product.seller || item.seller,
-    sellerId: product.sellerId || item.sellerId,
+    seller: seller,
+    sellerId: seller?.id || product.sellerId || item.sellerId,
+    sellerName: sellerName,
     tags: product.tags || item.tags || [],
     publishedAt: product.publishTime || product.publishedAt || product.createdAt || item.publishedAt,
     sales: product.views ?? item.sales ?? 0,
