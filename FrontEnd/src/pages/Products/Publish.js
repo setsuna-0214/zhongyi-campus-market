@@ -22,7 +22,7 @@ import {
   CheckCircleOutlined
 } from '@ant-design/icons';
 import './Publish.css';
-import { CATEGORY_CODE_TO_LABEL } from '../../utils/labels';
+import { CATEGORY_CODE_TO_LABEL, TRADE_METHOD_OPTIONS } from '../../utils/labels';
 import { createProduct, getProduct, updateProduct, updateProductStatus } from '../../api/products';
 
 const { TextArea } = Input;
@@ -379,12 +379,11 @@ const PublishProduct = () => {
                 >
                   <Checkbox.Group>
                     <Row>
-                      <Col span={20}>
-                        <Checkbox value="campus">校内交易（自提）</Checkbox>
-                      </Col>
-                      <Col span={20}>
-                        <Checkbox value="express">快递邮寄</Checkbox>
-                      </Col>
+                      {TRADE_METHOD_OPTIONS.map(opt => (
+                        <Col span={20} key={opt.value}>
+                          <Checkbox value={opt.value}>{opt.label}</Checkbox>
+                        </Col>
+                      ))}
                     </Row>
                   </Checkbox.Group>
                 </Form.Item>

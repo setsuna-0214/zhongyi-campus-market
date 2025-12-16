@@ -1,27 +1,28 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-  import {
-    Layout,
-    Menu,
-    Button,
-    Modal,
-    Form,
-    Upload,
-    message,
-  } from 'antd';
-  import {
-    UserOutlined,
-    ShoppingOutlined,
-    HeartOutlined,
-    CameraOutlined,
-    LockOutlined,
-    OrderedListOutlined,
-    TeamOutlined,
-  } from '@ant-design/icons';
+import {
+  Layout,
+  Menu,
+  Button,
+  Modal,
+  Form,
+  Upload,
+  message,
+} from 'antd';
+import {
+  UserOutlined,
+  ShoppingOutlined,
+  HeartOutlined,
+  CameraOutlined,
+  LockOutlined,
+  OrderedListOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import './Profile.css';
 import { PROFILE_BANNER_OPTIONS, DEFAULT_PROFILE_BANNER_KEY } from '../../config/profile';
 import { getCurrentUser, updateCurrentUser, uploadAvatar, getMyPublished, getMyPurchases, getFollows, unfollowUser } from '../../api/user';
 import { getFavorites, removeFromFavorites } from '../../api/favorites';
+import { toGenderLabel, toGenderNum } from '../../utils/labels';
 import SectionBasic from './Profile/SectionBasic';
 import SectionProducts from './Profile/SectionProducts';
 import SectionFavorites from './Profile/SectionFavorites';
@@ -96,6 +97,8 @@ const UserProfile = () => {
         allowedFields.forEach(key => {
           normalized[key] = info?.[key] ?? '';
         });
+        // 将后端返回的数字性别转换为字符串，以便 Segmented 组件正确高亮
+        normalized.gender = toGenderLabel(normalized.gender);
         setUserInfo(normalized);
         setMyProducts(Array.isArray(published) ? published : []);
         setPurchaseHistory(Array.isArray(purchases) ? purchases : []);
@@ -138,17 +141,22 @@ const UserProfile = () => {
 
     // 转换性别为数字
     if (payload.gender !== undefined && payload.gender !== null) {
-      const genderMap = { '男': 1, '女': 2, '保密': 0 };
-      if (typeof payload.gender === 'string') {
-        payload.gender = genderMap[payload.gender] ?? 0;
-      }
+      payload.gender = toGenderNum(payload.gender);
     }
 
     setLoading(true);
     try {
       const updated = await updateCurrentUser(payload);
-      const nextUser = { ...userInfo, ...updated };
-      setUserInfo(nextUser);
+      // 只保留允许的字段，避免后端返回额外字段导致显示异常
+      const allowedFields = ['id', 'username', 'nickname', 'email', 'avatar', 'phone', 'address', 'bio', 'joinDate', 'gender', 'lastLoginAt', 'token', 'profileBanner'];
+      const normalized = {};
+      allowedFields.forEach(key => {
+        // 优先使用更新后的值，否则保留原值
+        normalized[key] = updated?.[key] !== undefined ? updated[key] : (userInfo?.[key] ?? '');
+      });
+      // 将后端返回的数字性别转换为字符串
+      normalized.gender = toGenderLabel(normalized.gender);
+      setUserInfo(normalized);
       setIsBasicDirty(false);
       message.success('基本信息已保存');
     } catch (error) {
@@ -255,7 +263,7 @@ const UserProfile = () => {
           )}
 
           {selectedKey === 'products' && (
-            <SectionProducts myProducts={myProducts} purchaseHistory={purchaseHistory} onDeleteProduct={handleDeleteProduct} onNavigate={navigate} />
+            <SectionProducts myProducts={myProducts} purchaseHistory={purchaseHistory} onDeleteProduct={handleDeleteProduct} onNavigate={navigate} userInfo={userInfo} />
           )}
 
           {selectedKey === 'orders' && (

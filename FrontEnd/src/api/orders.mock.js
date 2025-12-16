@@ -48,6 +48,21 @@ export async function submitReview(orderId) {
 export async function createOrder({ productId, quantity = 1 }) {
   ensureMockState();
   const orders = readMockList('mock_orders');
+  
+  // 检查是否存在同一商品的未完成订单（待处理或待确认状态）
+  const existingOrder = orders.find(o => {
+    const orderProductId = o.product?.id || o.productId;
+    const buyerId = o.buyer?.id || o.buyerId;
+    const isActiveOrder = o.status === 'pending' || o.status === 'pending_seller' || o.status === 'pending_buyer';
+    return String(orderProductId) === String(productId) && 
+           String(buyerId) === String(mockUserDebug.id) && 
+           isActiveOrder;
+  });
+  
+  if (existingOrder) {
+    throw new Error('您已对该商品下过订单，请勿重复下单');
+  }
+  
   const product = mockProducts.find(p => String(p.id) === String(productId));
   const now = new Date().toISOString();
   const newOrder = {
@@ -102,4 +117,15 @@ export async function uploadOrderImages(orderId, formData) {
   // Mock: 模拟图片上传，返回假URL
   await new Promise(resolve => setTimeout(resolve, 500));
   return { code: 200, url: `/images/products/product-${Date.now()}.jpg` };
+}
+
+export async function deleteOrder(orderId) {
+  ensureMockState();
+  const orders = readMockList('mock_orders');
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) throw new Error('订单不存在');
+  if (order.status !== 'cancelled') throw new Error('只能删除已取消的订单');
+  const filtered = orders.filter(o => String(o.id) !== String(orderId));
+  writeMockList('mock_orders', filtered);
+  return { success: true };
 }

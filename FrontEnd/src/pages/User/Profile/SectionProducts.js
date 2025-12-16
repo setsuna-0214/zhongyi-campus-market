@@ -1,9 +1,9 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Card, Tabs, List, Button, Empty } from 'antd';
 import ProductCard from '../../../components/ProductCard';
 import { resolveImageSrc } from '../../../utils/images';
 
-export default function SectionProducts({ myProducts, purchaseHistory, onDeleteProduct, onNavigate, isReadOnly = false }) {
+export default function SectionProducts({ myProducts, purchaseHistory, onDeleteProduct, onNavigate, isReadOnly = false, userInfo }) {
   // 去重购买记录，根据商品ID去除重复项
   const uniquePurchaseHistory = useMemo(() => {
     if (!purchaseHistory) return [];
@@ -40,8 +40,12 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
                     category={item.category}
                     status={item.status}
                     location={item.location}
-                    sellerName={typeof item.seller === 'object' ? (item.seller?.nickname || item.seller?.username || '卖家') : (item.seller || '卖家')}
-                    sellerId={typeof item.seller === 'object' ? item.seller?.id : item.sellerId}
+                    sellerName={
+                      typeof item.seller === 'object' 
+                        ? (item.seller?.nickname || item.seller?.username || '卖家') 
+                        : (item.seller || userInfo?.nickname || userInfo?.username || '我')
+                    }
+                    sellerId={typeof item.seller === 'object' ? item.seller?.id : (item.sellerId || userInfo?.id)}
                     publishedAt={item.publishTime || item.publishedAt || item.createdAt}
                     views={item.views}
                     overlayType="views-left"

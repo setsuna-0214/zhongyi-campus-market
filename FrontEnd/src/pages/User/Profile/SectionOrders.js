@@ -1,8 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Card, Tabs, List, Empty, message } from 'antd';
 import ProductCard from '../../../components/ProductCard';
 import { resolveImageSrc } from '../../../utils/images';
-import { listOrders } from '../../../api/orders';
+import { listOrders, deleteOrder } from '../../../api/orders';
+import { 
+  ORDER_STATUS, 
+  normalizeOrderStatus, 
+  getOrderStatusText 
+} from '../../../utils/labels';
 
 export default function SectionOrders({ userInfo, onNavigate }) {
   const [orders, setOrders] = useState([]);
@@ -16,31 +21,109 @@ export default function SectionOrders({ userInfo, onNavigate }) {
       setLoading(true);
       try {
         const list = await listOrders();
+        // 调试日志：查看订单数据结构
+        if (import.meta.env.DEV) {
+          console.log('[SectionOrders] 获取到订单列表:', list);
+          console.log('[SectionOrders] 当前用户ID:', myId);
+        }
         if (mounted) setOrders(Array.isArray(list) ? list : []);
       } catch (err) {
+        console.error('[SectionOrders] 获取订单失败:', err);
         message.error(err?.message || '获取订单失败');
       } finally {
         setLoading(false);
       }
     })();
     return () => { mounted = false; };
+  }, [myId]);
+
+  // 去重函数：针对同一商品的多个订单，只保留时间最早的
+  const deduplicateOrders = useCallback((orderList) => {
+    const productMap = new Map();
+    
+    // 按商品ID分组，保留时间最早的订单
+    orderList.forEach(order => {
+      const productId = order.product?.id || order.productId;
+      if (!productId) {
+        // 没有商品ID的订单直接保留
+        productMap.set(order.id, order);
+        return;
+      }
+      
+      const key = String(productId);
+      const existing = productMap.get(key);
+      
+      if (!existing) {
+        productMap.set(key, order);
+      } else {
+        // 比较时间，保留更早的订单
+        const existingTime = new Date(existing.orderTime || existing.createdAt || 0).getTime();
+        const currentTime = new Date(order.orderTime || order.createdAt || 0).getTime();
+        if (currentTime < existingTime) {
+          productMap.set(key, order);
+        }
+      }
+    });
+    
+    return Array.from(productMap.values());
   }, []);
 
   const purchaseOrders = useMemo(() => {
-    return orders.filter(o => {
-      const buyerId = o?.buyer?.id || o?.buyer?._id || o?.buyerId;
-      return buyerId && myId && String(buyerId) === String(myId);
+    const filtered = orders.filter(o => {
+      const buyerId = o?.buyer?.id || o?.buyer?._id || o?.buyerId || o?.buyer_id;
+      // 如果没有 buyerId 信息但有 sellerId 且不是自己，则认为是购买订单
+      const sellerId = o?.seller?.id || o?.seller?._id || o?.sellerId || o?.seller_id;
+      if (buyerId && myId) {
+        return String(buyerId) === String(myId);
+      }
+      // 如果订单没有明确的 buyer 信息，但 seller 不是自己，则可能是购买订单
+      if (!buyerId && sellerId && myId && String(sellerId) !== String(myId)) {
+        return true;
+      }
+      // 如果订单既没有 buyer 也没有 seller 信息，默认显示在购买列表
+      if (!buyerId && !sellerId) {
+        return true;
+      }
+      return false;
     });
-  }, [orders, myId]);
+    return deduplicateOrders(filtered);
+  }, [orders, myId, deduplicateOrders]);
 
   const sellOrders = useMemo(() => {
-    return orders.filter(o => {
-      const sellerId = o?.seller?.id || o?.seller?._id || o?.sellerId;
+    const filtered = orders.filter(o => {
+      const sellerId = o?.seller?.id || o?.seller?._id || o?.sellerId || o?.seller_id;
       return sellerId && myId && String(sellerId) === String(myId);
     });
-  }, [orders, myId]);
+    return deduplicateOrders(filtered);
+  }, [orders, myId, deduplicateOrders]);
 
-  const filterByStatus = (list, status) => list.filter(o => (o.status || '').toLowerCase() === status);
+  // 删除订单（仅已取消的订单可删除）
+  const handleDeleteOrder = useCallback(async (orderId) => {
+    try {
+      await deleteOrder(orderId);
+      message.success('订单已删除');
+      // 直接从本地状态中移除该订单，避免重新请求
+      setOrders(prev => prev.filter(o => o.id !== orderId));
+    } catch (err) {
+      message.error(err?.message || '删除订单失败');
+    }
+  }, []);
+
+  // 按状态分类过滤
+  const filterByStatus = (list, statusGroup) => list.filter(o => {
+    const status = normalizeOrderStatus(o.status);
+    if (statusGroup === 'pending') {
+      // 待处理：包括待卖家处理和待买家确认
+      return status === ORDER_STATUS.PENDING_SELLER || status === ORDER_STATUS.PENDING_BUYER;
+    }
+    if (statusGroup === 'completed') {
+      return status === ORDER_STATUS.COMPLETED;
+    }
+    if (statusGroup === 'cancelled') {
+      return status === ORDER_STATUS.CANCELLED;
+    }
+    return false;
+  });
 
   const renderOrderList = (data, role) => (
     <List
@@ -51,6 +134,10 @@ export default function SectionOrders({ userInfo, onNavigate }) {
         const p = order.product || {};
         const amount = (Number(p.price) || 0) * (Number(p.quantity) || 1);
         const counterpartName = role === 'purchase' ? (order.seller?.nickname || '卖家') : (order.buyer?.nickname || '买家');
+        const statusText = getOrderStatusText(order.status);
+        const orderStatus = normalizeOrderStatus(order.status);
+        const isCancelled = orderStatus === ORDER_STATUS.CANCELLED;
+        
         return (
           <List.Item key={order.id}>
             <div className="product-item">
@@ -59,7 +146,7 @@ export default function SectionOrders({ userInfo, onNavigate }) {
                 title={p.title || '商品'}
                 price={amount}
                 category={p.category}
-                status={order.status}
+                status={statusText}
                 location={p.location}
                 sellerName={counterpartName}
                 publishedAt={order.orderTime}
@@ -70,6 +157,8 @@ export default function SectionOrders({ userInfo, onNavigate }) {
                 imageHeight={200}
                 showOrderButton
                 onOrderClick={() => onNavigate(`/orders/${order.id}`)}
+                showOrderDeleteButton={isCancelled}
+                onOrderDelete={() => handleDeleteOrder(order.id)}
               />
             </div>
           </List.Item>
@@ -93,6 +182,7 @@ export default function SectionOrders({ userInfo, onNavigate }) {
                 items={[
                   { key: 'pending', label: '待处理', children: renderOrderList(filterByStatus(purchaseOrders, 'pending'), 'purchase') },
                   { key: 'completed', label: '已完成', children: renderOrderList(filterByStatus(purchaseOrders, 'completed'), 'purchase') },
+                  { key: 'cancelled', label: '已取消', children: renderOrderList(filterByStatus(purchaseOrders, 'cancelled'), 'purchase') },
                 ]}
               />
             )
@@ -106,6 +196,7 @@ export default function SectionOrders({ userInfo, onNavigate }) {
                 items={[
                   { key: 'pending', label: '待处理', children: renderOrderList(filterByStatus(sellOrders, 'pending'), 'sell') },
                   { key: 'completed', label: '已完成', children: renderOrderList(filterByStatus(sellOrders, 'completed'), 'sell') },
+                  { key: 'cancelled', label: '已取消', children: renderOrderList(filterByStatus(sellOrders, 'cancelled'), 'sell') },
                 ]}
               />
             )

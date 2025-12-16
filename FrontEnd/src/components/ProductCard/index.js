@@ -95,6 +95,10 @@ const ProductCard = ({
   onDelete,
   showOrderButton,
   onOrderClick,
+  deleteButtonText,
+  deleteConfirmText,
+  showOrderDeleteButton,
+  onOrderDelete,
 }) => {
   const navigate = useNavigate();
   const overlayClass = overlayType === 'publish-right' ? 'overlay-recent' : (overlayType === 'views-left' ? 'overlay-hot' : '');
@@ -175,7 +179,7 @@ const ProductCard = ({
           {/* 删除按钮 - 右下角 */}
           {showDeleteButton && (
             <Popconfirm
-              title="确定要删除这个商品吗？该操作不可逆，请谨慎操作。"
+              title={deleteConfirmText || "确定要删除这个商品吗？该操作不可逆，请谨慎操作。"}
               onConfirm={() => onDelete?.()}
               onCancel={(e) => e?.stopPropagation()}
               okText="确定"
@@ -184,7 +188,25 @@ const ProductCard = ({
               <div
                 className="action-badge action-badge-right"
                 onClick={(e) => e.stopPropagation()}
-                title="删除该商品"
+                title={deleteButtonText || "删除该商品"}
+              >
+                <DeleteOutlined />
+              </div>
+            </Popconfirm>
+          )}
+          {/* 删除订单按钮 - 左下角（仅已取消订单显示） */}
+          {showOrderDeleteButton && (
+            <Popconfirm
+              title="确定要删除这个订单吗？删除后无法恢复。"
+              onConfirm={() => onOrderDelete?.()}
+              onCancel={(e) => e?.stopPropagation()}
+              okText="确定"
+              cancelText="取消"
+            >
+              <div
+                className="action-badge action-badge-left"
+                onClick={(e) => e.stopPropagation()}
+                title="删除订单"
               >
                 <DeleteOutlined />
               </div>
