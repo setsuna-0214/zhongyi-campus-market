@@ -52,7 +52,7 @@ const SearchPage = () => {
   const [filters, setFilters] = useState({
     keyword: searchParams.get('keyword') || '',
     category: normalizedCategory,
-    priceRange: [0, 999999],
+    priceRange: [0, 1000000],
     location: searchParams.get('location') || '',
     sortBy: searchParams.get('sortBy') || 'latest',
     status: searchParams.get('status') || '在售'
@@ -68,7 +68,7 @@ const SearchPage = () => {
         const parts = priceRangeParamUrl.split(',').map(n => Number(n));
         if (parts.length === 2 && parts.every(n => Number.isFinite(n))) return parts;
       }
-      return [0, 999999];
+      return [0, 1000000];
     })();
 
     const nextFilters = {
@@ -201,8 +201,26 @@ const SearchPage = () => {
     navigate(`/users/${userId}`);
   }, [navigate]);
 
+  // 获取当前登录用户ID
+  const getCurrentUserId = () => {
+    try {
+      const raw = localStorage.getItem('authUser');
+      if (raw) {
+        const user = JSON.parse(raw);
+        return user?.id;
+      }
+    } catch {}
+    return null;
+  };
+
   const handleFollow = async (e, userId) => {
     e.stopPropagation();
+    // 检查是否关注自己
+    const currentUserId = getCurrentUserId();
+    if (currentUserId && String(currentUserId) === String(userId)) {
+      message.warning('不能关注自己');
+      return;
+    }
     try {
       const isFollowing = followingMap[userId];
       if (isFollowing) {
@@ -269,7 +287,7 @@ const SearchPage = () => {
           
           {searchType === 'products' && (
             <Row gutter={[16, 16]} align="middle" style={{ marginTop: 16 }}>
-              <Col flex="auto">(
+              <Col flex="auto">
                 <Space size="middle" className="filter-controls" wrap>
                   <Select
                     placeholder="商品分类"
@@ -310,7 +328,7 @@ const SearchPage = () => {
                     <span>价格：</span>
                     <InputNumber
                       min={0}
-                      max={999999}
+                      max={1000000}
                       value={filters.priceRange[0]}
                       onChange={(value) => {
                         const min = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
@@ -323,10 +341,10 @@ const SearchPage = () => {
                     <span>~</span>
                     <InputNumber
                       min={0}
-                      max={999999}
+                      max={1000000}
                       value={filters.priceRange[1]}
                       onChange={(value) => {
-                        const max = typeof value === 'number' && !Number.isNaN(value) ? value : 999999;
+                        const max = typeof value === 'number' && !Number.isNaN(value) ? value : 1000000;
                         const min = filters.priceRange[0];
                         handleFilterChange('priceRange', [min, max]);
                       }}

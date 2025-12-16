@@ -95,6 +95,36 @@
     }
     ```
 
+### 检查用户名是否已存在
+- `GET /auth/check-username`
+  - Query Params:
+    - `username` - 要检查的用户名
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "data": {
+        "exists": true
+      }
+    }
+    ```
+  - 说明：用于注册时检查用户名是否已被占用，`exists` 为 `true` 表示已存在
+
+### 检查邮箱是否已存在
+- `GET /auth/check-email`
+  - Query Params:
+    - `email` - 要检查的邮箱
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "data": {
+        "exists": true
+      }
+    }
+    ```
+  - 说明：用于注册时检查邮箱是否已被注册，`exists` 为 `true` 表示已存在
+
 ### 认证说明
 认证通过后，前端将 `token` 存储在 `localStorage.authToken`，并将 `user` 存储在 `localStorage.authUser`。当未找到 `authToken` 时，前端会回退读取 `localStorage.authUser.token`。
 后续请求中，前端会在请求头自动附加 `Authorization: Bearer <token>`。Axios 基础配置包含 `baseURL` 与 `timeout: 10000` 毫秒。
@@ -107,7 +137,8 @@
     - `keyword` - 搜索关键词
     - `category` - 商品分类（electronics/books/daily/other）
     - `location` - 地点
-    - `status` - 状态（在售/已下架/全部）
+    - `status` - 状态（在售/已下架/已售出/全部）
+    - `excludeSold` - 是否排除已售出商品（true/false，默认true）
     - `priceMin` - 最低价格
     - `priceMax` - 最高价格
     - `sort` - 排序方式（latest/price-low/price-high/popular）
@@ -194,10 +225,72 @@
     ```
   - 说明：也支持返回 `{ items: Product[] }`，前端会自动兼容
 
+### 创建商品
+- `POST /products`
+  - Content-Type: `multipart/form-data`
+  - Request:
+    - `pro_name` - 商品标题
+    - `price` - 价格
+    - `category` - 分类
+    - `discription` - 描述
+    - `location` - 交易地址
+    - `tradeMethod` - 交易方式（逗号分隔：campus,express）
+    - `negotiable` - 是否支持议价（true/false）
+    - `images` - 图片文件（多个）
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "message": "商品发布成功",
+      "data": {
+        "id": 123
+      }
+    }
+    ```
+
+### 更新商品
+- `PUT /products/:id`
+  - Content-Type: `multipart/form-data`
+  - Request: 同创建商品，额外支持：
+    - `existingImages` - 保留的已有图片URL列表（JSON字符串）
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "message": "商品更新成功",
+      "data": {
+        "id": 123
+      }
+    }
+    ```
+
+### 更新商品状态
+- `PATCH /products/:id/status`
+  - Request:
+    ```json
+    {
+      "status": "在售"
+    }
+    ```
+  - 说明：status 可选值：`在售`、`已下架`、`已售出`
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "message": "状态更新成功",
+      "data": {
+        "id": 123,
+        "status": "在售"
+      }
+    }
+    ```
+
 ## 首页 Home
 
 ### 获取热门商品
 - `GET /home/hot`
+  - Query Params:
+    - `excludeSold` - 是否排除已售出商品（true/false，默认true）
   - Response:
     ```json
     [
@@ -219,6 +312,8 @@
 
 ### 获取最新发布
 - `GET /home/latest`
+  - Query Params:
+    - `excludeSold` - 是否排除已售出商品（true/false，默认true）
   - Response:
     ```json
     [
@@ -393,6 +488,65 @@
     }
     ```
 
+### 获取订单详情
+- `GET /orders/:id`
+  - Response:
+    ```json
+    {
+      "id": 1,
+      "status": "pending",
+      "orderTime": "2024-01-15T10:30:00Z",
+      "product": {
+        "id": 123,
+        "title": "iPhone 14 Pro",
+        "price": 6999,
+        "image": "/images/products/product-1.jpg"
+      },
+      "buyer": {
+        "id": 1,
+        "nickname": "买家昵称"
+      },
+      "seller": {
+        "id": 2,
+        "nickname": "卖家昵称"
+      },
+      "sellerMessage": "卖家留言内容",
+      "sellerImages": ["/images/order/img1.jpg"]
+    }
+    ```
+  - 说明：status 可选值：`pending`（待处理）、`seller_processed`（卖家已处理）、`completed`（已完成）、`cancelled`（已取消）
+
+### 更新订单状态
+- `PATCH /orders/:id/status`
+  - Request:
+    ```json
+    {
+      "status": "seller_processed",
+      "sellerMessage": "卖家留言",
+      "sellerImages": ["/images/order/img1.jpg"]
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "message": "更新成功"
+    }
+    ```
+
+### 上传订单图片
+- `POST /orders/:id/images`
+  - Content-Type: `multipart/form-data`
+  - Request:
+    - `image` - 图片文件
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "url": "/images/order/uploaded-image.jpg"
+    }
+    ```
+
 ## 用户 User
 
 ### 获取当前用户信息
@@ -402,37 +556,46 @@
     {
       "id": 1,
       "username": "张同学",
+      "nickname": "张同学",
       "email": "1234567@email.com",
       "avatar": "/images/avatars/avatar-1.svg",
       "phone": "13800138000",
-      "school": "北京大学",
-      "studentId": "2021001",
-      "createdAt": "2024-01-01T00:00:00Z"
+      "address": "北京大学",
+      "bio": "个人简介内容",
+      "joinDate": "2024-01-01",
+      "gender": "男",
+      "lastLoginAt": "2024-01-15T10:30:00Z"
     }
     ```
+  - 说明：前端统一显示以下字段：id, username, nickname, email, avatar, phone, address, bio, joinDate, gender, lastLoginAt。后端未返回的字段前端会显示为空。
 
 ### 更新当前用户信息
 - `PUT /user/me`
-  - Request:
+  - Request（可编辑字段）:
     ```json
     {
-      "username": "张同学",
+      "nickname": "张同学",
       "phone": "13800138000",
-      "school": "北京大学",
-      "studentId": "2021001"
+      "address": "北京大学",
+      "bio": "个人简介内容",
+      "gender": 1
     }
     ```
+  - 说明：gender 字段值：0=保密，1=男，2=女
   - Response:
     ```json
     {
       "id": 1,
       "username": "张同学",
+      "nickname": "张同学",
       "email": "1234567@email.com",
       "avatar": "/images/avatars/avatar-1.svg",
       "phone": "13800138000",
-      "school": "北京大学",
-      "studentId": "2021001",
-      "createdAt": "2024-01-01T00:00:00Z"
+      "address": "北京大学",
+      "bio": "个人简介内容",
+      "joinDate": "2024-01-01",
+      "gender": "男",
+      "lastLoginAt": "2024-01-15T10:30:00Z"
     }
     ```
 

@@ -97,18 +97,6 @@
 .description-content p {
   margin-bottom: 12px;
 }
-
-.product-tags {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.product-tags h4 {
-  margin-bottom: 12px;
-  color: #262626;
-}
-
 /* 规格表 */
 .spec-item {
   display: flex;

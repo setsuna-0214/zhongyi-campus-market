@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Card, Tabs, List, Button, Space, Empty, message } from 'antd';
+import { Card, Tabs, List, Empty, message } from 'antd';
 import ProductCard from '../../../components/ProductCard';
 import { resolveImageSrc } from '../../../utils/images';
-import { listOrders, confirmReceived, cancelOrder, submitReview } from '../../../api/orders';
+import { listOrders } from '../../../api/orders';
 
 export default function SectionOrders({ userInfo, onNavigate }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const myId = useMemo(() => userInfo?.id || userInfo?._id || userInfo?.userId, [userInfo]);
+  const myId = useMemo(() => userInfo?.id || userInfo?._id || userInfo?.userId || userInfo?.user_Id, [userInfo]);
 
   useEffect(() => {
     let mounted = true;
@@ -51,9 +51,8 @@ export default function SectionOrders({ userInfo, onNavigate }) {
         const p = order.product || {};
         const amount = (Number(p.price) || 0) * (Number(p.quantity) || 1);
         const counterpartName = role === 'purchase' ? (order.seller?.nickname || '卖家') : (order.buyer?.nickname || '买家');
-        const productId = p.id || p._id;
         return (
-          <List.Item key={order.id || productId}>
+          <List.Item key={order.id}>
             <div className="product-item">
               <ProductCard
                 imageSrc={resolveImageSrc({ product: p, item: p })}
@@ -67,34 +66,11 @@ export default function SectionOrders({ userInfo, onNavigate }) {
                 views={0}
                 overlayType="none"
                 dateFormat={'ymd'}
-                onClick={() => productId && onNavigate(`/products/${productId}`)}
+                onClick={() => onNavigate(`/orders/${order.id}`)}
                 imageHeight={200}
+                showOrderButton
+                onOrderClick={() => onNavigate(`/orders/${order.id}`)}
               />
-              <div className="card-actions">
-                <Space>
-                  {order.status === 'pending' && role === 'purchase' && (
-                    <>
-                      <Button type="link" onClick={async () => {
-                        try { await confirmReceived(order.id); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'completed' } : o)); message.success('已确认收货'); } catch (e) { message.error(e?.message || '操作失败'); }
-                      }}>确认收货</Button>
-                      <Button type="link" danger onClick={async () => {
-                        try { await cancelOrder(order.id); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'cancelled' } : o)); message.success('订单已取消'); } catch (e) { message.error(e?.message || '操作失败'); }
-                      }}>取消订单</Button>
-                    </>
-                  )}
-                  {order.status === 'pending' && role === 'sell' && (
-                    <Button type="link" onClick={async () => {
-                      try { await confirmReceived(order.id); setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'completed' } : o)); message.success('订单已标记完成'); } catch (e) { message.error(e?.message || '操作失败'); }
-                    }}>标记完成</Button>
-                  )}
-                  {order.status === 'completed' && role === 'purchase' && (
-                    <Button type="link" onClick={async () => {
-                      try { await submitReview(order.id, { rating: 5, comment: '好评' }); message.success('评价已提交'); } catch (e) { message.error(e?.message || '操作失败'); }
-                    }}>评价</Button>
-                  )}
-                  <Button type="link" onClick={() => productId && onNavigate(`/products/${productId}`)}>查看详情</Button>
-                </Space>
-              </div>
             </div>
           </List.Item>
         );

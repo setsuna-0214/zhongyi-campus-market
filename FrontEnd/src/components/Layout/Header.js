@@ -109,7 +109,7 @@ const Header = () => {
         <div className="header-search">
           <Space.Compact>
             <Input
-              placeholder="搜索商品、分类或卖家"
+              placeholder="搜索商品或卖家"
               size="large"
               value={headerKeyword}
               onChange={(e) => setHeaderKeyword(e.target.value)}

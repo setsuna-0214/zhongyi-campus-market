@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Form,
   Input,
@@ -14,7 +14,8 @@ import {
   Checkbox,
   Typography,
   Alert,
-  Modal
+  Modal,
+  Spin
 } from 'antd';
 import {
   PlusOutlined,
@@ -22,7 +23,7 @@ import {
 } from '@ant-design/icons';
 import './Publish.css';
 import { CATEGORY_CODE_TO_LABEL } from '../../utils/labels';
-import { createProduct } from '../../api/products';
+import { createProduct, getProduct, updateProduct, updateProductStatus } from '../../api/products';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -30,14 +31,90 @@ const { Title, Text } = Typography;
 
 const PublishProduct = () => {
   const navigate = useNavigate();
+  const { id: productId } = useParams(); // 编辑模式时有商品ID
+  const isEditMode = !!productId;
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(false);
   const [imageList, setImageList] = useState([]);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
+  const [productStatus, setProductStatus] = useState('在售'); // 商品当前状态
+  const [statusLoading, setStatusLoading] = useState(false); // 状态切换加载中
 
   // 商品分类数据
   const categories = Object.entries(CATEGORY_CODE_TO_LABEL).map(([value, label]) => ({ value, label }));
+
+  // 编辑模式：加载商品数据
+  const loadProductData = useCallback(async () => {
+    if (!productId) return;
+    setInitialLoading(true);
+    try {
+      const product = await getProduct(productId);
+      // 填充表单数据
+      form.setFieldsValue({
+        title: product.title,
+        category: product.category,
+        description: product.description,
+        price: product.price,
+        negotiable: product.negotiable,
+        tradeMethod: product.tradeMethod 
+          ? (Array.isArray(product.tradeMethod) ? product.tradeMethod : product.tradeMethod.split(',').map(s => s.trim()))
+          : [],
+        location: product.location,
+      });
+      // 保存商品当前状态
+      setProductStatus(product.status || '在售');
+      // 处理已有图片
+      if (product.images && product.images.length > 0) {
+        const existingImages = product.images.map((url, index) => ({
+          uid: `existing-${index}`,
+          name: `image-${index}.jpg`,
+          status: 'done',
+          url: url,
+          isExisting: true, // 标记为已有图片
+        }));
+        setImageList(existingImages);
+        form.setFieldsValue({ images: existingImages });
+      }
+    } catch (error) {
+      message.error('加载商品信息失败');
+      navigate('/user?tab=products');
+    } finally {
+      setInitialLoading(false);
+    }
+  }, [productId, form, navigate]);
+
+  // 切换商品上架/下架状态
+  const handleToggleStatus = async () => {
+    if (!productId) return;
+    // 已售出的商品不能切换状态
+    if (productStatus === '已售出' || productStatus === 'sold') {
+      message.warning('已售出的商品无法修改状态');
+      return;
+    }
+    const newStatus = (productStatus === '在售' || productStatus === 'available') ? '已下架' : '在售';
+    setStatusLoading(true);
+    try {
+      const result = await updateProductStatus(productId, newStatus);
+      if (result?.code === 200) {
+        setProductStatus(newStatus);
+        message.success(newStatus === '在售' ? '商品已重新上架' : '商品已下架');
+      } else {
+        message.error(result?.message || '操作失败');
+      }
+    } catch (error) {
+      message.error(error.message || '操作失败');
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isEditMode) {
+      loadProductData();
+    }
+  }, [isEditMode, loadProductData]);
 
   // 图片上传处理
   const handleImageChange = ({ fileList }) => {
@@ -73,9 +150,24 @@ const PublishProduct = () => {
       formData.append('price', String(values.price));
       formData.append('category', values.category || 'other');
       formData.append('discription', values.description || '');
+      formData.append('location', values.location || '');
+      // 交易方式：数组转为逗号分隔的字符串
+      if (values.tradeMethod && values.tradeMethod.length > 0) {
+        formData.append('tradeMethod', values.tradeMethod.join(','));
+      }
+      // 是否支持议价
+      formData.append('negotiable', values.negotiable ? 'true' : 'false');
       
       // 添加图片文件
       if (imageList && imageList.length > 0) {
+        // 已有图片的URL列表
+        const existingImageUrls = imageList
+          .filter(file => file.isExisting && file.url)
+          .map(file => file.url);
+        if (existingImageUrls.length > 0) {
+          formData.append('existingImages', JSON.stringify(existingImageUrls));
+        }
+        // 新上传的图片
         imageList.forEach((file) => {
           if (file.originFileObj) {
             formData.append('images', file.originFileObj);
@@ -83,17 +175,28 @@ const PublishProduct = () => {
         });
       }
 
-      // 调用真实 API
-      const result = await createProduct(formData);
-      
-      if (result?.code === 200) {
-        message.success('商品发布成功！');
-        navigate('/user?tab=products');
+      let result;
+      if (isEditMode) {
+        // 编辑模式：调用更新 API
+        result = await updateProduct(productId, formData);
+        if (result?.code === 200) {
+          message.success('商品更新成功！');
+          navigate('/user?tab=products');
+        } else {
+          message.error(result?.message || '更新失败，请重试');
+        }
       } else {
-        message.error(result?.message || '发布失败，请重试');
+        // 新建模式：调用创建 API
+        result = await createProduct(formData);
+        if (result?.code === 200) {
+          message.success('商品发布成功！');
+          navigate('/user?tab=products');
+        } else {
+          message.error(result?.message || '发布失败，请重试');
+        }
       }
     } catch (error) {
-      message.error(error.message || '发布失败，请重试');
+      message.error(error.message || (isEditMode ? '更新失败，请重试' : '发布失败，请重试'));
     } finally {
       setLoading(false);
     }
@@ -101,11 +204,21 @@ const PublishProduct = () => {
 
   
 
+  if (initialLoading) {
+    return (
+      <div className="page-container publish-container" style={{ textAlign: 'center', padding: '100px 0' }}>
+        <Spin size="large" tip="加载商品信息中..." />
+      </div>
+    );
+  }
+
   return (
     <div className="page-container publish-container">
       <div className="publish-header">
-        <Title level={2}>发布商品</Title>
-        <Text type="secondary">发布你的闲置物品，让它们找到新主人</Text>
+        <Title level={2}>{isEditMode ? '编辑商品' : '发布商品'}</Title>
+        <Text type="secondary">
+          {isEditMode ? '修改商品信息后点击保存' : '发布你的闲置物品，让它们找到新主人'}
+        </Text>
       </div>
 
       <Card className="publish-card">
@@ -115,10 +228,12 @@ const PublishProduct = () => {
           onFinish={handleSubmit}
           onFinishFailed={(errorInfo) => {
             console.log('表单验证失败:', errorInfo);
-            message.error('请填写所有必填项');
+            const firstError = errorInfo.errorFields?.[0]?.errors?.[0];
+            message.error(firstError || '请填写所有必填项并确保信息正确');
           }}
           className="publish-form"
           scrollToFirstError
+          validateTrigger={['onChange', 'onBlur']}
         >
           <Card title="商品信息" className="step-card">
             <Row gutter={24}>
@@ -128,10 +243,19 @@ const PublishProduct = () => {
                   label="商品标题"
                   rules={[
                     { required: true, message: '请输入商品标题' },
-                    { max: 50, message: '标题不能超过50个字符' }
+                    { min: 2, message: '标题至少2个字符' },
+                    { max: 50, message: '标题不能超过50个字符' },
+                    {
+                      validator: (_, value) => {
+                        if (value && /^[\s]+$/.test(value)) {
+                          return Promise.reject(new Error('标题不能只包含空格'));
+                        }
+                        return Promise.resolve();
+                      }
+                    }
                   ]}
                 >
-                  <Input placeholder="请输入商品标题" showCount maxLength={50} />
+                  <Input placeholder="请输入商品标题（2-50个字符）" showCount maxLength={50} />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -181,12 +305,21 @@ const PublishProduct = () => {
                   label="商品描述"
                   rules={[
                     { required: true, message: '请输入商品描述' },
-                    { min: 10, message: '描述至少10个字符' }
+                    { min: 10, message: '描述至少10个字符，请详细描述商品信息' },
+                    { max: 500, message: '描述不能超过500个字符' },
+                    {
+                      validator: (_, value) => {
+                        if (value && /^[\s]+$/.test(value)) {
+                          return Promise.reject(new Error('描述不能只包含空格'));
+                        }
+                        return Promise.resolve();
+                      }
+                    }
                   ]}
                 >
                   <TextArea
                     rows={6}
-                    placeholder="详细描述商品的外观、功能、使用情况等信息"
+                    placeholder="详细描述商品的外观、功能、使用情况等信息（至少10个字符）"
                     showCount
                     maxLength={500}
                   />
@@ -203,7 +336,20 @@ const PublishProduct = () => {
                   label="出售价格"
                   rules={[
                     { required: true, message: '请输入出售价格' },
-                    { type: 'number', min: 0.01, message: '价格必须大于0' }
+                    { type: 'number', min: 0.01, message: '价格必须大于0' },
+                    {
+                      validator: (_, value) => {
+                        if (value !== undefined && value !== null) {
+                          if (value < 0.01) {
+                            return Promise.reject(new Error('价格必须大于0'));
+                          }
+                          if (value > 1000000) {
+                            return Promise.reject(new Error('价格不能超过1000000元'));
+                          }
+                        }
+                        return Promise.resolve();
+                      }
+                    }
                   ]}
                 >
                   <InputNumber
@@ -233,14 +379,11 @@ const PublishProduct = () => {
                 >
                   <Checkbox.Group>
                     <Row>
-                      <Col span={12}>
-                        <Checkbox value="campus">校内交易</Checkbox>
+                      <Col span={20}>
+                        <Checkbox value="campus">校内交易（自提）</Checkbox>
                       </Col>
-                      <Col span={12}>
+                      <Col span={20}>
                         <Checkbox value="express">快递邮寄</Checkbox>
-                      </Col>
-                      <Col span={12}>
-                        <Checkbox value="pickup">自提</Checkbox>
                       </Col>
                     </Row>
                   </Checkbox.Group>
@@ -250,21 +393,13 @@ const PublishProduct = () => {
                 <Form.Item
                   name="location"
                   label="交易地址"
-                  rules={[{ required: true, message: '请输入交易地址' }]}
+                  rules={[
+                    { required: true, message: '请输入交易地址' },
+                    { min: 2, message: '地址至少2个字符' },
+                    { max: 100, message: '地址不能超过100个字符' }
+                  ]}
                 >
-                  <Input placeholder="请输入具体的交易地址或区域" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="contactMethod"
-                  label="联系方式"
-                  rules={[{ required: true, message: '请选择联系方式' }]}
-                >
-                  <Select placeholder="请选择联系方式">
-                    <Option value="phone">电话联系</Option>
-                    <Option value="platform">站内私信</Option>
-                  </Select>
+                  <Input placeholder="请输入具体的交易地址或区域" maxLength={100} />
                 </Form.Item>
               </Col>
             </Row>
@@ -294,8 +429,29 @@ const PublishProduct = () => {
               loading={loading}
               icon={<CheckCircleOutlined />}
             >
-              确认发布
+              {isEditMode ? '保存修改' : '确认发布'}
             </Button>
+            {isEditMode && (
+              <>
+                {/* 上架/下架按钮 - 仅编辑模式显示，已售出商品不显示 */}
+                {productStatus !== '已售出' && productStatus !== 'sold' && (
+                  <Button
+                    style={{ marginLeft: 12 }}
+                    danger={productStatus === '在售' || productStatus === 'available'}
+                    loading={statusLoading}
+                    onClick={handleToggleStatus}
+                  >
+                    {(productStatus === '在售' || productStatus === 'available') ? '下架商品' : '重新上架'}
+                  </Button>
+                )}
+                <Button
+                  style={{ marginLeft: 12 }}
+                  onClick={() => navigate('/user?tab=products')}
+                >
+                  取消
+                </Button>
+              </>
+            )}
           </div>
         </Form>
       </Card>

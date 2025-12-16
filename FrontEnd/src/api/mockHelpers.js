@@ -46,7 +46,7 @@ export function normalizeMockFavorite(item) {
     publishedAt:
       item?.publishedAt || product?.publishTime || product?.publishedAt || product?.createdAt,
     tags: item?.tags || product?.tags || [],
-    seller: item?.seller || product?.seller || { name: '卖家', rating: 4.6 },
+    seller: item?.seller || product?.seller || { nickname: '卖家', rating: 4.6 },
     location: item?.location || product?.location || '校园',
     sales:
       typeof item?.sales === 'number'
@@ -68,7 +68,7 @@ export function normalizeMockPurchase(order) {
     category: order?.product?.category || product?.category || 'other',
     status: order?.product?.status || product?.status || '在售',
     location: order?.product?.location || product?.location || '校园',
-    seller: order?.seller || product?.seller || { name: '卖家', rating: 4.6 },
+    seller: order?.seller || product?.seller || { nickname: '卖家', rating: 4.6 },
     publishTime: product?.publishTime || product?.publishedAt || product?.createdAt,
     views: product?.views ?? order?.product?.views ?? 0,
     productImage: imageSrc,
@@ -99,7 +99,7 @@ export function createMockFavorite(productId) {
     isAvailable: (product?.status || '在售') === '在售',
     publishedAt: product?.publishTime || product?.publishedAt || product?.createdAt,
     tags: product?.tags || [],
-    seller: product?.seller || { name: '卖家', rating: 4.6 },
+    seller: product?.seller || { nickname: '卖家', rating: 4.6 },
     location: product?.location || '校园',
     sales: Math.max(0, Math.floor((product?.views || 0) / 3)),
     status: product?.status || '在售',

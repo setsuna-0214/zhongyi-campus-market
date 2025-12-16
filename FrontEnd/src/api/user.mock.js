@@ -49,8 +49,13 @@ export async function getCurrentUser() {
   if (raw) {
     const parsed = JSON.parse(raw);
     const merged = { ...mockUserDebug, ...parsed };
+    // 清理不需要的字段，只保留：id, username, nickname, email, avatar, phone, address, bio, joinDate, gender, lastLoginAt
     delete merged.adress;
     delete merged.location;
+    delete merged.role;
+    delete merged.school;
+    delete merged.studentId;
+    delete merged.createdAt;
     if ('verified' in merged) delete merged.verified;
     return merged;
   }
@@ -64,18 +69,24 @@ export async function updateCurrentUser(payload) {
     if (raw) base = { ...mockUserDebug, ...JSON.parse(raw) };
   } catch {}
   const sanitized = { ...payload };
-  if (sanitized.adress && !sanitized.address) {
-    sanitized.address = sanitized.adress;
-  }
+  // 清理不需要的字段
   delete sanitized.adress;
-  if (!sanitized.address) {
-    sanitized.address = base.address || '';
-  }
   delete sanitized.location;
+  delete sanitized.role;
+  delete sanitized.school;
+  delete sanitized.studentId;
+  delete sanitized.createdAt;
   if ('verified' in sanitized) delete sanitized.verified;
-  ['id','username','token','createdAt','lastLoginAt','joinDate'].forEach(k => { if (k in sanitized) delete sanitized[k]; });
+  // 不可编辑字段
+  ['id', 'username', 'email', 'token', 'joinDate', 'lastLoginAt'].forEach(k => { if (k in sanitized) delete sanitized[k]; });
   const updated = { ...base, ...sanitized };
-  if ('location' in updated) delete updated.location;
+  // 清理更新后对象中的无效字段
+  delete updated.adress;
+  delete updated.location;
+  delete updated.role;
+  delete updated.school;
+  delete updated.studentId;
+  delete updated.createdAt;
   if ('verified' in updated) delete updated.verified;
   try { localStorage.setItem('authUser', JSON.stringify(updated)); } catch {}
   return updated;

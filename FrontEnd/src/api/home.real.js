@@ -1,12 +1,14 @@
 import client from './client';
 
 export async function getHotProducts() {
-  const { data } = await client.get('/home/hot');
+  // 排除已售出商品
+  const { data } = await client.get('/home/hot', { params: { excludeSold: 'true' } });
   return Array.isArray(data) ? data : (data.items || []);
 }
 
 export async function getLatestProducts() {
-  const { data } = await client.get('/home/latest');
+  // 排除已售出商品
+  const { data } = await client.get('/home/latest', { params: { excludeSold: 'true' } });
   return Array.isArray(data) ? data : (data.items || []);
 }
 

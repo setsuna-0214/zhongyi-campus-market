@@ -64,11 +64,42 @@ export async function createOrder({ productId, quantity = 1 }) {
       category: product?.category,
       location: product?.location
     },
-    seller: product?.seller || { id: 'seller', name: '卖家' },
-    buyer: { id: mockUserDebug.id, name: mockUserDebug.nickname || '我' }
+    seller: product?.seller || { id: 'seller', nickname: '卖家' },
+    buyer: { id: mockUserDebug.id, nickname: mockUserDebug.nickname || '我' }
   };
   const next = [newOrder, ...orders];
   writeMockList('mock_orders', next);
   return newOrder;
 }
 
+
+export async function getOrderDetail(orderId) {
+  ensureMockState();
+  const orders = readMockList('mock_orders');
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) throw new Error('订单不存在');
+  return order;
+}
+
+export async function updateOrderStatus(orderId, data) {
+  ensureMockState();
+  const orders = readMockList('mock_orders');
+  const index = orders.findIndex(o => String(o.id) === String(orderId));
+  if (index === -1) throw new Error('订单不存在');
+  
+  const updated = {
+    ...orders[index],
+    status: data.status || orders[index].status,
+    sellerMessage: data.sellerMessage || orders[index].sellerMessage,
+    sellerImages: data.sellerImages || orders[index].sellerImages
+  };
+  orders[index] = updated;
+  writeMockList('mock_orders', orders);
+  return { code: 200, message: '更新成功', data: updated };
+}
+
+export async function uploadOrderImages(orderId, formData) {
+  // Mock: 模拟图片上传，返回假URL
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return { code: 200, url: `/images/products/product-${Date.now()}.jpg` };
+}

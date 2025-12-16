@@ -143,7 +143,7 @@ const Home = () => {
           category={product.category}
           status={product.status}
           location={product.location}
-          sellerName={product.seller?.name || product.seller}
+          sellerName={product.seller?.nickname || product.seller?.username || product.seller}
           sellerId={product.sellerId || product.seller?.id}
           publishedAt={product.publishedAt}
           views={product.views}

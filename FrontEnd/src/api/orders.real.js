@@ -30,3 +30,20 @@ export async function createOrder({ productId, quantity = 1 }) {
   return data;
 }
 
+
+export async function getOrderDetail(orderId) {
+  const { data } = await client.get(`/orders/${orderId}`);
+  return data;
+}
+
+export async function updateOrderStatus(orderId, payload) {
+  const { data } = await client.patch(`/orders/${orderId}/status`, payload);
+  return data;
+}
+
+export async function uploadOrderImages(orderId, formData) {
+  const { data } = await client.post(`/orders/${orderId}/images`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return data;
+}

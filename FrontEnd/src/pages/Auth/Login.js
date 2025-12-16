@@ -24,14 +24,22 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
+  // 判断输入是否为邮箱格式
+  const isEmail = (value) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
+  };
+
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      const res = await login({
-        username: values.username,
-        email: values.username, // 支持邮箱或用户名登录
-        password: values.password,
-      });
+      const input = values.username?.trim();
+      // 根据输入格式判断是用户名还是邮箱
+      const loginPayload = isEmail(input)
+        ? { email: input, password: values.password }
+        : { username: input, password: values.password };
+      
+      const res = await login(loginPayload);
       
       // 后端返回格式: { code: 200, message: "登录成功", data: { token, user } }
       if (res?.code !== 200) {

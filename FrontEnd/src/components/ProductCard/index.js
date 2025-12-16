@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './index.css';
 import { FALLBACK_IMAGE } from '../../utils/images';
 import { Card, Tag, Avatar } from 'antd';
-import { EyeOutlined, EnvironmentOutlined, UserOutlined } from '@ant-design/icons';
+import { EyeOutlined, EnvironmentOutlined, UserOutlined, EditOutlined, DeleteOutlined, FileTextOutlined } from '@ant-design/icons';
+import { Popconfirm } from 'antd';
 import { getCategoryLabel, getStatusLabel, getStatusColor } from '../../utils/labels';
 
 /**
@@ -88,6 +89,12 @@ const ProductCard = ({
   unavailableText = '暂时缺货',
   imageAlt,
   imageHeight,
+  showEditButton,
+  onEdit,
+  showDeleteButton,
+  onDelete,
+  showOrderButton,
+  onOrderClick,
 }) => {
   const navigate = useNavigate();
   const overlayClass = overlayType === 'publish-right' ? 'overlay-recent' : (overlayType === 'views-left' ? 'overlay-hot' : '');
@@ -153,6 +160,44 @@ const ProductCard = ({
           {unavailable && (
             <div className="unavailable-overlay">
               <span>{unavailableText}</span>
+            </div>
+          )}
+          {/* 编辑按钮 - 左下角 */}
+          {showEditButton && (
+            <div
+              className="action-badge action-badge-left"
+              onClick={(e) => { e.stopPropagation(); onEdit?.(); }}
+              title="编辑"
+            >
+              <EditOutlined />
+            </div>
+          )}
+          {/* 删除按钮 - 右下角 */}
+          {showDeleteButton && (
+            <Popconfirm
+              title="确定要删除这个商品吗？该操作不可逆，请谨慎操作。"
+              onConfirm={() => onDelete?.()}
+              onCancel={(e) => e?.stopPropagation()}
+              okText="确定"
+              cancelText="取消"
+            >
+              <div
+                className="action-badge action-badge-right"
+                onClick={(e) => e.stopPropagation()}
+                title="删除该商品"
+              >
+                <DeleteOutlined />
+              </div>
+            </Popconfirm>
+          )}
+          {/* 订单处理按钮 - 右下角 */}
+          {showOrderButton && (
+            <div
+              className="action-badge action-badge-right"
+              onClick={(e) => { e.stopPropagation(); onOrderClick?.(); }}
+              title="订单处理"
+            >
+              <FileTextOutlined />
             </div>
           )}
         </div>
@@ -223,7 +268,10 @@ const areEqual = (prevProps, nextProps) => {
     prevProps.unavailable === nextProps.unavailable &&
     prevProps.unavailableText === nextProps.unavailableText &&
     prevProps.imageAlt === nextProps.imageAlt &&
-    prevProps.imageHeight === nextProps.imageHeight
+    prevProps.imageHeight === nextProps.imageHeight &&
+    prevProps.showEditButton === nextProps.showEditButton &&
+    prevProps.showDeleteButton === nextProps.showDeleteButton &&
+    prevProps.showOrderButton === nextProps.showOrderButton
   );
 };
 

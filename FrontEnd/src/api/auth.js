@@ -10,3 +10,5 @@ export const login = impl.login;
 export const register = impl.register;
 export const sendCode = impl.sendCode;
 export const forgotPassword = impl.forgotPassword;
+export const checkUsernameExists = impl.checkUsernameExists;
+export const checkEmailExists = impl.checkEmailExists;

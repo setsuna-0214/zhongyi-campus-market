@@ -7,6 +7,8 @@ export async function searchProducts({ keyword, category, priceRange, location, 
     location: location || undefined,
     sort: sortBy || undefined,
     status: status || undefined,
+    // 默认排除已售出商品（除非明确搜索已售出）
+    excludeSold: status !== '已售出' ? 'true' : undefined,
     page,
     pageSize,
   };
@@ -39,6 +41,18 @@ export async function createProduct(formData) {
   const { data } = await client.post('/products', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
+  return data;
+}
+
+export async function updateProduct(id, formData) {
+  const { data } = await client.put(`/products/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  return data;
+}
+
+export async function updateProductStatus(id, status) {
+  const { data } = await client.patch(`/products/${id}/status`, { status });
   return data;
 }
 

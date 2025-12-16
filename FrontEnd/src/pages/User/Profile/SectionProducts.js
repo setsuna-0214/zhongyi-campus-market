@@ -1,9 +1,21 @@
-import React from 'react';
-import { Card, Tabs, List, Button, Space, Popconfirm, Empty } from 'antd';
+import React, { useMemo } from 'react';
+import { Card, Tabs, List, Button, Empty } from 'antd';
 import ProductCard from '../../../components/ProductCard';
 import { resolveImageSrc } from '../../../utils/images';
 
 export default function SectionProducts({ myProducts, purchaseHistory, onDeleteProduct, onNavigate, isReadOnly = false }) {
+  // 去重购买记录，根据商品ID去除重复项
+  const uniquePurchaseHistory = useMemo(() => {
+    if (!purchaseHistory) return [];
+    const seen = new Set();
+    return purchaseHistory.filter((item) => {
+      const id = item.id || item.productId;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }, [purchaseHistory]);
+
   const items = [
     {
       key: 'published',
@@ -28,7 +40,7 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
                     category={item.category}
                     status={item.status}
                     location={item.location}
-                    sellerName={item.seller?.nickname || item.seller}
+                    sellerName={typeof item.seller === 'object' ? (item.seller?.nickname || item.seller?.username || '卖家') : (item.seller || '卖家')}
                     sellerId={typeof item.seller === 'object' ? item.seller?.id : item.sellerId}
                     publishedAt={item.publishTime || item.publishedAt || item.createdAt}
                     views={item.views}
@@ -36,20 +48,11 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
                     dateFormat={'ymd'}
                     onClick={() => onNavigate(`/products/${item.id}`)}
                     imageHeight={200}
+                    showEditButton={!isReadOnly}
+                    onEdit={() => onNavigate(`/products/${item.id}/edit`)}
+                    showDeleteButton={!isReadOnly}
+                    onDelete={() => onDeleteProduct(item.id)}
                   />
-                  <div className="card-actions">
-                    <Space>
-                      <Button type="link" onClick={() => onNavigate(`/products/${item.id}`)}>查看详情</Button>
-                      {!isReadOnly && (
-                        <>
-                          <Button type="link">编辑</Button>
-                          <Popconfirm title="确定要删除这个商品吗？" onConfirm={() => onDeleteProduct(item.id)}>
-                            <Button type="link" danger>删除</Button>
-                          </Popconfirm>
-                        </>
-                      )}
-                    </Space>
-                  </div>
                 </div>
               </List.Item>
             )}
@@ -67,7 +70,7 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
       children: (
         <List
           grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3, xl: 3, xxl: 3 }}
-          dataSource={purchaseHistory}
+          dataSource={uniquePurchaseHistory}
           renderItem={(item) => (
             <List.Item>
               <div className="product-item">
@@ -78,7 +81,7 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
                   category={item.category || (Array.isArray(item.tags) ? item.tags[0] : '')}
                   status={item.status || item.saleStatus || item.state}
                   location={item.location}
-                  sellerName={item.seller?.nickname || item.seller || item.vendor?.nickname || '卖家'}
+                  sellerName={typeof item.seller === 'object' ? (item.seller?.nickname || item.seller?.username || '卖家') : (item.seller || item.vendor?.nickname || item.vendor?.username || '卖家')}
                   sellerId={typeof item.seller === 'object' ? item.seller?.id : (item.sellerId || item.vendor?.id)}
                   publishedAt={item.publishTime || item.publishedAt || item.productPublishTime || item.createdAt}
                   views={item.views || 0}
@@ -87,9 +90,6 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
                   onClick={() => onNavigate(`/products/${item.id}`)}
                   imageHeight={200}
                 />
-                <div className="card-actions">
-                  <Button type="link" onClick={() => onNavigate(`/products/${item.id}`)}>查看详情</Button>
-                </div>
               </div>
             </List.Item>
           )}

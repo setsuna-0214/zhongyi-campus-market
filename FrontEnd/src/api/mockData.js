@@ -58,8 +58,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-11-01T10:15:00.000Z',
     tags: ['平板', '学习', '娱乐'],
-    description:
-      '成色很好，使用次数不多，配件齐全。\n适合线上课堂、记笔记与娱乐。\n支持当面交易，价格可小刀。'
+    description: '成色很好，使用次数不多，配件齐全。\n适合线上课堂、记笔记与娱乐。\n支持当面交易，价格可小刀。',
+    tradeMethod: 'campus,express',
+    negotiable: true
   },
   {
     id: 'p1002',
@@ -73,8 +74,9 @@ export const mockProducts = [
     status: '已下架',
     publishTime: '2025-11-03T08:00:00.000Z',
     tags: ['教材', '数学', '考试'],
-    description:
-      '书本无缺页，部分章节有铅笔标注，已擦拭。\n赠送考研真题一本。\n同城自取优先。'
+    description: '书本无缺页，部分章节有铅笔标注，已擦拭。\n赠送考研真题一本。\n同城自取优先。',
+    tradeMethod: 'campus',
+    negotiable: false
   },
   {
     id: 'p1003',
@@ -88,8 +90,9 @@ export const mockProducts = [
     status: '已下架',
     publishTime: '2025-10-30T12:30:00.000Z',
     tags: ['生活', '家用', '夏季'],
-    description:
-      '搬宿舍出，功能正常，风力稳定。\n支持送货到楼下。'
+    description: '搬宿舍出，功能正常，风力稳定。\n支持送货到楼下。',
+    tradeMethod: 'campus',
+    negotiable: true
   },
   {
     id: 'p1004',
@@ -103,10 +106,10 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-11-04T02:30:00.000Z',
     tags: ['键盘', '外设', '机械'],
-    description:
-      '几乎全新，敲击手感好，灯效可调。\n支持试用后购买。'
-  }
-  ,
+    description: '几乎全新，敲击手感好，灯效可调。\n支持试用后购买。',
+    tradeMethod: 'campus,express',
+    negotiable: true
+  },
   {
     id: 'p1005',
     title: 'Kindle Paperwhite 电子书阅读器',
@@ -119,8 +122,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-11-02T09:40:00.000Z',
     tags: ['阅读', '电子书', '学习'],
-    description:
-      '屏幕无划痕，续航给力，支持随书赠送几本经典教材电子版。'
+    description: '屏幕无划痕，续航给力，支持随书赠送几本经典教材电子版。',
+    tradeMethod: 'campus',
+    negotiable: true
   },
   {
     id: 'p1006',
@@ -134,8 +138,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-11-01T18:15:00.000Z',
     tags: ['笔记本', '办公', '课程设计'],
-    description:
-      '键盘轻微磨损，性能稳定，适合课程设计与论文排版。'
+    description: '键盘轻微磨损，性能稳定，适合课程设计与论文排版。',
+    tradeMethod: 'campus',
+    negotiable: true
   },
   {
     id: 'p1007',
@@ -149,8 +154,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-10-28T14:10:00.000Z',
     tags: ['教材', '代数', '考试'],
-    description:
-      '封面有包书皮，内页干净，附带少量笔记。'
+    description: '封面有包书皮，内页干净，附带少量笔记。',
+    tradeMethod: 'campus',
+    negotiable: false
   },
   {
     id: 'p1008',
@@ -164,8 +170,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-10-31T07:30:00.000Z',
     tags: ['英语', '考试', '资料'],
-    description:
-      '几乎未使用，附赠听力材料下载链接。打包更优惠。'
+    description: '几乎未使用，附赠听力材料下载链接。打包更优惠。',
+    tradeMethod: 'campus,express',
+    negotiable: true
   },
   {
     id: 'p1009',
@@ -179,8 +186,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-10-29T20:10:00.000Z',
     tags: ['生活', '宿舍', '家电'],
-    description:
-      '加热快速，自动断电，宿舍必备。可面交。'
+    description: '加热快速，自动断电，宿舍必备。可面交。',
+    tradeMethod: 'campus',
+    negotiable: false
   },
   {
     id: 'p1010',
@@ -194,8 +202,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-11-03T21:05:00.000Z',
     tags: ['照明', '学习', '宿舍'],
-    description:
-      '护眼光源，亮度可调，适合看书与写作业。'
+    description: '护眼光源，亮度可调，适合看书与写作业。',
+    tradeMethod: 'campus,express',
+    negotiable: true
   },
   {
     id: 'p1011',
@@ -209,8 +218,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-10-26T11:25:00.000Z',
     tags: ['线代', '题库', '考试'],
-    description:
-      '题目解析详细，有少量笔记标注，不影响阅读。'
+    description: '题目解析详细，有少量笔记标注，不影响阅读。',
+    tradeMethod: 'campus',
+    negotiable: false
   },
   {
     id: 'p1012',
@@ -224,8 +234,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-11-04T08:55:00.000Z',
     tags: ['外设', '鼠标', '静音'],
-    description:
-      '双蓝牙支持，静音按键，移动办公佳选。'
+    description: '双蓝牙支持，静音按键，移动办公佳选。',
+    tradeMethod: 'express',
+    negotiable: true
   },
   {
     id: 'p1013',
@@ -239,8 +250,9 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-10-25T09:05:00.000Z',
     tags: ['保温杯', '生活', '出行'],
-    description:
-      '保温效果好，杯口顺滑，送原装杯套。'
+    description: '保温效果好，杯口顺滑，送原装杯套。',
+    tradeMethod: 'campus',
+    negotiable: false
   },
   {
     id: 'p1014',
@@ -254,13 +266,15 @@ export const mockProducts = [
     status: '在售',
     publishTime: '2025-11-02T13:45:00.000Z',
     tags: ['编程', 'C++', '教材'],
-    description:
-      '封面有轻微折痕，内容完整，附带课程笔记。'
+    description: '封面有轻微折痕，内容完整，附带课程笔记。',
+    tradeMethod: 'campus,express',
+    negotiable: true
   }
 ];
 
 
 // 模拟当前登录用户
+// 统一字段：id, username, nickname, email, avatar, phone, address, bio, joinDate, gender, lastLoginAt
 export const mockUserDebug = {
   id: 'u1',
   username: 'student_01',
@@ -269,12 +283,11 @@ export const mockUserDebug = {
   avatar: '/images/avatars/avatar-1.svg',
   phone: '13800000000',
   address: '珠海校区 - 榕园9号',
-  token: 'debug-token',
   bio: '这是用于调试的用户，包含完整字段以便测试展示。',
   joinDate: '2023-09-01',
-  role: 'user',
   gender: '男',
-  lastLoginAt: new Date().toISOString()
+  lastLoginAt: new Date().toISOString(),
+  token: 'debug-token'
 };
 
 // 收藏示例（为调试用户）
@@ -316,7 +329,7 @@ export const initialOrders = [
       quantity: 1
     },
     seller: mockSellers[2],
-    buyer: { id: mockUserDebug.id, name: mockUserDebug.nickname || '调试用户' }
+    buyer: { id: mockUserDebug.id, nickname: mockUserDebug.nickname || '调试用户' }
   },
   {
     id: 'o1002',
@@ -331,7 +344,7 @@ export const initialOrders = [
       quantity: 1
     },
     seller: mockSellers[1],
-    buyer: { id: mockUserDebug.id, name: mockUserDebug.nickname || '调试用户' }
+    buyer: { id: mockUserDebug.id, nickname: mockUserDebug.nickname || '调试用户' }
   }
 ];
 
@@ -340,7 +353,7 @@ export const initialConversations = [
   {
     id: 'c1',
     userId: mockSellers[0].id,
-    userName: mockSellers[0].name,
+    userName: mockSellers[0].nickname,
     userAvatar: mockSellers[0].avatar,
     lastMessage: '好的，明天图书馆见',
     lastMessageTime: new Date(Date.now() - 1000 * 60 * 20).toLocaleString(),
@@ -350,7 +363,7 @@ export const initialConversations = [
   {
     id: 'c2',
     userId: mockSellers[1].id,
-    userName: mockSellers[1].name,
+    userName: mockSellers[1].nickname,
     userAvatar: mockSellers[1].avatar,
     lastMessage: '教材还有吗？',
     lastMessageTime: new Date(Date.now() - 1000 * 60 * 60).toLocaleString(),
@@ -364,7 +377,7 @@ export const initialMessages = {
     {
       id: 'm1',
       senderId: 'seller',
-      senderName: mockSellers[0].name,
+      senderName: mockSellers[0].nickname,
       content: '明天有空吗？',
       type: 'text',
       timestamp: new Date(Date.now() - 1000 * 60 * 30).toLocaleString(),
@@ -382,7 +395,7 @@ export const initialMessages = {
     {
       id: 'm3',
       senderId: 'seller',
-      senderName: mockSellers[0].name,
+      senderName: mockSellers[0].nickname,
       content: '好的，明天图书馆见',
       type: 'text',
       timestamp: new Date(Date.now() - 1000 * 60 * 20).toLocaleString(),
@@ -402,7 +415,7 @@ export const initialMessages = {
     {
       id: 'm5',
       senderId: 'seller',
-      senderName: mockSellers[1].name,
+      senderName: mockSellers[1].nickname,
       content: '还有一本，成色不错。',
       type: 'text',
       timestamp: new Date(Date.now() - 1000 * 60 * 55).toLocaleString(),

@@ -5,22 +5,16 @@ export async function getCurrentUser() {
   // 后端返回格式: { code: 200, message: "成功", data: userInfo }
   // 需要提取 data.data 才是真正的用户信息
   const userInfo = data?.data || data;
-  const normalized = { ...(userInfo || {}) };
-  delete normalized.adress;
-  delete normalized.location;
-  if ('verified' in normalized) delete normalized.verified;
-  return normalized;
+  // 直接返回后端数据，由前端统一处理字段过滤
+  return userInfo || {};
 }
 
 export async function updateCurrentUser(payload) {
   const { data } = await client.put('/user/me', payload);
   // 后端返回格式: { code: 200, message: "修改完成", data: updatedUserInfo }
   const userInfo = data?.data || data;
-  const normalized = { ...(userInfo || {}) };
-  if ('verified' in normalized) delete normalized.verified;
-  if ('adress' in normalized) delete normalized.adress;
-  if ('location' in normalized) delete normalized.location;
-  return normalized;
+  // 直接返回后端数据，由前端统一处理字段过滤
+  return userInfo || {};
 }
 
 export async function getUserCollections() {
@@ -100,7 +94,7 @@ export async function unfollowUser(sellerId) {
 }
 
 export async function searchUsers(params) {
-  const { data } = await client.get('/user/search', { params });
+  const { data } = await client.get('/users/search', { params });
   // 后端返回格式: { code: 200, message: "搜索成功", data: { items: [...], total: 10 } }
   const result = data?.data || data;
   return {

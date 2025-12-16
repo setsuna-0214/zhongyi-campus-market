@@ -19,6 +19,7 @@ import Chat from './pages/Chat';
 import AdminDashboard from './pages/Admin/Dashboard';
 import FloatingButtons from './components/FloatingButtons';
 import AdminGuard from './pages/Admin/Guard';
+import OrderProcess from './pages/Orders/OrderProcess';
 
 import './App.css';
 import './components/ProductCard/index.css';
@@ -36,11 +37,13 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/register" element={<Register />} />
           <Route path="/products/:id" element={<ProductDetail />} />
+          <Route path="/products/:id/edit" element={<PublishProduct />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/publish" element={<PublishProduct />} />
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/users/:id" element={<SellerProfile />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/orders/:id" element={<OrderProcess />} />
           <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

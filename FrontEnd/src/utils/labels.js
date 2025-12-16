@@ -30,12 +30,13 @@ export const STATUS_CODE_TO_LABEL = {
   selling: '在售',
   on_sale: '在售',
   sold_out: '已下架',
-  sold: '已下架',
+  sold: '已售出',
   off_shelf: '已下架',
   unavailable: '已下架',
   pending: '待处理',
   在售: '在售',
   已下架: '已下架',
+  已售出: '已售出',
   待处理: 'pending'
 };
 
@@ -47,10 +48,17 @@ export function getStatusLabel(status) {
 export const STATUS_COLOR_MAP = {
   在售: 'blue',
   已下架: 'red',
+  已售出: 'green',
   待处理: 'orange'
 };
 
 export function getStatusColor(status) {
   const label = getStatusLabel(status);
   return STATUS_COLOR_MAP[label] || 'default';
+}
+
+// 判断商品是否可在列表中显示（排除已售出）
+export function isProductVisible(status) {
+  const label = getStatusLabel(status);
+  return label !== '已售出';
 }
