@@ -91,6 +91,6 @@ export async function markConversationAsRead(conversationId) {
   if (!conversationId) {
     throw new Error('conversationId is required');
   }
-  const response = await client.post(`/chat/conversations/${conversationId}/read`);
+  const response = await client.put(`/chat/conversations/${conversationId}/read`);
   return extractData(response);
 }

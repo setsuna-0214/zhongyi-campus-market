@@ -171,4 +171,14 @@ public class AuthService {
             return new Result(500, "密码更新失败: " + e.getMessage(), null);
         }
     }
+
+    // 检查用户名是否已存在
+    public boolean checkUsernameExists(String username) {
+        return authMapper.findByUsername(username) != null;
+    }
+
+    // 检查邮箱是否已存在
+    public boolean checkEmailExists(String email) {
+        return authMapper.findByEmail(email) != null;
+    }
 }

@@ -47,28 +47,38 @@ public class ChatConversationService {
         UserInfo currentUserInfo = userInfoMapper.findById(currentUserId);
         UserInfo partnerInfo = userInfoMapper.findById(partnerId);
         
-        // 对方的昵称和头像
+        // 对方的昵称和头像（优先昵称，其次用户名）
         String partnerName = request.getPartnerName();
         String partnerAvatar = request.getPartnerAvatar();
         if (partnerInfo != null) {
-            if (partnerName == null) {
+            if (partnerName == null || partnerName.trim().isEmpty()) {
                 partnerName = partnerInfo.getNickname();
+                if (partnerName == null || partnerName.trim().isEmpty()) {
+                    partnerName = partnerInfo.getUsername();
+                }
             }
             if (partnerAvatar == null) {
                 partnerAvatar = partnerInfo.getAvatar();
             }
         }
-        if (partnerName == null) {
+        if (partnerName == null || partnerName.trim().isEmpty()) {
             partnerName = "用户" + partnerId;
         }
         if (partnerAvatar == null) {
             partnerAvatar = "/images/avatars/default.svg";
         }
         
-        // 当前用户的昵称和头像
-        String currentUserName = currentUserInfo != null ? currentUserInfo.getNickname() : "用户" + currentUserId;
-        String currentUserAvatar = currentUserInfo != null ? currentUserInfo.getAvatar() : "/images/avatars/default.svg";
-        if (currentUserName == null) {
+        // 当前用户的昵称和头像（优先昵称，其次用户名）
+        String currentUserName = null;
+        String currentUserAvatar = null;
+        if (currentUserInfo != null) {
+            currentUserName = currentUserInfo.getNickname();
+            if (currentUserName == null || currentUserName.trim().isEmpty()) {
+                currentUserName = currentUserInfo.getUsername();
+            }
+            currentUserAvatar = currentUserInfo.getAvatar();
+        }
+        if (currentUserName == null || currentUserName.trim().isEmpty()) {
             currentUserName = "用户" + currentUserId;
         }
         if (currentUserAvatar == null) {

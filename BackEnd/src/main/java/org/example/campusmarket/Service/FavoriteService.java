@@ -75,6 +75,36 @@ public class FavoriteService {
             }
             product.setStatus(isSeal ? "已售出" : "在售");
             
+            // 设置浏览量
+            Object viewCountObj = row.get("view_count");
+            if (viewCountObj instanceof Number) {
+                product.setViews(((Number) viewCountObj).intValue());
+            } else {
+                product.setViews(0);
+            }
+            
+            // 设置发布时间
+            Object publishTimeObj = row.get("publish_time");
+            if (publishTimeObj instanceof LocalDateTime) {
+                product.setPublishTime(publishTimeObj.toString());
+            } else if (publishTimeObj != null) {
+                product.setPublishTime(publishTimeObj.toString());
+            }
+            
+            // 设置位置
+            product.setLocation((String) row.get("location"));
+            
+            // 设置卖家信息
+            Object sellerIdObj = row.get("seller_id");
+            if (sellerIdObj != null) {
+                FavoriteDto.SellerSummary seller = new FavoriteDto.SellerSummary();
+                seller.setId(((Number) sellerIdObj).intValue());
+                seller.setNickname((String) row.get("seller_nickname"));
+                seller.setUsername((String) row.get("seller_username"));
+                seller.setAvatar((String) row.get("seller_avatar"));
+                product.setSeller(seller);
+            }
+            
             item.setProduct(product);
             result.add(item);
         }

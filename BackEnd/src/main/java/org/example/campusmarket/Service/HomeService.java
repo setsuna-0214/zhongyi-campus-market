@@ -64,6 +64,8 @@ public class HomeService {
                 Integer priceInt = parsePriceToInt(r.getPrice());
                 // 使用 Redis 中的实时浏览量
                 Long viewCount = viewCounts.getOrDefault(productId, 0L);
+                // 卖家名称：优先昵称，其次用户名
+                String sellerName = r.getSeller() != null ? r.getSeller() : r.getSellerUsername();
                 items.add(new HomeDto.HomeProduct(
                         r.getId(),
                         r.getTitle(),
@@ -71,7 +73,8 @@ public class HomeService {
                         priceInt,
                         "",
                         null,
-                        r.getSeller(),
+                        r.getSellerId(),
+                        sellerName,
                         r.getLocation(),
                         r.getCategory(),
                         r.getStatus(),
@@ -100,6 +103,8 @@ public class HomeService {
                     if (items.size() >= limit) break;
                     if (!existingIds.contains(r.getId())) {
                         Integer priceInt = parsePriceToInt(r.getPrice());
+                        // 卖家名称：优先昵称，其次用户名
+                        String sellerName = r.getSeller() != null ? r.getSeller() : r.getSellerUsername();
                         // 未被浏览过的商品，浏览量为 0
                         items.add(new HomeDto.HomeProduct(
                                 r.getId(),
@@ -108,7 +113,8 @@ public class HomeService {
                                 priceInt,
                                 "",
                                 null,
-                                r.getSeller(),
+                                r.getSellerId(),
+                                sellerName,
                                 r.getLocation(),
                                 r.getCategory(),
                                 r.getStatus(),
@@ -131,6 +137,8 @@ public class HomeService {
         if (rows == null) return items;
         for (HomeProductRow r : rows) {
             Integer priceInt = parsePriceToInt(r.getPrice());
+            // 卖家名称：优先昵称，其次用户名
+            String sellerName = r.getSeller() != null ? r.getSeller() : r.getSellerUsername();
             items.add(new HomeDto.HomeProduct(
                     r.getId(),
                     r.getTitle(),
@@ -138,7 +146,8 @@ public class HomeService {
                     priceInt,
                     "",
                     null,
-                    r.getSeller(),
+                    r.getSellerId(),
+                    sellerName,
                     r.getLocation(),
                     r.getCategory(),
                     r.getStatus(),
@@ -161,6 +170,8 @@ public class HomeService {
         for (HomeProductRow r : rows) {
             // priceInt：转换价格为整数
             Integer priceInt = parsePriceToInt(r.getPrice());
+            // 卖家名称：优先昵称，其次用户名
+            String sellerName = r.getSeller() != null ? r.getSeller() : r.getSellerUsername();
             // 构造返回条目
             items.add(new HomeDto.HomeProduct(
                     r.getId(),           // id：商品唯一标识
@@ -169,7 +180,8 @@ public class HomeService {
                     priceInt,            // price：整数价格
                     null,                // publishedAt：最新接口不使用该字段
                     "",                 // publishTime：可选发布时间占位，留空字符串
-                    r.getSeller(),       // seller：卖家昵称
+                    r.getSellerId(),     // sellerId：卖家ID
+                    sellerName,          // seller：卖家昵称或用户名
                     r.getLocation(),     // location：卖家地址/学校
                     r.getCategory(),     // category：类目（可能为 null）
                     r.getStatus(),       // status：在售/已售

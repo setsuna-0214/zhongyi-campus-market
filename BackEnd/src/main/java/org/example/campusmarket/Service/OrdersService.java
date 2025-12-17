@@ -84,19 +84,27 @@ public class OrdersService {
         OrderDto.UserSummary seller = null;
         String location = null;
         
+        // 获取买家信息
+        if (order.getUserId() != null) {
+            UserInfo buyerInfo = userInfoMapper.findByUserId(order.getUserId());
+            buyer = buildUserSummary(buyerInfo);
+        }
+        
+        // 获取卖家信息 - 优先从订单表获取，其次从商品表获取
+        Integer sellerId = order.getSellerId();
+        if (sellerId == null && product != null) {
+            sellerId = product.getSaler_id();
+        }
+        if (sellerId != null) {
+            UserInfo sellerInfo = userInfoMapper.findByUserId(sellerId);
+            seller = buildUserSummary(sellerInfo);
+            if (sellerInfo != null) {
+                location = sellerInfo.getAddress();
+            }
+        }
+        
         if (product != null) {
             Integer unitPriceInt = parsePriceToInt(product.getPrice());
-            
-            // 获取卖家信息和地址
-            if (product.getSaler_id() != null) {
-                UserInfo sellerInfo = userInfoMapper.findByUserId(product.getSaler_id());
-                if (sellerInfo != null) {
-                    seller = new OrderDto.UserSummary(sellerInfo.getUser_id(), 
-                        sellerInfo.getNickname(), sellerInfo.getUsername());
-                    location = sellerInfo.getAddress();
-                }
-            }
-            
             productSummary = new OrderDto.ProductSummary(
                 product.getPro_id(), 
                 product.getPro_name(), 
@@ -105,15 +113,6 @@ public class OrdersService {
                 product.getCategory(),
                 location
             );
-        }
-        
-        // 获取买家信息
-        if (order.getUserId() != null) {
-            UserInfo buyerInfo = userInfoMapper.findByUserId(order.getUserId());
-            if (buyerInfo != null) {
-                buyer = new OrderDto.UserSummary(buyerInfo.getUser_id(), 
-                    buyerInfo.getNickname(), buyerInfo.getUsername());
-            }
         }
         
         Integer totalPriceInt = order.getTotalPrice() == null ? null : order.getTotalPrice().intValue();
@@ -175,16 +174,12 @@ public class OrdersService {
         String location = null;
         
         UserInfo buyerInfo = userInfoMapper.findByUserId(userId);
-        if (buyerInfo != null) {
-            buyer = new OrderDto.UserSummary(buyerInfo.getUser_id(), 
-                buyerInfo.getNickname(), buyerInfo.getUsername());
-        }
+        buyer = buildUserSummary(buyerInfo);
         
         if (product.getSaler_id() != null) {
             UserInfo sellerInfo = userInfoMapper.findByUserId(product.getSaler_id());
+            seller = buildUserSummary(sellerInfo);
             if (sellerInfo != null) {
-                seller = new OrderDto.UserSummary(sellerInfo.getUser_id(), 
-                    sellerInfo.getNickname(), sellerInfo.getUsername());
                 location = sellerInfo.getAddress();
             }
         }
@@ -274,18 +269,18 @@ public class OrdersService {
         // 获取买家信息
         if (order.getUserId() != null) {
             UserInfo buyerInfo = userInfoMapper.findByUserId(order.getUserId());
-            if (buyerInfo != null) {
-                buyer = new OrderDto.UserSummary(buyerInfo.getUser_id(), 
-                    buyerInfo.getNickname(), buyerInfo.getUsername());
-            }
+            buyer = buildUserSummary(buyerInfo);
         }
         
-        // 获取卖家信息
-        if (order.getSellerId() != null) {
-            UserInfo sellerInfo = userInfoMapper.findByUserId(order.getSellerId());
+        // 获取卖家信息 - 优先从订单表获取，其次从商品表获取
+        Integer sellerId = order.getSellerId();
+        if (sellerId == null && product != null) {
+            sellerId = product.getSaler_id();
+        }
+        if (sellerId != null) {
+            UserInfo sellerInfo = userInfoMapper.findByUserId(sellerId);
+            seller = buildUserSummary(sellerInfo);
             if (sellerInfo != null) {
-                seller = new OrderDto.UserSummary(sellerInfo.getUser_id(), 
-                    sellerInfo.getNickname(), sellerInfo.getUsername());
                 location = sellerInfo.getAddress();
             }
         }
@@ -317,6 +312,18 @@ public class OrdersService {
     public boolean updateOrderStatus(Integer orderId, String status, String sellerMessage, List<String> sellerImages) {
         String imagesStr = sellerImages != null && !sellerImages.isEmpty() ? String.join(",", sellerImages) : null;
         return ordersMapper.updateOrderStatusWithMessage(orderId, status, sellerMessage, imagesStr) == 1;
+    }
+
+    /**
+     * 构建用户摘要，如果 nickname 为空则使用 username
+     */
+    private OrderDto.UserSummary buildUserSummary(UserInfo userInfo) {
+        if (userInfo == null) return null;
+        String displayName = userInfo.getNickname();
+        if (displayName == null || displayName.trim().isEmpty()) {
+            displayName = userInfo.getUsername();
+        }
+        return new OrderDto.UserSummary(userInfo.getUser_id(), displayName, userInfo.getUsername());
     }
 
     /**

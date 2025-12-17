@@ -5,10 +5,7 @@ import jakarta.validation.Valid;
 import org.example.campusmarket.DTO.AuthDto;
 import org.example.campusmarket.Service.AuthService;
 import org.example.campusmarket.entity.Result;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.example.campusmarket.util.VerificationCodeService;
 
 //登录功能
@@ -73,6 +70,26 @@ public class AuthController {
         } else {
             return new Result(400, "邮箱或用户名不能为空", null);
         }
+    }
+
+    // 检查用户名是否已存在
+    @GetMapping("/check-username")
+    public Result checkUsername(@RequestParam String username) {
+        if (username == null || username.isBlank()) {
+            return new Result(400, "用户名不能为空", null);
+        }
+        boolean exists = authService.checkUsernameExists(username);
+        return new Result(200, "查询成功", java.util.Map.of("exists", exists));
+    }
+
+    // 检查邮箱是否已存在
+    @GetMapping("/check-email")
+    public Result checkEmail(@RequestParam String email) {
+        if (email == null || email.isBlank()) {
+            return new Result(400, "邮箱不能为空", null);
+        }
+        boolean exists = authService.checkEmailExists(email);
+        return new Result(200, "查询成功", java.util.Map.of("exists", exists));
     }
 
     //忘记密码

@@ -18,12 +18,17 @@ public interface FavoriteMapper {
     """)
     List<Product> getFavoritesByUserId(@Param("userId") Integer userId);
 
-    // 获取收藏列表（包含收藏记录信息）
+    // 获取收藏列表（包含收藏记录信息、卖家信息、浏览量等）
     @Select("""
     SELECT fp.id as fav_id, fp.pro_id, fp.created_at,
-           p.pro_name, p.price, p.is_seal, p.picture
+           p.pro_name, p.price, p.is_seal, p.picture,
+           p.view_count, p.created_at as publish_time,
+           ui.user_id as seller_id, ui.nickname as seller_nickname, 
+           ui.username as seller_username, ui.avatar as seller_avatar,
+           ui.address as location
     FROM fav_products fp
     JOIN products p ON p.pro_id = fp.pro_id
+    LEFT JOIN userinfo ui ON p.saler_id = ui.user_id
     WHERE fp.user_id = #{userId}
     ORDER BY fp.created_at DESC
     """)
