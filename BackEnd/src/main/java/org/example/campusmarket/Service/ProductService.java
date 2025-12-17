@@ -356,6 +356,7 @@ public class ProductService {
             ProductDto.SellerInfo seller = new ProductDto.SellerInfo(
                 product.getTempSellerId(),
                 product.getTempSellerName(),
+                product.getTempSellerUsername(),
                 product.getTempSellerAvatar(),
                 product.getTempSellerRating()
             );

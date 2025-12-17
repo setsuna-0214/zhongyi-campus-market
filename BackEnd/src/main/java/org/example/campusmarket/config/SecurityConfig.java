@@ -70,6 +70,14 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/home/**", "/products/**").permitAll()
                 .requestMatchers("/users/**").permitAll()
+                // 评论接口：GET公开，POST/DELETE需要认证
+                .requestMatchers(HttpMethod.GET, "/api/comments/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/comments/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/comments/**").authenticated()
+                // 获取指定用户信息和发布的商品（公开接口）
+                .requestMatchers(HttpMethod.GET, "/user/search").authenticated()
+                .requestMatchers(HttpMethod.GET, "/user/{id}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/user/{id}/published").permitAll()
                 .requestMatchers(HttpMethod.POST, "/user/me/avatar").authenticated()
                 .requestMatchers("/user/**", "/favorites/**", "/orders/**", "/cart/**").authenticated()
                 .anyRequest().permitAll()

@@ -18,10 +18,12 @@ public class HomeDto {
         private String image;
         // 商品价格（整数，单位元）
         private Integer price;
-        // 仅用于“热门”接口的可选发布日期字符串（YYYY-MM-DD），为空表示未提供
+        // 仅用于"热门"接口的可选发布日期字符串（YYYY-MM-DD），为空表示未提供
         private String publishedAt;
-        // 仅用于“最新”接口的可选发布时间（ISO 字符串），为空表示未提供
+        // 仅用于"最新"接口的可选发布时间（ISO 字符串），为空表示未提供
         private String publishTime;
+        // 卖家ID
+        private Integer sellerId;
         // 卖家昵称/名称
         private String seller;
         // 学校或地点信息

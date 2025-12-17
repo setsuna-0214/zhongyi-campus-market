@@ -11,8 +11,8 @@ import java.util.List;
 
 @Mapper
 public interface UserMapper {
-    //通过id查找用户
-    @Select("SELECT * FROM userinfo WHERE user_id = #{userId}")
+    //通过id查找用户（联表查询获取注册时间）
+    @Select("SELECT ui.*, u.created_at FROM userinfo ui JOIN users u ON ui.user_id = u.user_id WHERE ui.user_id = #{userId}")
     UserInfo findUserinfoById(@Param("userId") Integer userId);
 
     //更新用户信息

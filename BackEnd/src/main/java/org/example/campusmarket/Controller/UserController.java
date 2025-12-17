@@ -240,4 +240,29 @@ public class UserController {
         }
     }
 
+    // 获取指定用户信息（公开信息）
+    @GetMapping("/{id}")
+    public Result GetUserById(@PathVariable("id") Integer userId) {
+        try {
+            UserInfo userInfo = userService.GetUserInfoById(userId);
+            if (userInfo == null) {
+                return new Result(404, "用户不存在", null);
+            }
+            return new Result(200, "成功", userInfo);
+        } catch (Exception e) {
+            return new Result(500, "查询失败: " + e.getMessage(), null);
+        }
+    }
+
+    // 获取指定用户发布的商品
+    @GetMapping("/{id}/published")
+    public Result GetUserPublished(@PathVariable("id") Integer userId) {
+        try {
+            List<Product> items = userService.GetPublishedProducts(userId);
+            return new Result(200, "成功", items == null ? Collections.emptyList() : items);
+        } catch (Exception e) {
+            return new Result(500, "查询失败: " + e.getMessage(), null);
+        }
+    }
+
 }

@@ -7,10 +7,14 @@ import java.util.List;
 @Mapper
 public interface ChatConversationMapper {
     
-    /** 获取当前用户的所有会话 */
-    @Select("SELECT id, user_id, partner_id, user_name, user_avatar, last_message, " +
-            "last_message_time, unread_count, order_id, product_id, created_at, updated_at " +
-            "FROM chat_conversation WHERE user_id = #{userId} ORDER BY updated_at DESC")
+    /** 获取当前用户的所有会话（实时获取对方用户的最新昵称和头像） */
+    @Select("SELECT c.id, c.user_id, c.partner_id, " +
+            "COALESCE(NULLIF(ui.nickname, ''), ui.username, c.user_name, CONCAT('用户', c.partner_id)) as user_name, " +
+            "COALESCE(ui.avatar, c.user_avatar) as user_avatar, " +
+            "c.last_message, c.last_message_time, c.unread_count, c.order_id, c.product_id, c.created_at, c.updated_at " +
+            "FROM chat_conversation c " +
+            "LEFT JOIN userinfo ui ON c.partner_id = ui.user_id " +
+            "WHERE c.user_id = #{userId} ORDER BY c.updated_at DESC")
     @Results({
         @Result(property = "id", column = "id"),
         @Result(property = "userId", column = "user_id"),

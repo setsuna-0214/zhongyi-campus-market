@@ -17,6 +17,17 @@ public class FavoriteDto {
         private Integer productId;
     }
 
+    // 卖家信息摘要
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SellerSummary {
+        private Integer id;
+        private String nickname;
+        private String username;
+        private String avatar;
+    }
+
     // 收藏列表中的商品摘要
     @Data
     @NoArgsConstructor
@@ -27,6 +38,10 @@ public class FavoriteDto {
         private Integer price;
         private String image;
         private String status;
+        private Integer views;
+        private String publishTime;
+        private String location;
+        private SellerSummary seller;
     }
 
     // 收藏列表响应项

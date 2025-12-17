@@ -105,7 +105,25 @@ export async function createOrder({ productId, quantity = 1, skipDuplicateCheck 
 
 export async function getOrderDetail(orderId) {
   const { data } = await client.get(`/orders/${orderId}`);
-  return data;
+  // 后端返回格式: { code: 200, message: "成功", data: {...} }
+  const orderData = data?.data || data;
+  
+  // 规范化订单数据，确保 buyer/seller 字段存在
+  let buyer = orderData.buyer;
+  if (!buyer && orderData.buyerId) {
+    buyer = { id: orderData.buyerId };
+  }
+  
+  let seller = orderData.seller;
+  if (!seller && orderData.sellerId) {
+    seller = { id: orderData.sellerId };
+  }
+  
+  return {
+    ...orderData,
+    buyer,
+    seller,
+  };
 }
 
 export async function updateOrderStatus(orderId, payload) {

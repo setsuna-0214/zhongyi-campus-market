@@ -57,6 +57,7 @@ public interface ProductMapper {
             
             ui.user_id as tempSellerId,
             ui.nickname as tempSellerName,
+            ui.username as tempSellerUsername,
             ui.avatar as tempSellerAvatar,
             4.8 as tempSellerRating
             
@@ -112,6 +113,7 @@ public interface ProductMapper {
         @Result(property = "tempImage", column = "tempImage"),
         @Result(property = "tempSellerId", column = "tempSellerId"),
         @Result(property = "tempSellerName", column = "tempSellerName"),
+        @Result(property = "tempSellerUsername", column = "tempSellerUsername"),
         @Result(property = "tempSellerAvatar", column = "tempSellerAvatar"),
         @Result(property = "tempSellerRating", column = "tempSellerRating")
     })
@@ -186,6 +188,7 @@ public interface ProductMapper {
             COALESCE(f.cnt,0) as likes,
             ui.user_id as tempSellerId,
             ui.nickname as tempSellerName,
+            ui.username as tempSellerUsername,
             ui.avatar as tempSellerAvatar,
             4.8 as tempSellerRating
         FROM products p
@@ -209,7 +212,8 @@ public interface ProductMapper {
             ui.address as location,
             CASE WHEN p.is_seal = 1 THEN '已下架' ELSE '在售' END as status,
             ui.user_id as tempSellerId,
-            ui.nickname as tempSellerName
+            ui.nickname as tempSellerName,
+            ui.username as tempSellerUsername
         FROM products p
         LEFT JOIN userinfo ui ON p.saler_id = ui.user_id
         WHERE p.category = #{category} AND p.pro_id != #{excludeId}
