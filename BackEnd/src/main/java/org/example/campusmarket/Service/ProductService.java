@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 // 商品服务层，处理商品相关的业务逻辑
@@ -27,6 +29,9 @@ public class ProductService {
     @Autowired
     private ImageService imageService;
 
+    @Autowired
+    private ProductHotnessService productHotnessService;
+
     // 搜索商品的核心业务方法
     // keyword: 搜索关键词
     // category: 分类过滤
@@ -35,6 +40,7 @@ public class ProductService {
     // priceMin/priceMax: 价格区间
     // sort: 排序方式
     // page/pageSize: 分页参数
+    // Requirements: 2.1 - 热度排序时从 Redis 获取浏览量
     public ProductDto.ProductListResponse searchProducts(String keyword, String category, String location, 
                                                          String status, Double priceMin, Double priceMax, 
                                                          String sort, int page, int pageSize) {
@@ -50,6 +56,15 @@ public class ProductService {
         // 对查询结果进行后处理：填充图片列表和卖家信息结构
         if (items != null) {
             items.forEach(this::populateDetails);
+            
+            // 热度排序时从 Redis 获取实时浏览量并重新排序
+            // Requirements: 2.1 - 热度排序时从 Redis 获取浏览量
+            if ("popular".equals(sort) && !items.isEmpty()) {
+                items = sortByRedisHotness(items);
+            } else if (!items.isEmpty()) {
+                // 非热度排序时，也需要填充 Redis 中的实时浏览量
+                fillRedisViewCounts(items);
+            }
         } else {
             items = new ArrayList<>();
         }
@@ -57,14 +72,69 @@ public class ProductService {
         // 返回包含列表和总数的响应对象
         return new ProductDto.ProductListResponse(items, total);
     }
+    
+    /**
+     * 使用 Redis 中的实时浏览量对商品列表进行热度排序
+     * Requirements: 2.1
+     */
+    private List<ProductDto.ProductDetail> sortByRedisHotness(List<ProductDto.ProductDetail> items) {
+        // 获取所有商品ID
+        List<Integer> productIds = items.stream()
+                .map(ProductDto.ProductDetail::getId)
+                .collect(Collectors.toList());
+        
+        // 批量获取 Redis 中的实时浏览量
+        Map<Integer, Long> viewCounts = productHotnessService.getViewCounts(productIds);
+        
+        // 更新每个商品的浏览量并按热度降序排序
+        for (ProductDto.ProductDetail item : items) {
+            Long viewCount = viewCounts.getOrDefault(item.getId(), 0L);
+            item.setViews(viewCount.intValue());
+        }
+        
+        // 按浏览量降序排序
+        return items.stream()
+                .sorted(Comparator.comparingInt(ProductDto.ProductDetail::getViews).reversed())
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * 填充商品列表的 Redis 实时浏览量
+     */
+    private void fillRedisViewCounts(List<ProductDto.ProductDetail> items) {
+        List<Integer> productIds = items.stream()
+                .map(ProductDto.ProductDetail::getId)
+                .collect(Collectors.toList());
+        
+        Map<Integer, Long> viewCounts = productHotnessService.getViewCounts(productIds);
+        
+        for (ProductDto.ProductDetail item : items) {
+            Long viewCount = viewCounts.getOrDefault(item.getId(), 0L);
+            item.setViews(viewCount.intValue());
+        }
+    }
 
     // 获取单个商品详情的业务方法
     // id: 商品ID
+    // 同时增加浏览量并从 Redis 获取实时浏览量
+    // Requirements: 1.1, 4.1
     public ProductDto.ProductDetail getProductDetail(Integer id) {
+        log.debug("getProductDetail 被调用，商品ID: {}", id);
         ProductDto.ProductDetail detail = productMapper.getProductDetail(id);
         if (detail != null) {
             // 同样需要填充图片和卖家信息
             populateDetails(detail);
+            
+            // 增加商品浏览量（使用带防重复机制的方法）
+            // Requirements: 1.1 - 用户访问商品详情页时自动增加浏览量
+            // 使用时间戳作为 requestId，防止短时间内重复计数
+            String requestId = String.valueOf(System.currentTimeMillis() / 1000); // 1秒内的请求视为同一请求
+            productHotnessService.incrementViewCountSafe(id, requestId);
+            
+            // 从 Redis 获取实时浏览量填充到返回结果
+            // Requirements: 4.1 - 返回 Redis 中的实时 View_Count
+            Long viewCount = productHotnessService.getViewCount(id);
+            detail.setViews(viewCount != null ? viewCount.intValue() : 0);
         }
         return detail;
     }
@@ -286,10 +356,36 @@ public class ProductService {
             ProductDto.SellerInfo seller = new ProductDto.SellerInfo(
                 product.getTempSellerId(),
                 product.getTempSellerName(),
+                product.getTempSellerUsername(),
                 product.getTempSellerAvatar(),
                 product.getTempSellerRating()
             );
             product.setSeller(seller);
         }
+    }
+
+    /**
+     * 更新商品状态
+     * 
+     * @param productId 商品ID
+     * @param status 新状态，如 "在售", "已下架", "已售出"
+     */
+    public void updateProductStatus(Integer productId, String status) {
+        log.info("更新商品状态 - id: {}, status: {}", productId, status);
+        
+        // 验证商品是否存在
+        Product product = productMapper.findProductBasicById(productId);
+        if (product == null) {
+            throw new IllegalArgumentException("商品不存在");
+        }
+        
+        // 验证状态值
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("状态不能为空");
+        }
+        
+        // 更新状态
+        productMapper.updateProductStatus(productId, status);
+        log.info("商品状态更新成功 - id: {}, status: {}", productId, status);
     }
 }

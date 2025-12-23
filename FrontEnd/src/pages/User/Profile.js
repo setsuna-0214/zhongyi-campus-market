@@ -119,6 +119,10 @@ const UserProfile = () => {
         allowedFields.forEach(key => {
           normalized[key] = info?.[key] ?? '';
         });
+        // 后端返回 user_id，前端统一使用 id
+        if (!normalized.id && info?.user_id) {
+          normalized.id = info.user_id;
+        }
         // 将后端返回的数字性别转换为字符串，以便 Segmented 组件正确高亮
         normalized.gender = toGenderLabel(normalized.gender);
         setUserInfo(normalized);
@@ -176,6 +180,10 @@ const UserProfile = () => {
         // 优先使用更新后的值，否则保留原值
         normalized[key] = updated?.[key] !== undefined ? updated[key] : (userInfo?.[key] ?? '');
       });
+      // 后端返回 user_id，前端统一使用 id
+      if (!normalized.id && updated?.user_id) {
+        normalized.id = updated.user_id;
+      }
       // 将后端返回的数字性别转换为字符串
       normalized.gender = toGenderLabel(normalized.gender);
       setUserInfo(normalized);

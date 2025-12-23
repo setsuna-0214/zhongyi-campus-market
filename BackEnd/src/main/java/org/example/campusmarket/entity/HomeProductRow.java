@@ -16,8 +16,12 @@ public class HomeProductRow {
     private String image;
     // 原始价格字符串（数据库存的是字符串，需要转换）
     private String price;
+    // 卖家ID（来自 userinfo.user_id）
+    private Integer sellerId;
     // 卖家昵称（来自 userinfo.nickname）
     private String seller;
+    // 卖家用户名（来自 userinfo.username）
+    private String sellerUsername;
     // 卖家地址/学校（来自 userinfo.address）
     private String location;
     // 类目（当前为占位，查询中返回 NULL）

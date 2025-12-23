@@ -22,7 +22,7 @@ export default function SectionOrders({
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const myId = useMemo(() => userInfo?.id || userInfo?._id || userInfo?.userId || userInfo?.user_Id, [userInfo]);
+  const myId = useMemo(() => userInfo?.id || userInfo?._id || userInfo?.userId || userInfo?.user_id || userInfo?.user_Id, [userInfo]);
 
   useEffect(() => {
     let mounted = true;
@@ -142,7 +142,14 @@ export default function SectionOrders({
       renderItem={(order) => {
         const p = order.product || {};
         const amount = (Number(p.price) || 0) * (Number(p.quantity) || 1);
-        const counterpartName = role === 'purchase' ? (order.seller?.nickname || '卖家') : (order.buyer?.nickname || '买家');
+        // 获取对方名称：优先使用 nickname，其次使用 username
+        const getDisplayName = (user, defaultName) => {
+          if (!user) return defaultName;
+          return user.nickname || user.username || defaultName;
+        };
+        const counterpartName = role === 'purchase' 
+          ? getDisplayName(order.seller, '卖家') 
+          : getDisplayName(order.buyer, '买家');
         const statusText = getOrderStatusText(order.status);
         const orderStatus = normalizeOrderStatus(order.status);
         const isCancelled = orderStatus === ORDER_STATUS.CANCELLED;

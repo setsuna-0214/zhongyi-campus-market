@@ -66,6 +66,18 @@ client.interceptors.response.use(
         }
       );
     }
+    
+    // 处理 401 认证失败：清除登录状态并跳转到登录页
+    if (error.response?.status === 401) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+      // 避免在登录页面重复跳转
+      if (!window.location.pathname.includes('/login')) {
+        alert('登录已过期，请重新登录');
+        window.location.href = '/login';
+      }
+    }
+    
     const msg = error?.response?.data?.message || error.message || '网络错误';
     return Promise.reject(new Error(msg));
   }

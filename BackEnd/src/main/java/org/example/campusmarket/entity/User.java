@@ -12,8 +12,7 @@ public class User {
     @JsonProperty("id")
     private Integer user_id;
     private String username;
-
     private String email;
     private String password;
-
+    private String role;  // 用户角色：user-普通用户，admin-管理员
 }

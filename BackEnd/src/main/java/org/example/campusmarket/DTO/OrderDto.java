@@ -25,8 +25,20 @@ public class OrderDto {
     public static class ProductSummary {
         private Integer id;
         private String title;
-        private Integer price; // 与前端期望一致，使用整数或分为单位
+        private Integer price;
         private String image;
+        private String category;
+        private String location;
+    }
+
+    // 用户摘要（买家/卖家信息）
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserSummary {
+        private Integer id;
+        private String nickname;
+        private String username;
     }
 
     // 订单响应
@@ -38,9 +50,12 @@ public class OrderDto {
         private Integer productId;
         private ProductSummary product;
         private Integer quantity;
-        private Integer totalPrice; // 整数价格
+        private Integer totalPrice;
         private String status;
+        private LocalDateTime orderTime;
         private LocalDateTime createdAt;
+        private UserSummary buyer;
+        private UserSummary seller;
     }
 
     // 订单统计响应
@@ -69,5 +84,30 @@ public class OrderDto {
     @AllArgsConstructor
     public static class SuccessResponse {
         private boolean success;
+    }
+
+    // 订单详情响应（包含卖家留言和图片）
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DetailResponse {
+        private Integer id;
+        private String status;
+        private java.time.LocalDateTime orderTime;
+        private ProductSummary product;
+        private UserSummary buyer;   // { id, nickname }
+        private UserSummary seller;  // { id, nickname }
+        private String sellerMessage;
+        private java.util.List<String> sellerImages;
+    }
+
+    // 订单状态更新请求
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StatusUpdateRequest {
+        private String status;
+        private String sellerMessage;
+        private java.util.List<String> sellerImages;
     }
 }

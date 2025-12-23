@@ -70,6 +70,9 @@ public class ProductDto {
         // 临时存储卖家的昵称 (Temporary Seller Name)
         @JsonIgnore private String tempSellerName;
         
+        // 临时存储卖家的用户名 (Temporary Seller Username)
+        @JsonIgnore private String tempSellerUsername;
+        
         // 临时存储卖家的头像 (Temporary Seller Avatar)
         @JsonIgnore private String tempSellerAvatar;
         
@@ -87,8 +90,11 @@ public class ProductDto {
         // 卖家用户 ID (Seller ID)
         private Integer id;
         
-        // 卖家昵称 (Seller Name)
-        private String name;
+        // 卖家昵称 (Seller Nickname)
+        private String nickname;
+        
+        // 卖家用户名 (Seller Username)
+        private String username;
         
         // 卖家头像 URL (Seller Avatar)
         private String avatar;
@@ -108,5 +114,14 @@ public class ProductDto {
         
         // 符合条件的总记录数 (Total Count)，用于前端计算总页数
         private Long total;
+    }
+
+    // 商品状态更新请求
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StatusUpdateRequest {
+        // 商品状态，如 "在售", "已下架", "已售出"
+        private String status;
     }
 }

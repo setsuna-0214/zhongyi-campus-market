@@ -39,6 +39,7 @@ import { getCategoryLabel, getStatusLabel, getStatusColor, getTradeMethodLabel, 
 import { getFavorites, addToFavorites, removeFavoriteByProductId } from '../../api/favorites';
 import { checkIsFollowing, followUser, unfollowUser } from '../../api/user';
 import { resolveImageSrc, FALLBACK_IMAGE } from '../../utils/images';
+import { getComments, addComment } from '../../api/comments';
 
 const { TextArea } = Input;
 
@@ -57,6 +58,7 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
+  const [commentLoading, setCommentLoading] = useState(false);
 
   // 能否购买状态判断
   const normalizedStatus = useMemo(() => {
@@ -156,13 +158,19 @@ const ProductDetail = () => {
 
   const handleFollow = async (e) => {
     e.stopPropagation();
+    // 检查是否已登录
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      message.warning('请先登录后再关注');
+      navigate('/login');
+      return;
+    }
     if (!product?.seller?.id) {
       message.warning('卖家信息不完整');
       return;
     }
     // 检查是否关注自己
-    const currentUserId = getCurrentUserId();
-    if (currentUserId && String(currentUserId) === String(product.seller.id)) {
+    if (String(currentUserId) === String(product.seller.id)) {
       message.warning('不能关注自己');
       return;
     }
@@ -204,9 +212,15 @@ const ProductDetail = () => {
   const [createdOrderId, setCreatedOrderId] = useState(null);
 
   const handleBuyNow = () => {
-    // 检查是否购买自己的商品
+    // 检查是否已登录
     const currentUserId = getCurrentUserId();
-    if (currentUserId && product?.seller?.id && String(currentUserId) === String(product.seller.id)) {
+    if (!currentUserId) {
+      message.warning('请先登录后再购买');
+      navigate('/login');
+      return;
+    }
+    // 检查是否购买自己的商品
+    if (product?.seller?.id && String(currentUserId) === String(product.seller.id)) {
       message.warning('不能购买自己发布的商品');
       return;
     }
@@ -214,6 +228,13 @@ const ProductDetail = () => {
   };
 
   const gotoContactSeller = () => {
+    // 检查是否已登录
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      message.warning('请先登录后再联系卖家');
+      navigate('/login');
+      return;
+    }
     const sellerId = product?.seller?.id;
     if (sellerId) {
       const params = new URLSearchParams({ sellerId, productId: id });
@@ -224,21 +245,34 @@ const ProductDetail = () => {
     }
   };
 
-  // 添加留言
-  const handleAddComment = () => {
+  // 加载评论
+  const fetchComments = useCallback(async () => {
+    try {
+      const data = await getComments(id);
+      setComments(data || []);
+    } catch (error) {
+      console.error('获取评论失败:', error);
+    }
+  }, [id]);
+
+  // 添加评论
+  const handleAddComment = async () => {
     const text = (commentText || '').trim();
     if (!text) {
+      message.warning('请输入评论内容');
       return;
     }
-    const newItem = {
-      id: Date.now(),
-      author: '我',
-      avatar: '/images/avatars/avatar-1.svg',
-      content: text,
-      time: '刚刚'
-    };
-    setComments([newItem, ...comments]);
-    setCommentText('');
+    setCommentLoading(true);
+    try {
+      await addComment(id, text);
+      setCommentText('');
+      message.success('评论成功');
+      fetchComments(); // 重新加载评论列表
+    } catch (error) {
+      message.error(error.message || '评论失败');
+    } finally {
+      setCommentLoading(false);
+    }
   };
 
   // 查看卖家信息
@@ -279,6 +313,10 @@ const ProductDetail = () => {
   useEffect(() => {
     initFollowState();
   }, [initFollowState]);
+
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
 
   if (loading || !product) {
     return <div className="loading-container">加载中...</div>;
@@ -368,29 +406,37 @@ const ProductDetail = () => {
             </Card>
           )}
 
-            {/* 商品留言 */}
-            <Card title="商品留言" className="comments-card">
+            {/* 商品评论 */}
+            <Card title={`商品评论 (${comments.length})`} className="comments-card">
               <div className="comment-input">
                 <TextArea
                   rows={3}
                   placeholder="写下你的问题或想法…"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  maxLength={300}
+                  maxLength={500}
                   showCount
                 />
                 <div style={{ textAlign: 'right', marginTop: 8 }}>
-                  <Button type="primary" onClick={handleAddComment}>提交留言</Button>
+                  <Button type="primary" onClick={handleAddComment} loading={commentLoading}>提交评论</Button>
                 </div>
               </div>
               <List
                 itemLayout="horizontal"
                 dataSource={comments}
+                locale={{ emptyText: '暂无评论，快来抢沙发吧~' }}
                 renderItem={(item) => (
                   <List.Item>
                     <List.Item.Meta
-                      avatar={<Avatar src={item.avatar} />}
-                      title={<span>{item.author} · <span style={{ color: '#999', fontWeight: 400 }}>{item.time}</span></span>}
+                      avatar={<Avatar src={item.userAvatar} icon={<UserOutlined />} />}
+                      title={
+                        <span>
+                          {item.userNickname || '用户'} · 
+                          <span style={{ color: '#999', fontWeight: 400, marginLeft: 4 }}>
+                            {item.createdAt ? new Date(item.createdAt).toLocaleString('zh-CN') : ''}
+                          </span>
+                        </span>
+                      }
                       description={item.content}
                     />
                   </List.Item>
@@ -452,7 +498,7 @@ const ProductDetail = () => {
                   <Avatar size={48} src={product.seller?.avatar} icon={<UserOutlined />} />
                   <div className="seller-simple-info">
                     <div className="seller-name-row">
-                      <span className="seller-nickname">{product.seller?.nickname || '卖家'}</span>
+                      <span className="seller-nickname">{product.seller?.nickname || product.seller?.username || '卖家'}</span>
                       {product.seller?.isVerified && (
                         <Tooltip title="已认证用户">
                           <SafetyCertificateOutlined className="verified-icon" />

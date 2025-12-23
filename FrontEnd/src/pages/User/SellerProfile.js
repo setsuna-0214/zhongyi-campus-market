@@ -94,9 +94,15 @@ const SellerProfile = () => {
   };
 
   const handleFollow = async () => {
-    // 检查是否关注自己
+    // 检查是否已登录
     const currentUserId = getCurrentUserId();
-    if (currentUserId && String(currentUserId) === String(id)) {
+    if (!currentUserId) {
+      message.warning('请先登录后再关注');
+      navigate('/login');
+      return;
+    }
+    // 检查是否关注自己
+    if (String(currentUserId) === String(id)) {
       message.warning('不能关注自己');
       return;
     }
@@ -160,6 +166,12 @@ const SellerProfile = () => {
                   type="primary" 
                   size="large" 
                   onClick={() => {
+                    const currentUserId = getCurrentUserId();
+                    if (!currentUserId) {
+                      message.warning('请先登录后再联系卖家');
+                      navigate('/login');
+                      return;
+                    }
                     const params = new URLSearchParams({
                       sellerId: id,
                       partnerName: userInfo.nickname || userInfo.username || '未知用户',

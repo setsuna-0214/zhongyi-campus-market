@@ -10,6 +10,7 @@ const { TextArea } = Input;
 // 统一字段：id, username, nickname, email, avatar, phone, address, bio, joinDate, gender, lastLoginAt
 const userFieldLabels = {
   id: '用户ID',
+  user_id: '用户ID',
   username: '用户名',
   nickname: '昵称',
   email: '邮箱',

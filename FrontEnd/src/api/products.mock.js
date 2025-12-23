@@ -77,4 +77,3 @@ export async function updateProductStatus(id, status) {
   }
   return { code: 200, message: status === '在售' ? '商品已重新上架' : '商品已下架', data: { id, status } };
 }
-

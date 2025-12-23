@@ -69,7 +69,7 @@ class AuthServiceTest {
      */
     @Test
     void testRegister_UsernameExists() {
-        User existingUser = new User(1, "existuser", "exist@test.com", "hashedpwd");
+        User existingUser = new User(1, "existuser", "exist@test.com", "hashedpwd", "user");
         when(authMapper.findByUsername("existuser")).thenReturn(existingUser);
 
         Result result = authService.register("existuser", "new@test.com", "password123");
@@ -85,7 +85,7 @@ class AuthServiceTest {
      */
     @Test
     void testRegister_EmailExists() {
-        User existingUser = new User(1, "otheruser", "exist@test.com", "hashedpwd");
+        User existingUser = new User(1, "otheruser", "exist@test.com", "hashedpwd", "user");
         when(authMapper.findByUsername("newuser")).thenReturn(null);
         when(authMapper.findByEmail("exist@test.com")).thenReturn(existingUser);
 
@@ -106,7 +106,7 @@ class AuthServiceTest {
     void testLogin_Success() {
         // BCrypt加密后的"password123"
         String hashedPassword = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rsS3/r/7HfFJFgJ7rO";
-        User user = new User(1, "testuser", "test@test.com", hashedPassword);
+        User user = new User(1, "testuser", "test@test.com", hashedPassword, "user");
         when(authMapper.findByEmail("test@test.com")).thenReturn(user);
 
         // 由于BCrypt每次加密结果不同，这里使用真实的密码匹配
@@ -155,7 +155,7 @@ class AuthServiceTest {
      */
     @Test
     void testResetPassword_Success() {
-        User user = new User(1, "testuser", "test@test.com", "oldhash");
+        User user = new User(1, "testuser", "test@test.com", "oldhash", "user");
         when(authMapper.findByEmail("test@test.com")).thenReturn(user);
         when(authMapper.updatePassword(eq("test@test.com"), anyString())).thenReturn(1);
 
@@ -185,7 +185,7 @@ class AuthServiceTest {
      */
     @Test
     void testResetPassword_UpdateFailed() {
-        User user = new User(1, "testuser", "test@test.com", "oldhash");
+        User user = new User(1, "testuser", "test@test.com", "oldhash", "user");
         when(authMapper.findByEmail("test@test.com")).thenReturn(user);
         when(authMapper.updatePassword(eq("test@test.com"), anyString())).thenReturn(0);
 
