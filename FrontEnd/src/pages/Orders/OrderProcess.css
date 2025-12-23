@@ -1,89 +1,514 @@
+/* ===================== Order Process Page ===================== */
+/* 订单处理页面样式 - 与个人中心设计语言保持一致 */
+
 .order-process-page {
   padding: 24px;
   max-width: 900px;
   margin: 0 auto;
+  min-height: calc(100vh - 64px);
+  /* 添加与首页一致的渐变背景 */
+  background-image:
+    radial-gradient(at 0% 0%, rgba(107, 141, 214, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 143, 94, 0.06) 0px, transparent 50%);
+  background-attachment: fixed;
 }
 
+/* ===================== Back Button ===================== */
+.order-process-page > .container > .ant-btn:first-child {
+  border-radius: 20px;
+  height: 38px;
+  padding: 0 20px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1.5px solid #e8e8e8 !important;
+  color: #595959 !important;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.order-process-page > .container > .ant-btn:first-child:hover {
+  border-color: #4FACFE !important;
+  color: #4FACFE !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.2);
+  transform: translateX(-4px);
+}
+
+/* ===================== Cards ===================== */
+.order-process-page .ant-card {
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.order-process-page .ant-card:hover {
+  box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.12);
+}
+
+.order-process-page .ant-card-head {
+  border-bottom: 1px solid rgba(79, 172, 254, 0.12);
+  background: linear-gradient(180deg, rgba(79, 172, 254, 0.05) 0%, transparent 100%);
+  border-radius: 20px 20px 0 0;
+  min-height: 52px;
+}
+
+.order-process-page .ant-card-head-title {
+  font-weight: 600;
+  font-size: 16px;
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.order-process-page .ant-card-body {
+  padding: 24px;
+}
+
+/* ===================== Product Card ===================== */
 .order-product-card {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .order-product-info {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   align-items: flex-start;
+}
+
+.order-product-info .ant-image {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .order-product-detail {
   flex: 1;
 }
 
-.order-product-detail h4 {
-  margin-bottom: 8px;
+.order-product-detail h4.ant-typography {
+  margin-bottom: 12px !important;
+  font-weight: 600;
+  color: #262626;
 }
 
 .order-product-price {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
-  color: #ff4d4f;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+}
+
+.order-product-detail .ant-tag {
+  border-radius: 12px;
+  padding: 4px 12px;
+  font-weight: 500;
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.08) 100%);
+  border: 1px solid rgba(79, 172, 254, 0.2);
+  color: #4FACFE;
+}
+
+/* ===================== Steps Card ===================== */
+.order-steps-card {
+  margin-bottom: 20px;
+}
+
+/* ===================== Custom Steps ===================== */
+.custom-steps {
+  display: flex;
+  width: 100%;
+  padding: 16px 0;
+}
+
+.custom-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+}
+
+.custom-step-icon-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
   margin-bottom: 12px;
 }
 
-.order-steps-card {
-  margin-bottom: 24px;
+.custom-step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  z-index: 1;
 }
 
+/* 连接线 */
+.custom-step-line {
+  flex: 1;
+  height: 3px;
+  background: #e8e8e8;
+  margin: 0 8px;
+  border-radius: 2px;
+  transition: background 0.3s ease;
+}
+
+.custom-step-line.completed {
+  background: linear-gradient(90deg, #4FACFE 0%, #00F2FE 100%);
+}
+
+/* 步骤内容 */
+.custom-step-content {
+  padding-right: 16px;
+}
+
+.custom-step-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 4px;
+}
+
+.custom-step-description {
+  font-size: 13px;
+  color: #8c8c8c;
+}
+
+/* 等待状态 */
+.custom-step.wait .custom-step-icon {
+  background: #f5f7fa;
+  border: 2px solid #e8e8e8;
+  color: #bfbfbf;
+}
+
+.custom-step.wait .custom-step-title {
+  color: #8c8c8c;
+}
+
+/* 进行中状态 */
+.custom-step.process .custom-step-icon {
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
+}
+
+.custom-step.process .custom-step-title {
+  color: #4FACFE;
+}
+
+/* 完成状态 */
+.custom-step.finish .custom-step-icon {
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  border: none;
+  color: #fff;
+}
+
+.custom-step.finish .custom-step-title {
+  color: #262626;
+}
+
+/* 错误状态 */
+.custom-step.error .custom-step-icon {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+  border: none;
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(255, 107, 107, 0.4);
+}
+
+.custom-step.error .custom-step-title {
+  color: #ff4757;
+}
+
+/* 步骤标题 */
+.order-steps-card .ant-steps-item-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.order-steps-card .ant-steps-item-finish .ant-steps-item-title,
+.order-steps-card .ant-steps-item-process .ant-steps-item-title {
+  color: #262626;
+}
+
+/* 步骤详情 */
 .step-detail {
   font-size: 12px;
-  color: #666;
+  color: #8c8c8c;
   margin-top: 8px;
+  line-height: 1.6;
 }
 
 .step-detail > div {
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
+.step-detail .anticon {
+  color: #4FACFE;
+}
+
+/* 卖家留言 */
 .seller-message {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: #f5f5f5;
-  border-radius: 4px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.06) 0%, rgba(0, 242, 254, 0.04) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(79, 172, 254, 0.12);
 }
 
 .seller-message p {
-  margin: 4px 0 0;
+  margin: 8px 0 0;
   white-space: pre-wrap;
+  color: #595959;
+  line-height: 1.6;
 }
 
+/* ===================== Action Cards ===================== */
 .order-action-card {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
+/* 表单项 */
 .seller-action-form .form-item {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .seller-action-form .form-item > span {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: #262626;
 }
 
+/* 文本域 */
+.order-action-card .ant-input-textarea .ant-input {
+  border-radius: 16px;
+  background: #f5f7fa;
+  border: 1.5px solid #e8e8e8;
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  resize: none;
+}
+
+.order-action-card .ant-input-textarea .ant-input:hover {
+  background: #ffffff;
+  border-color: #4FACFE;
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.15);
+}
+
+.order-action-card .ant-input-textarea .ant-input:focus {
+  background: #ffffff;
+  border-color: #4FACFE;
+  box-shadow: 0 2px 12px rgba(79, 172, 254, 0.2);
+}
+
+/* 上传组件 */
+.order-action-card .ant-upload-wrapper .ant-upload-list-picture-card .ant-upload-list-item {
+  border-radius: 12px;
+  border: 1.5px solid #e8e8e8;
+  overflow: hidden;
+}
+
+.order-action-card .ant-upload-wrapper .ant-upload.ant-upload-select {
+  border-radius: 12px;
+  border: 2px dashed #e8e8e8;
+  background: #f5f7fa;
+  transition: all 0.3s ease;
+}
+
+.order-action-card .ant-upload-wrapper .ant-upload.ant-upload-select:hover {
+  border-color: #4FACFE;
+  background: rgba(79, 172, 254, 0.05);
+}
+
+.order-action-card .ant-upload-wrapper .ant-upload.ant-upload-select .anticon {
+  color: #4FACFE;
+}
+
+/* 表单操作按钮 */
 .form-actions {
   margin-top: 24px;
   text-align: right;
 }
 
+/* ===================== Buttons ===================== */
+/* 主要按钮 */
+.order-process-page .ant-btn-primary {
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important;
+  border: none !important;
+  border-radius: 20px;
+  height: 44px;
+  padding: 0 32px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #fff !important;
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.35);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.order-process-page .ant-btn-primary:hover {
+  background: linear-gradient(135deg, #5fb8ff 0%, #33f5ff 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(79, 172, 254, 0.45);
+}
+
+.order-process-page .ant-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* 危险按钮 */
+.order-process-page .ant-btn-dangerous {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%) !important;
+  border: none !important;
+  border-radius: 20px;
+  height: 44px;
+  padding: 0 32px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #fff !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 107, 0.35);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.order-process-page .ant-btn-dangerous:hover {
+  background: linear-gradient(135deg, #ff8080 0%, #ff5a6a 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(255, 107, 107, 0.45);
+}
+
+.order-process-page .ant-btn-dangerous:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* 默认按钮 */
+.order-process-page .ant-btn-default {
+  border-radius: 20px;
+  height: 44px;
+  padding: 0 28px;
+  font-weight: 500;
+  border: 1.5px solid #e8e8e8 !important;
+  background: #f5f7fa !important;
+  color: #595959 !important;
+  transition: all 0.3s ease;
+}
+
+.order-process-page .ant-btn-default:hover {
+  border-color: #4FACFE !important;
+  color: #4FACFE !important;
+  background: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.15);
+}
+
+/* ===================== Images Card ===================== */
 .order-images-card {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
-.buyer-confirm-section {
+.order-images-card .ant-image {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.order-images-card .ant-image:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* ===================== Buyer Sections ===================== */
+.buyer-confirm-section,
+.buyer-cancel-section {
   text-align: center;
-  padding: 20px 0;
+  padding: 24px 0;
 }
 
+.buyer-confirm-section .ant-typography,
+.buyer-cancel-section .ant-typography {
+  font-size: 15px;
+  color: #595959;
+}
+
+.buyer-confirm-section .ant-divider,
+.buyer-cancel-section .ant-divider {
+  margin: 20px 0;
+  border-color: rgba(79, 172, 254, 0.12);
+}
+
+/* ===================== Complete Card ===================== */
 .order-complete-card {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(82, 196, 26, 0.05) 0%, rgba(115, 209, 61, 0.03) 100%) !important;
+  border: 1px solid rgba(82, 196, 26, 0.15) !important;
+}
+
+.order-complete-card .anticon-check-circle {
+  font-size: 56px;
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.order-complete-card h4.ant-typography {
+  margin-top: 20px !important;
+  font-weight: 600;
+  color: #262626;
+}
+
+/* ===================== Responsive ===================== */
+@media (max-width: 768px) {
+  .custom-steps {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .custom-step {
+    flex-direction: row;
+    align-items: flex-start;
+    padding-bottom: 24px;
+  }
+
+  .custom-step:last-child {
+    padding-bottom: 0;
+  }
+
+  .custom-step-icon-wrapper {
+    flex-direction: column;
+    width: auto;
+    margin-bottom: 0;
+    margin-right: 16px;
+  }
+
+  .custom-step-line {
+    width: 3px;
+    height: 100%;
+    min-height: 40px;
+    margin: 8px 0;
+    flex: 1;
+  }
+
+  .custom-step-content {
+    padding-right: 0;
+    padding-top: 8px;
+  }
 }
 
 @media (max-width: 576px) {
@@ -95,5 +520,41 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
+  }
+
+  .order-product-detail {
+    width: 100%;
+  }
+
+  .order-process-page .ant-btn-primary,
+  .order-process-page .ant-btn-dangerous,
+  .order-process-page .ant-btn-default {
+    height: 40px;
+    padding: 0 24px;
+    font-size: 14px;
+  }
+
+  .custom-step-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .custom-step-title {
+    font-size: 14px;
+  }
+}
+
+/* ===================== Reduced Motion ===================== */
+@media (prefers-reduced-motion: reduce) {
+  .order-process-page .ant-btn,
+  .order-process-page .ant-card,
+  .order-images-card .ant-image {
+    transition: none;
+  }
+
+  .order-process-page .ant-btn:hover,
+  .order-images-card .ant-image:hover {
+    transform: none;
   }
 }

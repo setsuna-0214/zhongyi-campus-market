@@ -1,0 +1,121 @@
+.help-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.help-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.help-header .ant-typography h2 {
+  color: var(--campus-primary-dark);
+}
+
+/* FAQ 卡片 */
+.faq-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.faq-collapse {
+  background: transparent;
+}
+
+.faq-collapse .ant-collapse-item {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.faq-collapse .ant-collapse-header {
+  padding: 16px 0 !important;
+  font-size: 15px;
+}
+
+.faq-category-panel .ant-collapse-content-box {
+  padding: 0 0 16px 0 !important;
+}
+
+.faq-questions {
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.faq-questions .ant-collapse-item {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.faq-questions .ant-collapse-item:last-child {
+  border-bottom: none;
+}
+
+.faq-questions .ant-collapse-header {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.faq-questions .ant-collapse-content-box {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 反馈卡片 */
+.feedback-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.feedback-card .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+/* 联系卡片 */
+.contact-card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.contact-card .ant-space {
+  width: 100%;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+}
+
+.contact-item .anticon {
+  font-size: 18px;
+  color: var(--campus-primary);
+  flex-shrink: 0;
+}
+
+.contact-item .ant-typography {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 底部 */
+.help-footer {
+  text-align: center;
+  padding: 16px 0;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .help-page {
+    padding: 16px;
+  }
+
+  .help-header {
+    margin-bottom: 24px;
+  }
+
+  .help-header .ant-typography h2 {
+    font-size: 22px !important;
+  }
+}

@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Layout, Avatar, Dropdown, Input, Button, Space } from 'antd';
 import {
   UserOutlined,
   LogoutOutlined,
-  SearchOutlined
+  SearchOutlined,
+  ShopOutlined,
+  HeartOutlined,
+  MessageOutlined,
+  QuestionCircleOutlined,
+  SettingOutlined,
+  RightOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
 import { getCurrentUser } from '../../api/user';
 
@@ -13,11 +19,23 @@ const { Header: AntHeader } = Layout;
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // 登录状态
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [headerKeyword, setHeaderKeyword] = useState('');
+  
+  // 首页展开状态跟踪
+  const [homeExpanded, setHomeExpanded] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const transitionDirectionRef = useRef(null);
+  
+  // 判断是否在首页
+  const isHomePage = location.pathname === '/';
+  
+  // 计算是否应该显示透明模式
+  const shouldBeTransparent = isHomePage && !homeExpanded && !isTransitioning;
 
   useEffect(() => {
     let cancelled = false;
@@ -54,6 +72,36 @@ const Header = () => {
     return () => { cancelled = true; };
   }, []);
 
+  // 监听首页展开状态变化
+  const handleHomeExpandChange = useCallback((event) => {
+    const { isExpanded, isTransitioning: transitioning, transitionDirection } = event.detail;
+    
+    if (isHomePage) {
+      setHomeExpanded(isExpanded);
+      setIsTransitioning(transitioning);
+      transitionDirectionRef.current = transitionDirection;
+    }
+  }, [isHomePage]);
+
+  // 监听自定义事件
+  useEffect(() => {
+    window.addEventListener('homeExpandChange', handleHomeExpandChange);
+    return () => {
+      window.removeEventListener('homeExpandChange', handleHomeExpandChange);
+    };
+  }, [handleHomeExpandChange]);
+
+  // 首页初始化时设置状态
+  useEffect(() => {
+    if (isHomePage) {
+      // 检查是否已登录（登录用户默认展开）
+      const authUser = localStorage.getItem('authUser');
+      setHomeExpanded(!!authUser);
+    } else {
+      setHomeExpanded(true); // 非首页视为展开状态
+    }
+  }, [isHomePage]);
+
 
   const handleSearch = (value) => {
     const keyword = (value || '').trim();
@@ -76,32 +124,80 @@ const Header = () => {
     navigate('/');
   };
 
+  // 下拉菜单展开状态
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
   const userMenuItems = [
+    {
+      key: 'user-header',
+      type: 'group',
+      label: (
+        <div className="user-menu-header">
+          <div className="user-menu-info">
+            <div className="user-menu-name">{user?.nickname || user?.username || '用户'}</div>
+            <div className="user-menu-welcome">欢迎回来 👋</div>
+          </div>
+        </div>
+      ),
+    },
+    { type: 'divider' },
     {
       key: 'profile',
       icon: <UserOutlined />,
-      label: '个人中心',
+      label: <span className="menu-label">个人中心<RightOutlined className="menu-arrow" /></span>,
       onClick: () => navigate('/profile')
     },
     {
-      type: 'divider'
+      key: 'publish',
+      icon: <ShopOutlined />,
+      label: <span className="menu-label">发布商品<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/publish')
     },
+    {
+      key: 'favorites',
+      icon: <HeartOutlined />,
+      label: <span className="menu-label">我的收藏<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/profile?tab=favorites')
+    },
+    {
+      key: 'messages',
+      icon: <MessageOutlined />,
+      label: <span className="menu-label">我的消息<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/chat')
+    },
+    { type: 'divider' },
+    {
+      key: 'settings',
+      icon: <SettingOutlined />,
+      label: <span className="menu-label">账号设置<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/profile?tab=account')
+    },
+    {
+      key: 'help',
+      icon: <QuestionCircleOutlined />,
+      label: <span className="menu-label">帮助中心<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/help')
+    },
+    { type: 'divider' },
     {
       key: 'logout',
       icon: <LogoutOutlined />,
-      label: '退出登录',
-      onClick: handleLogout
+      label: <span className="menu-label">退出登录<RightOutlined className="menu-arrow" /></span>,
+      onClick: handleLogout,
+      danger: true
     }
   ];
 
 
 
+  // 计算动态样式和类名
+  const headerClassName = `app-header ${shouldBeTransparent ? 'header-transparent' : ''} ${isTransitioning ? 'header-transitioning' : ''}`;
+
   return (
-    <AntHeader className="app-header">
+    <AntHeader className={headerClassName}>
       <div className="header-content">
         {/* Logo */}
         <div className="logo" onClick={() => navigate('/')}>
-          <img src="/images/logo.png" alt="Logo" className="logo-icon" />
           <span className="logo-text">中易</span>
         </div>
 
@@ -131,17 +227,21 @@ const Header = () => {
         <div className="header-actions">
           {isLoggedIn ? (
             <Dropdown
-              menu={{ items: userMenuItems }}
+              menu={{ items: userMenuItems, className: 'user-dropdown-menu' }}
               placement="bottomRight"
-              arrow
+              trigger={['hover']}
+              overlayClassName="user-dropdown-overlay"
+              onOpenChange={setDropdownOpen}
+              getPopupContainer={(trigger) => trigger.parentElement}
             >
-              <button type="button" className="user-entry" aria-label="用户菜单">
+              <div className={`user-avatar-wrapper ${dropdownOpen ? 'active' : ''}`}>
                 <Avatar
-                  size="large"
+                  size={40}
                   icon={<UserOutlined />}
                   src={user?.avatar}
+                  className="header-avatar"
                 />
-              </button>
+              </div>
             </Dropdown>
           ) : (
             <button

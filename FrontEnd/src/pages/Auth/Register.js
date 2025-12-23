@@ -102,7 +102,7 @@ const Register = () => {
     try {
       const username = form.getFieldValue('username');
       const email = form.getFieldValue('email');
-      
+
       // 验证用户名
       if (!username) {
         message.error('请先输入用户名');
@@ -122,9 +122,9 @@ const Register = () => {
         message.error(emailStatus.error);
         return;
       }
-      
+
       setLoading(true);
-      
+
       // 发送验证码
       const res = await sendCode({ email });
       // 后端返回格式: { code: 200, message: "验证码发送成功", data: {} }
@@ -178,9 +178,9 @@ const Register = () => {
             { pattern: /^[a-zA-Z][a-zA-Z0-9_-]*$/, message: '用户名必须以字母开头，只能包含字母、数字、下划线和连字符' },
           ]}
         >
-          <Input 
-            prefix={<UserOutlined />} 
-            placeholder="请输入用户名" 
+          <Input
+            prefix={<UserOutlined />}
+            placeholder="请输入用户名"
             onChange={handleUsernameChange}
           />
         </Form.Item>
@@ -196,9 +196,9 @@ const Register = () => {
             { type: 'email', message: '请输入有效的邮箱地址' },
           ]}
         >
-          <Input 
-            prefix={<MailOutlined />} 
-            placeholder="请输入邮箱" 
+          <Input
+            prefix={<MailOutlined />}
+            placeholder="请输入邮箱"
             onChange={handleEmailChange}
           />
         </Form.Item>
@@ -252,6 +252,7 @@ const Register = () => {
                 loading={loading}
                 disabled={countdown > 0}
                 block
+                className="verify-code-btn"
               >
                 {countdown > 0 ? `重新发送(${countdown}s)` : '发送验证码'}
               </Button>

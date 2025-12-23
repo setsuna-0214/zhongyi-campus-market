@@ -62,8 +62,7 @@ const FloatingButtons = () => {
   };
 
   const handleHelp = () => {
-    // 可以打开帮助文档或客服
-    console.log('打开帮助');
+    navigate('/help');
   };
 
   return (

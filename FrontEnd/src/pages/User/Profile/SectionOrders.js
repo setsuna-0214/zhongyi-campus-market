@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { Card, Tabs, List, Empty, message } from 'antd';
+import { Card, List, Empty, message } from 'antd';
 import ProductCard from '../../../components/ProductCard';
+import OrderTabRow from '../../../components/OrderTabRow';
 import { resolveImageSrc } from '../../../utils/images';
 import { listOrders, deleteOrder } from '../../../api/orders';
 import { 
@@ -9,7 +10,15 @@ import {
   getOrderStatusText 
 } from '../../../utils/labels';
 
-export default function SectionOrders({ userInfo, onNavigate }) {
+export default function SectionOrders({ 
+  userInfo, 
+  onNavigate, 
+  orderType = 'purchase',
+  orderStatus = 'pending',
+  onOrderTypeChange,
+  onOrderStatusChange
+}) {
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -156,6 +165,8 @@ export default function SectionOrders({ userInfo, onNavigate }) {
                 status={statusText}
                 location={p.location}
                 sellerName={counterpartName}
+                sellerId={role === 'purchase' ? (order.seller?.id || order.sellerId) : (order.buyer?.id || order.buyerId)}
+                sellerAvatar={role === 'purchase' ? order.seller?.avatar : order.buyer?.avatar}
                 publishedAt={order.orderTime}
                 views={0}
                 overlayType="none"
@@ -175,41 +186,24 @@ export default function SectionOrders({ userInfo, onNavigate }) {
     />
   );
 
+  // 根据 orderType 选择显示的订单列表
+  const displayOrders = orderType === 'sell' ? sellOrders : purchaseOrders;
+  const role = orderType === 'sell' ? 'sell' : 'purchase';
+
+  // 根据当前 orderStatus 过滤订单
+  const filteredOrders = filterByStatus(displayOrders, orderStatus);
+
   return (
-    <Card className="section-card">
-      <Tabs
-        defaultActiveKey="purchase"
-        items={[
-          {
-            key: 'purchase',
-            label: '购买',
-            children: (
-              <Tabs
-                defaultActiveKey="pending"
-                items={[
-                  { key: 'pending', label: '待处理', children: renderOrderList(filterByStatus(purchaseOrders, 'pending'), 'purchase') },
-                  { key: 'completed', label: '已完成', children: renderOrderList(filterByStatus(purchaseOrders, 'completed'), 'purchase') },
-                  { key: 'cancelled', label: '已取消', children: renderOrderList(filterByStatus(purchaseOrders, 'cancelled'), 'purchase') },
-                ]}
-              />
-            )
-          },
-          {
-            key: 'sell',
-            label: '出售',
-            children: (
-              <Tabs
-                defaultActiveKey="pending"
-                items={[
-                  { key: 'pending', label: '待处理', children: renderOrderList(filterByStatus(sellOrders, 'pending'), 'sell') },
-                  { key: 'completed', label: '已完成', children: renderOrderList(filterByStatus(sellOrders, 'completed'), 'sell') },
-                  { key: 'cancelled', label: '已取消', children: renderOrderList(filterByStatus(sellOrders, 'cancelled'), 'sell') },
-                ]}
-              />
-            )
-          }
-        ]}
+    <Card className="section-card section-orders-card">
+      <OrderTabRow
+        orderType={orderType}
+        orderStatus={orderStatus}
+        onTypeChange={onOrderTypeChange}
+        onStatusChange={onOrderStatusChange}
       />
+      <div className="orders-content">
+        {renderOrderList(filteredOrders, role)}
+      </div>
     </Card>
   );
 }

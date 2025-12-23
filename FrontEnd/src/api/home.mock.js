@@ -10,10 +10,9 @@ const filterAvailableProducts = (products) => {
   });
 };
 
-export async function getHotProducts() {
-  const hot = filterAvailableProducts([...mockProducts])
+export async function getHotProducts(page = 1, pageSize = 12) {
+  const allProducts = filterAvailableProducts([...mockProducts])
     .sort((a, b) => (b.views || 0) - (a.views || 0))
-    .slice(0, 12)
     .map(p => ({
       id: p.id,
       title: p.title,
@@ -23,17 +22,25 @@ export async function getHotProducts() {
       publishedAt: p.publishTime,
       seller: p.seller?.nickname || '卖家',
       sellerId: p.seller?.id,
+      sellerAvatar: p.seller?.avatar,
       location: p.location,
       category: p.category,
       status: p.status || '在售'
     }));
-  return hot;
+  
+  const start = (page - 1) * pageSize;
+  const items = allProducts.slice(start, start + pageSize);
+  
+  return {
+    items,
+    hasMore: start + pageSize < allProducts.length,
+    total: allProducts.length
+  };
 }
 
-export async function getLatestProducts() {
-  const latest = filterAvailableProducts([...mockProducts])
+export async function getLatestProducts(page = 1, pageSize = 12) {
+  const allProducts = filterAvailableProducts([...mockProducts])
     .sort((a, b) => new Date(b.publishTime) - new Date(a.publishTime))
-    .slice(0, 12)
     .map(p => ({
       id: p.id,
       title: p.title,
@@ -43,10 +50,19 @@ export async function getLatestProducts() {
       publishedAt: new Date(p.publishTime).toLocaleDateString(),
       seller: p.seller?.nickname || '卖家',
       sellerId: p.seller?.id,
+      sellerAvatar: p.seller?.avatar,
       location: p.location,
       category: p.category,
       status: p.status || '在售'
     }));
-  return latest;
+  
+  const start = (page - 1) * pageSize;
+  const items = allProducts.slice(start, start + pageSize);
+  
+  return {
+    items,
+    hasMore: start + pageSize < allProducts.length,
+    total: allProducts.length
+  };
 }
 

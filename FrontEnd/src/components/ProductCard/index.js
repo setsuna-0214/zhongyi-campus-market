@@ -5,7 +5,7 @@ import { FALLBACK_IMAGE } from '../../utils/images';
 import { Card, Tag, Avatar } from 'antd';
 import { EyeOutlined, EnvironmentOutlined, UserOutlined, EditOutlined, DeleteOutlined, FileTextOutlined } from '@ant-design/icons';
 import { Popconfirm } from 'antd';
-import { getCategoryLabel, getStatusLabel, getStatusColor } from '../../utils/labels';
+import { getCategoryLabel, getStatusLabel, getStatusColor, getStatusBgColor, getCategoryColor, getCategoryBgColor } from '../../utils/labels';
 
 /**
  * Unified ProductCard component
@@ -74,6 +74,7 @@ const ProductCard = ({
   location,
   sellerName,
   sellerId,
+  sellerAvatar,
   publishedAt,
   views,
   overlayType,
@@ -229,38 +230,52 @@ const ProductCard = ({
         title={<div className="product-title">{title}</div>}
         description={
           <div className="product-desc">
-            {(category || status) && (
-              <div className="product-category-line">
+            <div className="product-info-row">
+              {/* 左侧：分类、状态、价格 */}
+              <div className="product-info-left">
                 {category && (
-                  <Tag color="green" className="product-category-tag">
+                  <Tag
+                    className="product-tag"
+                    style={{
+                      color: getCategoryColor(category),
+                      backgroundColor: getCategoryBgColor(category),
+                    }}
+                  >
                     {getCategoryLabel(category)}
                   </Tag>
                 )}
                 {status && (
-                  <Tag color={getStatusColor(status)} className="product-status-tag">
+                  <Tag
+                    className="product-tag"
+                    style={{
+                      color: getStatusColor(status),
+                      backgroundColor: getStatusBgColor(status),
+                    }}
+                  >
                     {getStatusLabel(status)}
                   </Tag>
                 )}
+                {price !== undefined && <div className="product-price">¥{price}</div>}
               </div>
-            )}
-            <div className="home-product-topline">
-              {price !== undefined && <div className="product-price">¥{price}</div>}
-              {publishedAtDisplay && <div className="home-product-published">{publishedAtDisplay}</div>}
-            </div>
-            <div className="home-product-bottom">
-              <div 
-                className={`home-product-seller ${sellerId ? 'clickable' : ''}`}
-                onClick={handleSellerClick}
-              >
-                <Avatar size={24} icon={<UserOutlined />} />
-                <span className="seller-name">{sellerName}</span>
-              </div>
-              {location && (
-                <div className="home-product-location">
-                  <EnvironmentOutlined />
-                  <span>{location}</span>
+              {/* 右侧：卖家、时间、地址 */}
+              <div className="product-info-right">
+                <div
+                  className={`product-seller ${sellerId ? 'clickable' : ''}`}
+                  onClick={handleSellerClick}
+                >
+                  <Avatar size={18} src={sellerAvatar} icon={<UserOutlined />} />
+                  <span className="seller-name">{sellerName}</span>
                 </div>
-              )}
+                {publishedAtDisplay && (
+                  <div className="product-date">{publishedAtDisplay}</div>
+                )}
+                {location && (
+                  <div className="product-location">
+                    <EnvironmentOutlined />
+                    <span>{location}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         }
@@ -279,6 +294,7 @@ const areEqual = (prevProps, nextProps) => {
     prevProps.location === nextProps.location &&
     prevProps.sellerName === nextProps.sellerName &&
     prevProps.sellerId === nextProps.sellerId &&
+    prevProps.sellerAvatar === nextProps.sellerAvatar &&
     prevProps.publishedAt === nextProps.publishedAt &&
     prevProps.views === nextProps.views &&
     prevProps.overlayType === nextProps.overlayType &&

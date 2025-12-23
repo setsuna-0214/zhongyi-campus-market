@@ -2,12 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Layout,
-  Menu,
   Button,
   Modal,
   Form,
   Upload,
   message,
+  Avatar,
 } from 'antd';
 import {
   UserOutlined,
@@ -18,6 +18,7 @@ import {
   OrderedListOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
+import SliderMenu from '../../components/SliderMenu';
 import './Profile.css';
 import { PROFILE_BANNER_OPTIONS, DEFAULT_PROFILE_BANNER_KEY } from '../../config/profile';
 import { getCurrentUser, updateCurrentUser, uploadAvatar, getMyPublished, getMyPurchases, getFollows, unfollowUser } from '../../api/user';
@@ -46,6 +47,11 @@ const UserProfile = () => {
   const [basicForm] = Form.useForm();
   const [isBasicDirty, setIsBasicDirty] = useState(false);
   const [selectedKey, setSelectedKey] = useState('profile');
+
+  // 子选项状态（用于商品管理和订单处理的子标签）
+  const [productSubTab, setProductSubTab] = useState('published');
+  const [orderSubTab, setOrderSubTab] = useState('purchase');
+  const [orderStatus, setOrderStatus] = useState('pending');
 
   // 用户信息
   const [userInfo, setUserInfo] = useState({});
@@ -76,8 +82,24 @@ const UserProfile = () => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get('tab');
-    if (tab && ['profile', 'products', 'orders', 'favorites', 'follows'].includes(tab)) {
+    // 更新为扁平化菜单的有效 tab 值
+    const validTabs = ['profile', 'account', 'products', 'orders', 'favorites', 'follows'];
+    if (tab && validTabs.includes(tab)) {
       setSelectedKey(tab);
+    }
+
+    // 从 URL 恢复子选项状态
+    const productSub = searchParams.get('productSubTab');
+    const orderSub = searchParams.get('orderSubTab');
+    const orderStat = searchParams.get('orderStatus');
+    if (productSub && ['published', 'purchases'].includes(productSub)) {
+      setProductSubTab(productSub);
+    }
+    if (orderSub && ['purchase', 'sell'].includes(orderSub)) {
+      setOrderSubTab(orderSub);
+    }
+    if (orderStat && ['pending', 'completed', 'cancelled'].includes(orderStat)) {
+      setOrderStatus(orderStat);
     }
 
     (async () => {
@@ -222,14 +244,46 @@ const UserProfile = () => {
   };
 
 
+  // 扁平化菜单项配置（移除子菜单结构）
   const menuItems = [
-    { key: 'profile', icon: <UserOutlined />, label: '基 本 信 息' },
-    { key: 'account', icon: <LockOutlined />, label: '账 户 信 息' },
-    { key: 'products', icon: <ShoppingOutlined />, label: '商 品 管 理' },
-    { key: 'orders', icon: <OrderedListOutlined />, label: '订 单 处 理' },
-    { key: 'favorites', icon: <HeartOutlined />, label: '商 品 收 藏' },
-    { key: 'follows', icon: <TeamOutlined />, label: '我 的 关 注' },
+    { key: 'profile', icon: <UserOutlined />, label: '基本信息' },
+    { key: 'account', icon: <LockOutlined />, label: '账户安全' },
+    { key: 'products', icon: <ShoppingOutlined />, label: '商品管理' },
+    { key: 'orders', icon: <OrderedListOutlined />, label: '订单处理' },
+    { key: 'favorites', icon: <HeartOutlined />, label: '商品收藏' },
+    { key: 'follows', icon: <TeamOutlined />, label: '我的关注' },
   ];
+
+  // 移除 openKeys 相关逻辑，因为不再有子菜单
+
+  // 更新 URL 参数的辅助函数
+  const updateUrlParams = (updates) => {
+    const params = new URLSearchParams(location.search);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.set(key, value);
+      }
+    });
+    navigate(`/profile?${params.toString()}`, { replace: true });
+  };
+
+  // 处理商品子选项切换
+  const handleProductSubTabChange = (subTab) => {
+    setProductSubTab(subTab);
+    updateUrlParams({ productSubTab: subTab });
+  };
+
+  // 处理订单子选项切换
+  const handleOrderSubTabChange = (subTab) => {
+    setOrderSubTab(subTab);
+    updateUrlParams({ orderSubTab: subTab });
+  };
+
+  // 处理订单状态切换
+  const handleOrderStatusChange = (status) => {
+    setOrderStatus(status);
+    updateUrlParams({ orderStatus: status });
+  };
 
   useEffect(() => {
     if (userInfo && Object.keys(userInfo).length > 0) {
@@ -247,11 +301,16 @@ const UserProfile = () => {
           <div className="user-sider-header">
             <span className="user-sider-title">个 人 中 心</span>
           </div>
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            onClick={(e) => setSelectedKey(e.key)}
+          <SliderMenu
             items={menuItems}
+            selectedKey={selectedKey}
+            onSelect={(key) => {
+              setSelectedKey(key);
+              // 更新 URL 参数，保持状态同步
+              const params = new URLSearchParams(location.search);
+              params.set('tab', key);
+              navigate(`/profile?${params.toString()}`, { replace: true });
+            }}
           />
         </Sider>
         <Content className="user-content">
@@ -271,11 +330,26 @@ const UserProfile = () => {
           )}
 
           {selectedKey === 'products' && (
-            <SectionProducts myProducts={myProducts} purchaseHistory={purchaseHistory} onDeleteProduct={handleDeleteProduct} onNavigate={navigate} userInfo={userInfo} />
+            <SectionProducts 
+              myProducts={myProducts} 
+              purchaseHistory={purchaseHistory} 
+              onDeleteProduct={handleDeleteProduct} 
+              onNavigate={navigate} 
+              userInfo={userInfo}
+              showType={productSubTab}
+              onSubTabChange={handleProductSubTabChange}
+            />
           )}
 
           {selectedKey === 'orders' && (
-            <SectionOrders userInfo={userInfo} onNavigate={navigate} />
+            <SectionOrders 
+              userInfo={userInfo} 
+              onNavigate={navigate} 
+              orderType={orderSubTab}
+              orderStatus={orderStatus}
+              onOrderTypeChange={handleOrderSubTabChange}
+              onOrderStatusChange={handleOrderStatusChange}
+            />
           )}
 
           {selectedKey === 'favorites' && (
@@ -296,10 +370,21 @@ const UserProfile = () => {
             open={avatarModalVisible}
             onCancel={() => setAvatarModalVisible(false)}
             footer={null}
+            className="avatar-upload-modal"
+            centered
+            width={400}
           >
-            <Upload name="avatar" showUploadList={false} beforeUpload={handleAvatarUpload}>
-              <Button icon={<CameraOutlined />}>选择图片并上传</Button>
-            </Upload>
+            <div className="avatar-upload-content">
+              <div className="avatar-preview">
+                <Avatar size={100} src={userInfo.avatar} icon={<UserOutlined />} />
+              </div>
+              <Upload name="avatar" showUploadList={false} beforeUpload={handleAvatarUpload}>
+                <Button type="primary" icon={<CameraOutlined />} size="large" className="avatar-upload-btn">
+                  选择图片并上传
+                </Button>
+              </Upload>
+              <p className="avatar-upload-tip">支持 JPG、PNG 格式，建议尺寸 200x200 像素</p>
+            </div>
           </Modal>
         </Content>
       </Layout>

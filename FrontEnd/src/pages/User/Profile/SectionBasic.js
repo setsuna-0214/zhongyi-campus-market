@@ -1,5 +1,6 @@
-import { Card, Avatar, Button, Form, Input, Select, Checkbox, Row, Col, Space, Typography, Popover, Segmented } from 'antd';
-import { UserOutlined, CameraOutlined, SettingOutlined } from '@ant-design/icons';
+import { useState, useEffect, useRef } from 'react';
+import { Card, Avatar, Button, Form, Input, Checkbox, Row, Col, Space, Typography, Segmented } from 'antd';
+import { UserOutlined, CameraOutlined, PictureOutlined } from '@ant-design/icons';
 import { PROFILE_BANNER_OPTIONS } from '../../../config/profile';
 import { GENDER_OPTIONS } from '../../../utils/labels';
 
@@ -62,9 +63,45 @@ export default function SectionBasic({
   loading,
   isReadOnly = false 
 }) {
+  // 背景图淡入淡出状态
+  const [displayedBgUrl, setDisplayedBgUrl] = useState(bannerBgUrl);
+  const [isFading, setIsFading] = useState(false);
+  const fadeTimeoutRef = useRef(null);
+
+  // 当 bannerBgUrl 变化时，触发淡入淡出效果
+  useEffect(() => {
+    if (bannerBgUrl !== displayedBgUrl) {
+      setIsFading(true);
+      // 清除之前的定时器
+      if (fadeTimeoutRef.current) {
+        clearTimeout(fadeTimeoutRef.current);
+      }
+      // 淡出后切换背景，然后淡入
+      fadeTimeoutRef.current = setTimeout(() => {
+        setDisplayedBgUrl(bannerBgUrl);
+        setIsFading(false);
+      }, 200);
+    }
+    return () => {
+      if (fadeTimeoutRef.current) {
+        clearTimeout(fadeTimeoutRef.current);
+      }
+    };
+  }, [bannerBgUrl, displayedBgUrl]);
+
+  // 循环切换背景图
+  const handleCycleBanner = () => {
+    const currentIndex = PROFILE_BANNER_OPTIONS.findIndex(opt => opt.key === bannerKey);
+    const nextIndex = (currentIndex + 1) % PROFILE_BANNER_OPTIONS.length;
+    onChangeBannerKey(PROFILE_BANNER_OPTIONS[nextIndex].key);
+  };
+
   return (
     <Card className="section-card" loading={loading}>
-      <div className="avatar-banner" style={bannerBgUrl ? { backgroundImage: `url(${bannerBgUrl})` } : { backgroundImage: 'none', backgroundColor: '#fafafa' }}>
+      <div 
+        className={`avatar-banner ${isFading ? 'banner-fading' : ''}`} 
+        style={displayedBgUrl ? { backgroundImage: `url(${displayedBgUrl})` } : { backgroundImage: 'none', backgroundColor: '#fafafa' }}
+      >
         <div className="avatar-wrapper">
           <div className="avatar-box">
             <Avatar size={120} src={userInfo.avatar} icon={<UserOutlined />} className="user-avatar" />
@@ -74,15 +111,7 @@ export default function SectionBasic({
           </div>
         </div>
         {!isReadOnly && (
-          <Popover placement="topRight" trigger="click" content={(
-            <Form layout="inline">
-              <Form.Item label="头像背景图" style={{ marginBottom: 0 }}>
-                <Select size="middle" style={{ minWidth: 180 }} value={bannerKey} onChange={onChangeBannerKey} options={PROFILE_BANNER_OPTIONS.map(opt => ({ label: opt.label, value: opt.key }))} />
-              </Form.Item>
-            </Form>
-          )}>
-            <Button shape="circle" size="small" type="default" icon={<SettingOutlined />} aria-label="界面设置" className="banner-settings-icon" />
-          </Popover>
+          <Button shape="circle" size="small" type="default" icon={<PictureOutlined />} aria-label="切换背景图" onClick={handleCycleBanner} className="banner-settings-icon" />
         )}
       </div>
       <div style={{ marginTop: 12 }}>

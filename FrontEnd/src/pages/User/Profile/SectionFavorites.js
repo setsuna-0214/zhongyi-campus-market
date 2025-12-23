@@ -2,23 +2,21 @@ import { useMemo, useState } from 'react';
 import { Card, Row, Col, Button, Space, Select, Input, Checkbox, Empty, Pagination, Typography } from 'antd';
 import ProductCard from '../../../components/ProductCard';
 import { resolveImageSrc } from '../../../utils/images';
+import { CATEGORY_CODE_TO_LABEL, getCategoryLabel } from '../../../utils/labels';
 
 const { Text } = Typography;
+
+// 商品分类选项（用于筛选下拉框）
+const CATEGORY_OPTIONS = [
+  { label: '全部分类', value: '' },
+  ...Object.entries(CATEGORY_CODE_TO_LABEL).map(([code, label]) => ({ label, value: code }))
+];
 
 export default function SectionFavorites({ favorites, onRemoveFavorite, onNavigate }) {
   const [filters, setFilters] = useState({ category: '', keyword: '', timeRange: 'all', sortBy: 'addTime' });
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
-
-  const categories = useMemo(() => {
-    const set = new Set();
-    favorites.forEach(item => {
-      if (item.category) set.add(item.category);
-      else if (Array.isArray(item.tags) && item.tags[0]) set.add(item.tags[0]);
-    });
-    return Array.from(set);
-  }, [favorites]);
 
   const filtered = useMemo(() => {
     let items = [...favorites];
@@ -86,32 +84,26 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
 
   return (
     <>
-      <Card className="section-card">
-        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+      <Card className="section-card" style={{ marginBottom: 12 }}>
+        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '4px 0' }}>
           <Space size="middle" wrap>
             <Space.Compact style={{ width: 280 }}>
               <Input placeholder="搜索收藏商品" allowClear value={filters.keyword} onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))} />
               <Button type="primary" onClick={() => setCurrentPage(1)}>搜索</Button>
             </Space.Compact>
-            <Select placeholder="商品分类" allowClear style={{ width: 140 }} value={filters.category || undefined} onChange={(val) => { setFilters(prev => ({ ...prev, category: val || '' })); setCurrentPage(1); }} options={categories.map(c => ({ label: c, value: c }))} />
+            <Select placeholder="商品分类" allowClear style={{ width: 140 }} value={filters.category || undefined} onChange={(val) => { setFilters(prev => ({ ...prev, category: val || '' })); setCurrentPage(1); }} options={CATEGORY_OPTIONS.filter(opt => opt.value !== '')} />
             <Select placeholder="加入时间" style={{ width: 140 }} value={filters.timeRange} onChange={(val) => { setFilters(prev => ({ ...prev, timeRange: val })); setCurrentPage(1); }} options={[{ label: '全部', value: 'all' },{ label: '最近7天', value: '7d' },{ label: '最近30天', value: '30d' }]} />
             <Select placeholder="排序方式" style={{ width: 140 }} value={filters.sortBy} onChange={(val) => { setFilters(prev => ({ ...prev, sortBy: val })); setCurrentPage(1); }} options={[{ label: '添加时间', value: 'addTime' },{ label: '价格从低到高', value: 'price_asc' },{ label: '价格从高到低', value: 'price_desc' }]} />
           </Space>
+          {filtered.length > 0 && (
+            <div className="batch-actions-inline">
+              <Checkbox checked={isAllSelected} indeterminate={isIndeterminate} onChange={(e) => handleSelectAll(e.target.checked)}>全选当前页</Checkbox>
+              <Text type="secondary" className="selected-count">{selectedIds.length > 0 ? `已选 ${selectedIds.length} 项` : '\u00A0'}</Text>
+              <Button className="batch-remove-btn" onClick={() => { const toRemove = [...selectedIds]; toRemove.forEach(id => onRemoveFavorite(id)); setSelectedIds([]); }} disabled={selectedIds.length === 0}>批量移除</Button>
+            </div>
+          )}
         </div>
       </Card>
-      {filtered.length > 0 && (
-        <Card className="section-card">
-          <div className="batch-actions" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="select-all" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <Checkbox checked={isAllSelected} indeterminate={isIndeterminate} onChange={(e) => handleSelectAll(e.target.checked)}>全选当前页</Checkbox>
-              {selectedIds.length > 0 && <Text type="secondary">已选择 {selectedIds.length} 个商品</Text>}
-            </div>
-            <Space>
-              <Button danger onClick={() => { const toRemove = [...selectedIds]; toRemove.forEach(id => onRemoveFavorite(id)); setSelectedIds([]); }} disabled={selectedIds.length === 0}>批量移除</Button>
-            </Space>
-          </div>
-        </Card>
-      )}
       <Card className="section-card">
         {currentItems.length > 0 ? (
           <Row gutter={[16, 16]}>
@@ -121,11 +113,12 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
                   imageSrc={resolveImageSrc({ item })}
                   title={item.productName}
                   price={item.currentPrice}
-                  category={item.category || (Array.isArray(item.tags) ? item.tags[0] : '')}
+                  category={getCategoryLabel(item.category || (Array.isArray(item.tags) ? item.tags[0] : ''))}
                   status={item.status}
                   location={item.location}
                   sellerName={item.seller?.nickname || item.seller?.username || item.seller?.name || item.sellerName || '卖家'}
                   sellerId={item.seller?.id || item.sellerId}
+                  sellerAvatar={item.seller?.avatar || item.sellerAvatar}
                   publishedAt={item.publishedAt || item.publishTime || item.createdAt}
                   favoriteAt={item.addTime}
                   views={item.sales}
