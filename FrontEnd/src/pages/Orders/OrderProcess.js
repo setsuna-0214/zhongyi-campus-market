@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Card,
-  Steps,
   Button,
   Upload,
   Input,
@@ -19,7 +18,12 @@ import {
   UserOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
-  ArrowLeftOutlined
+  ArrowLeftOutlined,
+  ShoppingOutlined,
+  SolutionOutlined,
+  SafetyOutlined,
+  SmileOutlined,
+  CloseCircleOutlined
 } from '@ant-design/icons';
 import { getOrderDetail, updateOrderStatus, uploadOrderImages, cancelOrder } from '../../api/orders';
 import { canCancelOrder } from '../../utils/labels';
@@ -28,6 +32,45 @@ import './OrderProcess.css';
 
 const { TextArea } = Input;
 const { Title, Text } = Typography;
+
+// 自定义进度条组件
+const OrderSteps = ({ currentStep, isCancelled, steps }) => {
+  return (
+    <div className="custom-steps">
+      {steps.map((step, index) => {
+        const isCompleted = currentStep > index;
+        const isCurrent = currentStep === index;
+        const isError = isCancelled && isCurrent;
+        
+        let statusClass = 'wait';
+        if (isError) statusClass = 'error';
+        else if (isCompleted) statusClass = 'finish';
+        else if (isCurrent) statusClass = 'process';
+        
+        return (
+          <div key={index} className={`custom-step ${statusClass}`}>
+            <div className="custom-step-icon-wrapper">
+              <div className="custom-step-icon">
+                {isError ? <CloseCircleOutlined /> : 
+                 isCompleted ? <CheckCircleOutlined /> : 
+                 step.icon}
+              </div>
+              {index < steps.length - 1 && (
+                <div className={`custom-step-line ${isCompleted ? 'completed' : ''}`} />
+              )}
+            </div>
+            <div className="custom-step-content">
+              <div className="custom-step-title">{step.title}</div>
+              {step.description && (
+                <div className="custom-step-description">{step.description}</div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const OrderProcess = () => {
   const { id: orderId } = useParams();
@@ -82,7 +125,7 @@ const OrderProcess = () => {
       }
     } catch (error) {
       message.error('加载订单信息失败');
-      navigate('/user?tab=orders');
+      navigate('/profile?tab=orders');
     } finally {
       setLoading(false);
     }
@@ -228,7 +271,14 @@ const OrderProcess = () => {
       <div className="container">
         <Button 
           icon={<ArrowLeftOutlined />} 
-          onClick={() => navigate('/user?tab=orders')}
+          onClick={() => {
+            // 如果有历史记录则返回上一页，否则跳转到订单列表
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate('/profile?tab=orders');
+            }
+          }}
           style={{ marginBottom: 16 }}
         >
           返回订单列表
@@ -255,11 +305,12 @@ const OrderProcess = () => {
 
         {/* 订单进度 */}
         <Card title="订单处理进度" className="order-steps-card">
-          <Steps
-            current={currentStep}
-            status={order.status === 'cancelled' ? 'error' : 'process'}
-            items={[
+          <OrderSteps
+            currentStep={currentStep}
+            isCancelled={order.status === 'cancelled'}
+            steps={[
               {
+                icon: <ShoppingOutlined />,
                 title: '已下单',
                 description: currentStep >= 0 ? (
                   <div className="step-detail">
@@ -269,6 +320,7 @@ const OrderProcess = () => {
                 ) : null
               },
               {
+                icon: <SolutionOutlined />,
                 title: currentStep >= 2 ? '卖家已处理' : '待卖家处理',
                 description: currentStep >= 1 ? (
                   <div className="step-detail">
@@ -285,6 +337,7 @@ const OrderProcess = () => {
                 ) : null
               },
               {
+                icon: <SafetyOutlined />,
                 title: currentStep >= 3 ? '买家已确认' : '待买家确认',
                 description: currentStep >= 2 ? (
                   <div className="step-detail">
@@ -295,6 +348,7 @@ const OrderProcess = () => {
                 ) : null
               },
               {
+                icon: <SmileOutlined />,
                 title: '订单完成',
                 description: currentStep >= 3 ? (
                   <div className="step-detail">

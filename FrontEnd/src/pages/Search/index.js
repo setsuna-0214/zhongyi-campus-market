@@ -4,20 +4,20 @@ import {
   Col, 
   Select, 
   Pagination, 
-  InputNumber,
+  Input,
   Space,
   Empty,
   Spin,
   message,
-  Radio,
   List,
   Avatar,
   Button,
-  Card,
-  Input
+  Card
 } from 'antd';
 import { 
   UserOutlined,
+  ShoppingOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.css';
@@ -145,9 +145,8 @@ const SearchPage = () => {
   };
 
   // 切换搜索类型
-  const handleTypeChange = (e) => {
-    const newType = e.target.value;
-    updateSearchParams({ type: newType, page: 1 });
+  const handleTypeChange = (type) => {
+    updateSearchParams({ type, page: 1 });
   };
 
   // 更新URL参数
@@ -248,6 +247,7 @@ const SearchPage = () => {
           location={product.location}
           sellerName={typeof product.seller === 'string' ? product.seller : (product.seller?.nickname || '卖家')}
           sellerId={typeof product.seller === 'object' ? product.seller?.id : product.sellerId}
+          sellerAvatar={typeof product.seller === 'object' ? product.seller?.avatar : product.sellerAvatar}
           publishedAt={product.publishTime}
           views={product.views}
           overlayType={'views-left'}
@@ -261,38 +261,45 @@ const SearchPage = () => {
   return (
     <div className="search-page">
       <div className="container">
-        {/* 搜索和筛选区域 */}
+        {/* 筛选区域 */}
         <div className="search-filter-section">
-          <Row gutter={[16, 16]} align="middle">
-            <Col flex="none">
-              <Radio.Group value={searchType} onChange={handleTypeChange} buttonStyle="solid">
-                <Radio.Button value="products">搜商品</Radio.Button>
-                <Radio.Button value="users">搜用户</Radio.Button>
-              </Radio.Group>
-            </Col>
+          <div className="filter-controls">
+            {/* 搜索类型切换 - 参考首页热门商品/最新发布的滑块效果 */}
+            <div className="filter-group filter-group-type">
+              <div className="search-type-switch">
+                <div 
+                  className="switch-slider" 
+                  style={{ transform: searchType === 'products' ? 'translateX(0)' : 'translateX(100%)' }}
+                />
+                <button 
+                  className={`switch-btn ${searchType === 'products' ? 'active' : ''}`}
+                  onClick={() => handleTypeChange('products')}
+                >
+                  <ShoppingOutlined className="switch-icon" />
+                  搜商品
+                </button>
+                <button 
+                  className={`switch-btn ${searchType === 'users' ? 'active' : ''}`}
+                  onClick={() => handleTypeChange('users')}
+                >
+                  <TeamOutlined className="switch-icon" />
+                  搜用户
+                </button>
+              </div>
+            </div>
             
-            <Col flex="auto">
-              <Input.Search
-                placeholder={searchType === 'products' ? '搜索商品名称或描述' : '搜索用户昵称'}
-                value={filters.keyword}
-                onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))}
-                onSearch={(value) => handleFilterChange('keyword', value)}
-                style={{ maxWidth: 400 }}
-                enterButton="搜索"
-                size="large"
-                allowClear
-              />
-            </Col>
-          </Row>
-          
-          {searchType === 'products' && (
-            <Row gutter={[16, 16]} align="middle" style={{ marginTop: 16 }}>
-              <Col flex="auto">
-                <Space size="middle" className="filter-controls" wrap>
+            {searchType === 'products' && (
+              <>
+                <div className="filter-divider" />
+                
+                <div className="filter-group">
+                  <span className="filter-label">分类</span>
                   <Select
-                    placeholder="商品分类"
+                    placeholder="全部分类"
                     allowClear
-                    style={{ width: 120 }}
+                    className="filter-select"
+                    popupClassName="filter-dropdown"
+                    suffixIcon={<span className="custom-arrow" />}
                     value={filters.category || undefined}
                     onChange={(value) => handleFilterChange('category', value || '')}
                   >
@@ -300,10 +307,15 @@ const SearchPage = () => {
                       <Option key={cat.value} value={cat.value}>{cat.label}</Option>
                     ))}
                   </Select>
-                  
+                </div>
+                
+                <div className="filter-group">
+                  <span className="filter-label">状态</span>
                   <Select
                     placeholder="出售状态"
-                    style={{ width: 120 }}
+                    className="filter-select"
+                    popupClassName="filter-dropdown"
+                    suffixIcon={<span className="custom-arrow" />}
                     value={filters.status}
                     onChange={(value) => handleFilterChange('status', value)}
                   >
@@ -311,10 +323,15 @@ const SearchPage = () => {
                     <Option value="在售">在售</Option>
                     <Option value="已下架">已下架</Option>
                   </Select>
+                </div>
 
+                <div className="filter-group">
+                  <span className="filter-label">排序</span>
                   <Select
                     placeholder="排序方式"
-                    style={{ width: 120 }}
+                    className="filter-select filter-select-wide"
+                    popupClassName="filter-dropdown"
+                    suffixIcon={<span className="custom-arrow" />}
                     value={filters.sortBy}
                     onChange={(value) => handleFilterChange('sortBy', value)}
                   >
@@ -322,40 +339,46 @@ const SearchPage = () => {
                       <Option key={option.value} value={option.value}>{option.label}</Option>
                     ))}
                   </Select>
+                </div>
 
-                  {/* 价格筛选 */}
-                  <Space size="small">
-                    <span>价格：</span>
-                    <InputNumber
+                <div className="filter-divider" />
+
+                {/* 价格筛选 */}
+                <div className="filter-group filter-group-price">
+                  <span className="filter-label">价格</span>
+                  <div className="price-inputs">
+                    <Input
+                      type="number"
                       min={0}
-                      max={1000000}
-                      value={filters.priceRange[0]}
-                      onChange={(value) => {
-                        const min = typeof value === 'number' && !Number.isNaN(value) ? value : 0;
+                      value={filters.priceRange[0] || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const min = val === '' ? 0 : Math.max(0, Number(val));
                         const max = filters.priceRange[1];
                         handleFilterChange('priceRange', [min, max]);
                       }}
                       placeholder="最低价"
-                      style={{ width: 100 }}
+                      className="price-input"
                     />
-                    <span>~</span>
-                    <InputNumber
+                    <span className="price-separator">—</span>
+                    <Input
+                      type="number"
                       min={0}
-                      max={1000000}
-                      value={filters.priceRange[1]}
-                      onChange={(value) => {
-                        const max = typeof value === 'number' && !Number.isNaN(value) ? value : 1000000;
+                      value={filters.priceRange[1] === 1000000 ? '' : filters.priceRange[1]}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const max = val === '' ? 1000000 : Math.max(0, Number(val));
                         const min = filters.priceRange[0];
                         handleFilterChange('priceRange', [min, max]);
                       }}
                       placeholder="最高价"
-                      style={{ width: 100 }}
+                      className="price-input"
                     />
-                  </Space>
-                </Space>
-              </Col>
-            </Row>
-          )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* 结果列表 */}

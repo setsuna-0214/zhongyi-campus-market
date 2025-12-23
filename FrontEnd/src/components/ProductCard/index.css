@@ -1,28 +1,31 @@
-/* 统一的商品卡片样式 */
+/* Campus Theme Product Card */
 
 .product-card {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--card-bg);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform, box-shadow;
   transform: translateY(0);
   cursor: pointer;
-  contain: layout paint;
-  content-visibility: auto;
-  contain-intrinsic-size: 380px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  height: 100%;
 }
 
 .product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(107, 141, 214, 0.2);
 }
 
-/* 商品图片容器与图片 */
+/* Card Image Area */
 .product-image-container {
   position: relative;
-  height: 230px;
+  height: 220px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: #f0f2f5;
 }
 
 .product-image-container img,
@@ -30,388 +33,344 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: opacity 0.25s ease, transform 0.2s ease, filter 0.25s ease;
-  will-change: opacity, transform, filter;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-/* 图片淡入过渡 */
-.product-image {
-  opacity: 0;
-  filter: blur(6px);
-}
-
-.product-image.loaded {
-  opacity: 1;
-  filter: none;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .product-card:hover .product-image-container img {
-  transform: scale(1.05);
-}
-
-/* 低功耗/减少动效设备降级 */
-@media (prefers-reduced-motion: reduce) {
-  .product-image-container img {
-    transition: none;
-  }
-  .product-card:hover .product-image-container img {
-    transform: none;
-  }
-  .product-card {
-    transition: none;
-  }
-  .product-card:hover {
-    transform: none;
-  }
-}
-
-/* 顶部覆盖信息：热门/最新发布 */
-.product-overlay {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: transparent;
-  color: inherit;
-  padding: 0;
-  border-radius: 0;
-  line-height: 0;
-  font-size: 12px;
-  font-family: 'Segoe UI', 'Trebuchet MS', 'Arial Rounded MT', Arial, sans-serif;
-  font-weight: 700;
-}
-
-.product-overlay.overlay-hot {
-  left: 8px;
-  right: auto;
-  background: transparent;
-}
-
-.product-overlay.overlay-recent {
-  right: 8px;
-  background: transparent;
-}
-
-/* 图片底部浮层（收藏时间） */
-.product-overlay-bottom {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-}
-
-/* 操作按钮徽标（编辑/删除） */
-.action-badge {
-  position: absolute;
-  bottom: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  backdrop-filter: saturate(160%) blur(2px);
-  color: #ffffff;
-  cursor: pointer;
-  z-index: 2;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.action-badge:hover {
-  background: rgba(0, 0, 0, 0.65);
   transform: scale(1.1);
 }
 
-.action-badge:active {
-  transform: scale(0.95);
+/* Overlays */
+.product-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.action-badge .anticon {
-  font-size: 14px;
+.product-overlay.overlay-hot {
+  left: 12px;
+  right: auto;
 }
 
-/* 编辑按钮 - 左下角 */
-.action-badge-left {
-  left: 8px;
-}
-
-/* 删除按钮 - 右下角 */
-.action-badge-right {
-  right: 8px;
-}
-
-.action-badge-right:hover {
-  background: rgba(255, 77, 79, 0.75);
-}
-
-/* 浏览量徽标 */
+.recent-badge,
 .views-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45); 
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  backdrop-filter: saturate(160%) blur(2px);
-  color: #ffffff;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--campus-primary-dark);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .views-badge .anticon {
-  color: #ffffff;
-  font-size: 12px;
+  color: var(--campus-accent);
 }
 
-
-.views-number {
-  font-size: 12px; 
-  font-weight: 700;
-  color: #ffffff;
-}
-
-/* 最近发布徽标 */
-.recent-badge {
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45); 
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  backdrop-filter: saturate(160%) blur(2px);
-  color: #ffffff;
-  display: inline-flex;
-  align-items: center;
-  line-height: 1;
-}
-
-.unavailable-overlay {
+/* Action Badges */
+.action-badge {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  bottom: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: white;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              opacity 0.3s ease;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(10px);
+  overflow: hidden;
+}
+
+/* 渐变背景伪元素 - 用于平滑过渡 */
+.action-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.action-badge .anticon {
+  position: relative;
   z-index: 1;
+  transition: color 0.3s ease;
 }
 
-/* 卡片信息区 */
-.product-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #262626;
-  margin-bottom: 6px;
-  line-height: 1;
+.product-card:hover .action-badge {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.product-desc {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.action-badge:hover {
+  transform: scale(1.1);
 }
 
-.product-category-line {
-  display: flex;
-  justify-content: center;
-  margin-top: 2px;
+.action-badge:hover::before {
+  opacity: 1;
 }
 
-.product-category-tag {
-  border: none;
-  background: #f6ffed;
+.action-badge-left {
+  left: 12px;
+}
+
+.action-badge-right {
+  right: 12px;
+}
+
+/* 编辑按钮 - 蓝色渐变 */
+.action-badge-left:has(.anticon-edit) .anticon,
+.action-badge:has(.anticon-edit) .anticon {
+  color: #4FACFE;
+}
+
+.action-badge-left:has(.anticon-edit)::before,
+.action-badge:has(.anticon-edit)::before {
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+}
+
+.action-badge-left:has(.anticon-edit):hover .anticon,
+.action-badge:has(.anticon-edit):hover .anticon {
+  color: white;
+}
+
+.action-badge-left:has(.anticon-edit):hover,
+.action-badge:has(.anticon-edit):hover {
+  box-shadow: 0 6px 16px rgba(79, 172, 254, 0.4);
+}
+
+/* 删除按钮 - 红色渐变 */
+.action-badge:has(.anticon-delete) .anticon {
+  color: #ff6b6b;
+}
+
+.action-badge:has(.anticon-delete)::before {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%);
+}
+
+.action-badge:has(.anticon-delete):hover .anticon {
+  color: white;
+}
+
+.action-badge:has(.anticon-delete):hover {
+  box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+}
+
+/* 订单处理按钮 - 绿色渐变 */
+.action-badge:has(.anticon-file-text) .anticon {
   color: #52c41a;
 }
 
-/* 分类标签与状态标签统一形态（仅在显式类名时生效） */
-.ant-tag.product-category-tag {
-  border: none;
-  border-radius: 999px;
-  font-weight: 600;
-  padding: 0 8px;
-  line-height: 20px;
+.action-badge:has(.anticon-file-text)::before {
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
 }
 
-/* 通用标签命名类（可在组件外复用） */
-/* 仅对显式添加这些类名的 Tag 生效，不做全局覆盖 */
-.ant-tag.tag-pill {
-  border-radius: 999px;
+.action-badge:has(.anticon-file-text):hover .anticon {
+  color: white;
 }
 
-.ant-tag.tag-sm {
-  font-size: 12px;
-  line-height: 20px;
-  padding: 0 8px;
+.action-badge:has(.anticon-file-text):hover {
+  box-shadow: 0 6px 16px rgba(82, 196, 26, 0.4);
 }
 
-.ant-tag.tag-md {
-  font-size: 13px;
-  line-height: 22px;
-  padding: 0 10px;
-}
-
-.ant-tag.tag-bold {
-  font-weight: 600;
-  border: none;
-}
-
-.ant-tag.tag-muted {
-  background: #f5f5f5;
-  color: #595959;
-  border: none;
-}
-
-/* 产品状态标签统一形态 */
-.ant-tag.product-status-tag {
-  border: none;
-  border-radius: 999px;
-  font-weight: 600;
-  padding: 0 8px;
-  line-height: 20px;
-}
-
-.home-product-topline {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.home-product-published {
-  font-size: 12px;
-  color: #8c8c8c;
-}
-
-.product-price {
-  font-size: 18px;
-  font-weight: 700;
-  color: #ff4d4f;
-}
-
-.home-product-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
-}
-
-.home-product-seller {
+/* Unavailable Overlay */
+.unavailable-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #8c8c8c;
-  transition: color 0.2s ease;
+  justify-content: center;
+  z-index: 10;
+  font-weight: bold;
+  color: var(--text-secondary);
+  font-size: 16px;
+  letter-spacing: 1px;
 }
 
-.home-product-seller.clickable {
-  cursor: pointer;
+/* Card Content */
+.product-card .ant-card-body {
+  padding: 12px 14px !important;
 }
 
-.home-product-seller.clickable:hover {
-  color: #1890ff;
-}
-
-.seller-name {
-  max-width: 80px;
+.product-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0;
+  line-height: 1.4;
+  height: auto;
+  max-height: 22px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.home-product-location {
+.product-card .ant-card-meta-title {
+  margin-bottom: 10px !important;
+}
+
+.product-desc {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Info Row: Left & Right columns */
+.product-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Left Column: Category, Status, Price */
+.product-info-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+/* Right Column: Seller, Date, Location */
+.product-info-right {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+/* Unified Tag Style */
+.product-tag {
+  border: none !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  padding: 0 8px !important;
+  height: 20px;
+  line-height: 20px;
+  font-weight: 500;
+  margin: 0 !important;
+}
+
+/* Price */
+.product-price {
+  color: var(--campus-accent);
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+/* Seller */
+.product-seller {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-size: 12px;
-  color: #8c8c8c;
+  color: var(--text-secondary);
+  transition: color 0.2s;
 }
 
-/* 收藏复选框（仅在需要时显示） */
+.product-seller.clickable {
+  cursor: pointer;
+}
+
+.product-seller.clickable:hover {
+  color: var(--campus-primary);
+}
+
+.product-seller .ant-avatar {
+  width: 22px !important;
+  height: 22px !important;
+  line-height: 22px !important;
+  font-size: 12px !important;
+  flex-shrink: 0;
+}
+
+.seller-name {
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Date */
+.product-date {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.9;
+}
+
+/* Location - max 10 Chinese characters (~100px) */
+.product-location {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  max-width: 110px;
+}
+
+.product-location span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-location .anticon {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* Checkbox */
 .product-checkbox {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  backdrop-filter: saturate(160%) blur(2px);
-  /* 布局与交互 */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  cursor: pointer;
-  outline: none;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   appearance: none;
-  -webkit-appearance: none;
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-/* 自定义勾选符号 */
-.product-checkbox::after {
-  content: '😎';
-  font-size: 16px;
-  line-height: 1;
-  color: rgba(255, 255, 255, 1);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.product-checkbox:checked::after {
-  opacity: 1;
-}
-
-.product-card:hover .product-checkbox {
-  background: rgba(0, 0, 0, 0.55);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
-}
-
-.product-checkbox:focus-visible {
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.6), 0 6px 16px rgba(0, 0, 0, 0.35);
-}
-
-.product-checkbox:active {
-  transform: scale(0.96);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 5;
 }
 
 .product-checkbox:checked {
-  background: rgba(0, 0, 0, 0.65);
+  background: var(--campus-primary);
+  border-color: var(--campus-primary);
 }
 
-/* 响应式 */
-@media (max-width: 768px) {
-  .product-image-container {
-    height: 150px;
-  }
-  .product-title {
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 576px) {
-  .product-image-container {
-    height: 120px;
-  }
-  .product-checkbox {
-    top: 4px;
-    right: 4px;
-    left: auto;
-    width: 24px;
-    height: 24px;
-  }
-  .product-title {
-    font-size: 11px;
-  }
+.product-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 6px;
+  border: 2px solid white;
+  border-top: none;
+  border-right: none;
+  transform: translate(-50%, -60%) rotate(-45deg);
 }

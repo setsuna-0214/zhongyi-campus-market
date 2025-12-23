@@ -20,6 +20,7 @@ import AdminDashboard from './pages/Admin/Dashboard';
 import FloatingButtons from './components/FloatingButtons';
 import AdminGuard from './pages/Admin/Guard';
 import OrderProcess from './pages/Orders/OrderProcess';
+import Help from './pages/Help';
 
 import './App.css';
 import './components/ProductCard/index.css';
@@ -44,6 +45,7 @@ function App() {
           <Route path="/users/:id" element={<SellerProfile />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/orders/:id" element={<OrderProcess />} />
+          <Route path="/help" element={<Help />} />
           <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

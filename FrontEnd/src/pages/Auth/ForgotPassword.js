@@ -143,6 +143,7 @@ const ForgotPassword = () => {
                         loading={loading}
                         disabled={countdown > 0}
                         block
+                        className="verify-code-btn"
                       >
                         {countdown > 0 ? `重新发送(${countdown}s)` : '发送验证码'}
                       </Button>

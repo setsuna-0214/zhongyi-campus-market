@@ -10,6 +10,22 @@ export const CATEGORY_CODE_TO_LABEL = {
   other: '其他物品',
 };
 
+// 分类颜色映射（用于 Tag）
+export const CATEGORY_COLOR_MAP = {
+  electronics: '#1565C0',  // 蓝色 - 数码电子
+  books: '#F57F17',        // 橙黄色 - 图书教材
+  daily: '#2E7D32',        // 绿色 - 生活用品
+  other: '#7B1FA2',        // 紫色 - 其他物品
+};
+
+// 分类背景色映射（用于 Tag 背景）
+export const CATEGORY_BG_COLOR_MAP = {
+  electronics: '#E3F2FD',  // 浅蓝色
+  books: '#FFF8E1',        // 浅黄色
+  daily: '#E8F5E9',        // 浅绿色
+  other: '#F3E5F5',        // 浅紫色
+};
+
 // 分类
 export const CATEGORY_LABEL_TO_CODE = {
   数码电子: 'electronics',
@@ -20,6 +36,14 @@ export const CATEGORY_LABEL_TO_CODE = {
 
 export function getCategoryLabel(category) {
   return CATEGORY_CODE_TO_LABEL[category] || category || '其他物品';
+}
+
+export function getCategoryColor(category) {
+  return CATEGORY_COLOR_MAP[category] || CATEGORY_COLOR_MAP.other;
+}
+
+export function getCategoryBgColor(category) {
+  return CATEGORY_BG_COLOR_MAP[category] || CATEGORY_BG_COLOR_MAP.other;
 }
 
 export function toCategoryCode(input) {
@@ -48,15 +72,28 @@ export function getStatusLabel(status) {
 
 // 出售状态颜色（用于 Tag）
 export const STATUS_COLOR_MAP = {
-  在售: 'blue',
-  已下架: 'red',
-  已售出: 'green',
-  待处理: 'orange'
+  在售: '#52c41a',      // 绿色 - 可购买
+  已下架: '#ff4d4f',    // 红色 - 不可购买
+  已售出: '#8c8c8c',    // 灰色 - 已完成
+  待处理: '#faad14'     // 橙色 - 等待中
+};
+
+// 出售状态背景色（用于 Tag 背景）
+export const STATUS_BG_COLOR_MAP = {
+  在售: '#f6ffed',      // 浅绿色
+  已下架: '#fff2f0',    // 浅红色
+  已售出: '#fafafa',    // 浅灰色
+  待处理: '#fffbe6'     // 浅橙色
 };
 
 export function getStatusColor(status) {
   const label = getStatusLabel(status);
-  return STATUS_COLOR_MAP[label] || 'default';
+  return STATUS_COLOR_MAP[label] || '#8c8c8c';
+}
+
+export function getStatusBgColor(status) {
+  const label = getStatusLabel(status);
+  return STATUS_BG_COLOR_MAP[label] || '#fafafa';
 }
 
 // 判断商品是否可在列表中显示（排除已售出）

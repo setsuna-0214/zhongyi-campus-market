@@ -9,6 +9,8 @@ Desktop.ini
 .vscode/
 .idea/
 *.iml
+.trae/documents
+.kiro
 
 # Logs
 logs/
@@ -56,5 +58,3 @@ pids/
 *.pid.lock
 *.seed
 *.tgz
-
-.trae/documents

@@ -1,0 +1,113 @@
+/* SubTabSlider - 带滑块指示器的水平标签切换组件 */
+
+.sub-tab-slider {
+  position: relative;
+  display: inline-flex;
+  background: #f0f4f8;
+  padding: 6px;
+  border-radius: 9999px;
+}
+
+/* 滑块指示器 */
+.sub-tab-indicator {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  height: calc(100% - 12px);
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
+  z-index: 1;
+}
+
+/* 初始加载时禁用动画 */
+.sub-tab-indicator.no-animation {
+  transition: none;
+}
+
+/* 启用动画后的滑块 */
+.sub-tab-indicator.animated {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 标签项容器 */
+.sub-tab-items {
+  position: relative;
+  z-index: 2;
+  display: flex;
+}
+
+/* 标签项 */
+.sub-tab-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  height: 40px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  color: var(--text-secondary, #64748b);
+  font-weight: 600;
+  font-size: 14px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* 标签项悬停效果 */
+.sub-tab-item:hover:not(.active) {
+  color: var(--campus-primary-dark, #5a7dc0);
+}
+
+/* 选中状态的标签项 */
+.sub-tab-item.active {
+  color: white;
+}
+
+/* 标签图标 */
+.sub-tab-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* 标签文字 */
+.sub-tab-label {
+  letter-spacing: 1px;
+}
+
+/* 订单状态滑块 - 使用不同颜色 */
+.sub-tab-slider.status-tab-slider .sub-tab-indicator {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .sub-tab-indicator,
+  .sub-tab-indicator.animated {
+    transition: none;
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .sub-tab-item {
+    padding: 0 16px;
+    height: 36px;
+    font-size: 13px;
+  }
+  
+  .sub-tab-slider {
+    padding: 4px;
+  }
+  
+  .sub-tab-indicator {
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+  }
+}

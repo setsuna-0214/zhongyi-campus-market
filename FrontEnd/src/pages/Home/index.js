@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, startTransition, useMemo } from 'react';
+import React, { useState, useEffect, useRef, startTransition, useMemo, useCallback } from 'react';
 import {
   Row,
   Col,
@@ -8,9 +8,12 @@ import {
   Space,
   Skeleton,
   Card,
+  Spin,
 } from 'antd';
 import {
   RightOutlined,
+  DownOutlined,
+  LoadingOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import './index.css';
@@ -22,19 +25,225 @@ import { getStatusLabel } from '../../utils/labels';
 
 const { Title, Paragraph } = Typography;
 
+// 粒子组件
+const Particles = ({ count = 50 }) => {
+  const particles = useMemo(() => {
+    return Array.from({ length: count }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      size: Math.random() * 4 + 2,
+      duration: Math.random() * 20 + 10,
+      delay: Math.random() * 5,
+      opacity: Math.random() * 0.5 + 0.2,
+    }));
+  }, [count]);
+
+  return (
+    <div className="particles-container">
+      {particles.map((p) => (
+        <div
+          key={p.id}
+          className="particle"
+          style={{
+            left: `${p.left}%`,
+            top: `${p.top}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            animationDuration: `${p.duration}s`,
+            animationDelay: `${p.delay}s`,
+            opacity: p.opacity,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const PAGE_SIZE = 12;
+
 
 const Home = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('hot');
   const isLoggedIn = !!localStorage.getItem('authUser');
+  
+  // 热门商品状态
   const [hotProducts, setHotProducts] = useState([]);
+  const [hotPage, setHotPage] = useState(1);
+  const [hotHasMore, setHotHasMore] = useState(true);
+  const [hotLoading, setHotLoading] = useState(false);
+  
+  // 最新发布状态
   const [recentProducts, setRecentProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [recentPage, setRecentPage] = useState(1);
+  const [recentHasMore, setRecentHasMore] = useState(true);
+  const [recentLoading, setRecentLoading] = useState(false);
+  
+  const [initialLoading, setInitialLoading] = useState(true);
   const didFetchRef = useRef(false);
-  // 分批渲染控制，减少首次渲染卡顿
-  const [visibleHotCount, setVisibleHotCount] = useState(0);
-  const [visibleRecentCount, setVisibleRecentCount] = useState(0);
-  const chunkTimerRef = useRef(null);
+  
+  // 无限滚动观察器
+  const loadMoreRef = useRef(null);
+  const observerRef = useRef(null);
+  
+  // 页面展开状态
+  const [isExpanded, setIsExpanded] = useState(isLoggedIn);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState(null);
+  const heroRef = useRef(null);
+
+  // 检查是否可以触发返回过渡
+  const canTriggerCollapse = useCallback(() => {
+    return isExpanded && !isTransitioning && window.scrollY === 0;
+  }, [isExpanded, isTransitioning]);
+
+  // 向上返回处理
+  const handleCollapseTransition = useCallback(() => {
+    if (!canTriggerCollapse()) return;
+    setIsTransitioning(true);
+    setTransitionDirection('up');
+    // 状态重置将由 onAnimationEnd 处理
+  }, [canTriggerCollapse]);
+
+  // 处理动画结束事件，重置过渡状态
+  const handleAnimationEnd = useCallback((e) => {
+    // 只处理 home-content 的动画结束事件
+    if (e.target.classList.contains('home-content')) {
+      if (transitionDirection === 'up') {
+        // 延迟重置状态，确保轮播图元素淡入动画完成
+        requestAnimationFrame(() => {
+          setIsExpanded(false);
+          setIsTransitioning(false);
+          setTransitionDirection(null);
+        });
+      } else if (transitionDirection === 'down') {
+        setIsExpanded(true);
+        setIsTransitioning(false);
+        setTransitionDirection(null);
+      }
+    }
+  }, [transitionDirection]);
+
+  // 派发首页展开状态变化事件给 Header
+  useEffect(() => {
+    const event = new CustomEvent('homeExpandChange', {
+      detail: {
+        isExpanded,
+        isTransitioning,
+        transitionDirection
+      }
+    });
+    window.dispatchEvent(event);
+  }, [isExpanded, isTransitioning, transitionDirection]);
+
+  // 监听滚轮事件，实现一次下滑展开
+  useEffect(() => {
+    if (isExpanded) return;
+    
+    const handleWheel = (e) => {
+      if (isTransitioning) return;
+      
+      // 向下滚动时展开
+      if (e.deltaY > 0) {
+        e.preventDefault();
+        setIsTransitioning(true);
+        setTransitionDirection('down');
+        // 状态重置将由 onAnimationEnd 处理
+      }
+    };
+    
+    // 监听触摸滑动（移动端）
+    let touchStartY = 0;
+    const handleTouchStart = (e) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    
+    const handleTouchMove = (e) => {
+      if (isTransitioning || isExpanded) return;
+      const touchEndY = e.touches[0].clientY;
+      const deltaY = touchStartY - touchEndY;
+      
+      // 向上滑动（手指向上）时展开
+      if (deltaY > 50) {
+        e.preventDefault();
+        setIsTransitioning(true);
+        setTransitionDirection('down');
+        // 状态重置将由 onAnimationEnd 处理
+      }
+    };
+    
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [isExpanded, isTransitioning]);
+
+  // 监听滚轮事件，支持向上滑动返回轮播图
+  useEffect(() => {
+    if (!isExpanded) return;
+    
+    const handleWheelCollapse = (e) => {
+      if (isTransitioning) return;
+      
+      // 向上滚动（deltaY < 0）且页面在顶部时返回轮播图
+      if (e.deltaY < 0 && window.scrollY === 0) {
+        e.preventDefault();
+        handleCollapseTransition();
+      }
+    };
+    
+    window.addEventListener('wheel', handleWheelCollapse, { passive: false });
+    
+    return () => {
+      window.removeEventListener('wheel', handleWheelCollapse);
+    };
+  }, [isExpanded, isTransitioning, handleCollapseTransition]);
+
+  // 监听触摸事件，支持向下滑动返回轮播图（移动端）
+  useEffect(() => {
+    if (!isExpanded) return;
+    
+    let touchStartY = 0;
+    
+    const handleTouchStartCollapse = (e) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    
+    const handleTouchMoveCollapse = (e) => {
+      if (isTransitioning) return;
+      
+      const touchEndY = e.touches[0].clientY;
+      const deltaY = touchEndY - touchStartY; // 正值表示手指向下移动
+      
+      // 向下滑动（手指向下移动）超过阈值且页面在顶部时返回轮播图
+      if (deltaY > 50 && window.scrollY === 0) {
+        e.preventDefault();
+        handleCollapseTransition();
+      }
+    };
+    
+    window.addEventListener('touchstart', handleTouchStartCollapse, { passive: true });
+    window.addEventListener('touchmove', handleTouchMoveCollapse, { passive: false });
+    
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStartCollapse);
+      window.removeEventListener('touchmove', handleTouchMoveCollapse);
+    };
+  }, [isExpanded, isTransitioning, handleCollapseTransition]);
+
+  // 点击箭头展开
+  const handleExpandClick = useCallback(() => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTransitionDirection('down');
+    // 状态重置将由 onAnimationEnd 处理
+  }, [isTransitioning]);
 
   const formatRelativeTime = (iso) => {
     try {
@@ -61,56 +270,108 @@ const Home = () => {
     }
   };
 
+  // 加载热门商品
+  const loadHotProducts = useCallback(async (page = 1, append = false) => {
+    if (hotLoading) return;
+    setHotLoading(true);
+    try {
+      const res = await getHotProducts(page, PAGE_SIZE);
+      const items = res.items || res;
+      const filtered = (Array.isArray(items) ? items : []).filter(p => getStatusLabel(p.status) === '在售');
+      
+      startTransition(() => {
+        if (append) {
+          setHotProducts(prev => [...prev, ...filtered]);
+        } else {
+          setHotProducts(filtered);
+        }
+        setHotHasMore(res.hasMore ?? filtered.length >= PAGE_SIZE);
+        setHotPage(page);
+      });
+    } catch (e) {
+      if (page === 1) message.info('热门商品暂不可用');
+    } finally {
+      setHotLoading(false);
+    }
+  }, [hotLoading]);
 
+  // 加载最新发布
+  const loadRecentProducts = useCallback(async (page = 1, append = false) => {
+    if (recentLoading) return;
+    setRecentLoading(true);
+    try {
+      const res = await getLatestProducts(page, PAGE_SIZE);
+      const items = res.items || res;
+      const filtered = (Array.isArray(items) ? items : []).filter(p => getStatusLabel(p.status) === '在售');
+      
+      startTransition(() => {
+        if (append) {
+          setRecentProducts(prev => [...prev, ...filtered]);
+        } else {
+          setRecentProducts(filtered);
+        }
+        setRecentHasMore(res.hasMore ?? filtered.length >= PAGE_SIZE);
+        setRecentPage(page);
+      });
+    } catch (e) {
+      if (page === 1) message.info('最新发布暂不可用');
+    } finally {
+      setRecentLoading(false);
+    }
+  }, [recentLoading]);
+
+  // 加载更多
+  const loadMore = useCallback(() => {
+    if (activeTab === 'hot' && hotHasMore && !hotLoading) {
+      loadHotProducts(hotPage + 1, true);
+    } else if (activeTab === 'recent' && recentHasMore && !recentLoading) {
+      loadRecentProducts(recentPage + 1, true);
+    }
+  }, [activeTab, hotHasMore, hotLoading, hotPage, recentHasMore, recentLoading, recentPage, loadHotProducts, loadRecentProducts]);
+
+  // 初始加载
   useEffect(() => {
     if (didFetchRef.current) return;
     didFetchRef.current = true;
-    setLoading(true);
+    
     (async () => {
-      const [hotRes, latestRes] = await Promise.all([
-        getHotProducts().catch(() => 'ERR_HOT'),
-        getLatestProducts().catch(() => 'ERR_LATEST'),
+      await Promise.all([
+        loadHotProducts(1),
+        loadRecentProducts(1)
       ]);
-      startTransition(() => {
-        if (hotRes !== 'ERR_HOT') {
-          const raw = Array.isArray(hotRes) ? hotRes : (hotRes?.items || []);
-          const filtered = raw.filter(p => getStatusLabel(p.status) === '在售');
-          setHotProducts(filtered);
-        } else {
-          message.info('热门商品暂不可用');
-          setHotProducts([]);
-        }
-        if (latestRes !== 'ERR_LATEST') {
-          const raw = Array.isArray(latestRes) ? latestRes : (latestRes?.items || []);
-          const filtered = raw.filter(p => getStatusLabel(p.status) === '在售');
-          setRecentProducts(filtered);
-        } else {
-          message.info('最新发布暂不可用');
-          setRecentProducts([]);
-        }
-      });
-      setLoading(false);
+      setInitialLoading(false);
     })();
   }, []);
 
-  // 数据加载完成后，仅对当前激活标签分批增加可见的商品卡片数量
+  // 无限滚动 - IntersectionObserver
   useEffect(() => {
-    if (loading) return;
-    // 清理上一次的定时器
-    if (chunkTimerRef.current) {
-      clearTimeout(chunkTimerRef.current);
-      chunkTimerRef.current = null;
+    if (!isExpanded) return;
+    
+    const currentLoadMoreRef = loadMoreRef.current;
+    
+    if (observerRef.current) {
+      observerRef.current.disconnect();
     }
-
-    // 初始显示数量（首批）
-    const INITIAL_CHUNK = 12;
-
-    if (activeTab === 'hot') {
-      setVisibleHotCount((c) => (c > 0 ? c : Math.min(INITIAL_CHUNK, hotProducts.length)));
-    } else {
-      setVisibleRecentCount((c) => (c > 0 ? c : Math.min(INITIAL_CHUNK, recentProducts.length)));
+    
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    
+    if (currentLoadMoreRef) {
+      observerRef.current.observe(currentLoadMoreRef);
     }
-  }, [loading, hotProducts, recentProducts, activeTab]);
+    
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [isExpanded, loadMore]);
 
   const bannerItems = [
     {
@@ -134,7 +395,7 @@ const Home = () => {
   ];
 
   const hotCards = useMemo(() => (
-    hotProducts.slice(0, visibleHotCount).map((product) => (
+    hotProducts.map((product) => (
       <Col xs={24} sm={12} md={6} lg={6} xl={6} key={`hot-${product.id}`}>
         <ProductCard
           imageSrc={product.image}
@@ -145,6 +406,7 @@ const Home = () => {
           location={product.location}
           sellerName={product.seller?.nickname || product.seller?.username || product.seller}
           sellerId={product.sellerId || product.seller?.id}
+          sellerAvatar={product.sellerAvatar || product.seller?.avatar}
           publishedAt={product.publishedAt}
           views={product.views}
           overlayType={'views-left'}
@@ -153,10 +415,10 @@ const Home = () => {
         />
       </Col>
     ))
-  ), [hotProducts, visibleHotCount, navigate]);
+  ), [hotProducts, navigate]);
 
   const recentCards = useMemo(() => (
-    recentProducts.slice(0, visibleRecentCount).map((product) => (
+    recentProducts.map((product) => (
       <Col xs={24} sm={12} md={6} lg={6} xl={6} key={`recent-${product.id}`}>
         <ProductCard
           imageSrc={product.image}
@@ -167,6 +429,7 @@ const Home = () => {
           location={product.location}
           sellerName={product.seller}
           sellerId={product.sellerId || product.seller?.id}
+          sellerAvatar={product.sellerAvatar || product.seller?.avatar}
           publishedAt={product.publishTime}
           views={product.views}
           overlayType={'publish-right'}
@@ -176,7 +439,11 @@ const Home = () => {
         />
       </Col>
     ))
-  ), [recentProducts, visibleRecentCount, navigate]);
+  ), [recentProducts, navigate]);
+
+  // 当前是否正在加载
+  const isLoadingMore = activeTab === 'hot' ? hotLoading : recentLoading;
+  const hasMore = activeTab === 'hot' ? hotHasMore : recentHasMore;
 
   const categories = [
     { name: '数码电子', code: 'electronics' },
@@ -187,41 +454,51 @@ const Home = () => {
 
 
   return (
-    <div className="home-page">
+    <div className={`home-page ${!isExpanded ? 'hero-mode' : ''} ${isTransitioning ? 'transitioning' : ''} ${isExpanded ? 'expanded' : ''} ${transitionDirection === 'down' ? 'transition-down' : ''} ${transitionDirection === 'up' ? 'transition-up' : ''}`}>
 
-      {/* 带轮播图背景的注册登录区域*/}
-      {!isLoggedIn && (
-        <section className="auth-carousel-section">
-          <Carousel
-            autoplay
-            autoplaySpeed={4000}
-            effect="fade"
-            className="auth-carousel"
-            dots={true}
-            dotPosition="bottom"
-            infinite={true}
-          >
-            {bannerItems.map((item, index) => (
-              <div key={index} className="auth-carousel-item">
-                <div className="auth-carousel-background">
-                  <img src={item.image} alt={item.title} loading="lazy" decoding="async" fetchpriority="low" />
-                  <div className="auth-carousel-overlay"></div>
-                </div>
-                <div className="auth-carousel-content">
-                  <div className="auth-content-wrapper">
-                    <Title level={1} className="auth-main-title">
-                      {item.title}
-                    </Title>
-                    <Paragraph className="auth-main-subtitle">
-                      {item.subtitle}
-                    </Paragraph>
-                  </div>
+      {/* 轮播图背景 */}
+      <section 
+        className={`auth-carousel-section ${isExpanded ? 'as-background' : ''} ${isTransitioning ? 'fading' : ''}`}
+        ref={heroRef}
+      >
+        <Particles count={60} />
+        <Carousel
+          autoplay
+          autoplaySpeed={4000}
+          className="auth-carousel"
+          dots={false}
+          dotPosition="bottom"
+          infinite={true}
+          effect="fade"
+        >
+          {bannerItems.map((item, index) => (
+            <div key={index} className="auth-carousel-item">
+              <div className="auth-carousel-background">
+                <img 
+                  src={item.image} 
+                  alt={item.title} 
+                  loading="lazy" 
+                  decoding="async" 
+                  fetchpriority="low"
+                />
+                <div className="auth-carousel-overlay"></div>
+              </div>
+              <div className={`auth-carousel-content ${isTransitioning ? 'fade-out' : ''}`}>
+                <div className="auth-content-wrapper">
+                  <Title level={1} className="auth-main-title">
+                    {item.title}
+                  </Title>
+                  <Paragraph className="auth-main-subtitle">
+                    {item.subtitle}
+                  </Paragraph>
                 </div>
               </div>
-            ))}
-          </Carousel>
-          {/* 固定的注册、登录按钮区域 */}
-          <div className="auth-fixed-buttons">
+            </div>
+          ))}
+        </Carousel>
+        {/* 注册、登录按钮区域（仅未登录时显示） */}
+        {!isLoggedIn && (
+          <div className={`auth-fixed-buttons ${isTransitioning ? 'fade-out' : ''}`}>
             <div className="auth-buttons-container">
               <Button
                 type="primary"
@@ -240,16 +517,20 @@ const Home = () => {
               </Button>
             </div>
           </div>
-        </section>
-      )}
-
-      <div className="home-content">
-        <section className="categories-section">
-          <div className="section-bar">
-            <div className="bar-title"><img src="/images/icons/category-title.svg" className="bar-icon" alt="分类图标" /> 商品分类</div>
-            <div className="bar-actions">
-            </div>
+        )}
+        {/* 向下滚动提示箭头 */}
+        {!isExpanded && (
+          <div className={`scroll-indicator ${isTransitioning ? 'fade-out' : ''}`} onClick={handleExpandClick}>
+            <DownOutlined className="scroll-arrow" />
           </div>
+        )}
+      </section>
+
+      <div 
+        className={`home-content ${!isExpanded && !isTransitioning ? 'hidden' : ''}`}
+        onAnimationEnd={handleAnimationEnd}
+      >
+        <section className="categories-section">
           <Row gutter={[24, 24]}>
             <Col xs={24} lg={24}>
               <Row gutter={[16, 16]}>
@@ -257,7 +538,6 @@ const Home = () => {
                   <Col xs={12} sm={8} md={6} lg={6} key={index}>
                     <Card
                       className={`category-card category-${category.code}`}
-                      style={{ background: getCategoryBackground(category.code) }}
                       hoverable
                       onClick={() => navigate(`/search?type=products&category=${category.code}`)}
                     >
@@ -296,7 +576,7 @@ const Home = () => {
         {/* 热门商品/最新发布 */}
         <section className="hot-products-section">
           <div className="section-header">
-            <Space size="middle" align="center">
+            <Space size="middle" align="center" className={activeTab === 'recent' ? 'tab-recent' : 'tab-hot'}>
               <Button
                 shape="round"
                 type={activeTab === 'hot' ? 'primary' : 'default'}
@@ -313,18 +593,18 @@ const Home = () => {
               >
                 最新发布
               </Button>
-              <Button
-                type="link"
-                onClick={() => navigate(activeTab === 'hot' ? '/search?type=products' : '/search?type=products&sortBy=latest')}
-                icon={<RightOutlined />}
-              >
-                查看更多
-              </Button>
             </Space>
+            <Button
+              type="link"
+              onClick={() => navigate(activeTab === 'hot' ? '/search?type=products' : '/search?type=products&sortBy=latest')}
+              icon={<RightOutlined />}
+            >
+              查看更多
+            </Button>
           </div>
           <Row gutter={[24, 24]}>
             <Col xs={24}>
-              {loading ? (
+              {initialLoading ? (
                 <Row gutter={[16, 16]}>
                   {Array.from({ length: 8 }).map((_, i) => (
                     <Col xs={24} sm={12} md={6} lg={6} xl={6} key={`skeleton-${i}`}>
@@ -346,12 +626,6 @@ const Home = () => {
                   >
                     {hotCards}
                   </Row>
-                  {/* 当卡片数量多于初始显示数量时显示加载更多 */}
-                  {activeTab === 'hot' && hotProducts.length > visibleHotCount && (
-                    <div style={{ textAlign: 'center', marginTop: 24 }}>
-                      <Button onClick={() => setVisibleHotCount(prev => prev + 8)}>加载更多</Button>
-                    </div>
-                  )}
 
                   <Row
                     gutter={[16, 16]}
@@ -360,10 +634,30 @@ const Home = () => {
                   >
                     {recentCards}
                   </Row>
-                  {/* 当卡片数量多于初始显示数量时显示加载更多 */}
-                  {activeTab === 'recent' && recentProducts.length > visibleRecentCount && (
-                    <div style={{ textAlign: 'center', marginTop: 24 }}>
-                      <Button onClick={() => setVisibleRecentCount(prev => prev + 8)}>加载更多</Button>
+                  
+                  {/* 无限滚动触发器 */}
+                  <div 
+                    ref={loadMoreRef} 
+                    className="load-more-trigger"
+                    style={{ 
+                      height: 1, 
+                      marginTop: 24,
+                      display: hasMore ? 'block' : 'none'
+                    }} 
+                  />
+                  
+                  {/* 加载中提示 */}
+                  {isLoadingMore && (
+                    <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                      <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+                      <div style={{ marginTop: 8, color: '#888', fontSize: 14 }}>加载中...</div>
+                    </div>
+                  )}
+                  
+                  {/* 没有更多数据提示 */}
+                  {!hasMore && !isLoadingMore && (
+                    <div style={{ textAlign: 'center', padding: '24px 0', color: '#999', fontSize: 14 }}>
+                      已经到底啦 ~
                     </div>
                   )}
                 </>

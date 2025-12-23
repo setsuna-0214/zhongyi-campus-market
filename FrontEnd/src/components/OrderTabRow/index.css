@@ -1,0 +1,73 @@
+/* OrderTabRow - 订单处理页面的标签行组件 */
+
+.order-tab-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* 标签组容器 */
+.order-tab-group {
+  display: flex;
+  align-items: center;
+}
+
+/* 订单类型标签组 - 左侧 */
+.order-type-group {
+  flex-shrink: 0;
+}
+
+/* 订单状态标签组 - 右侧 */
+.order-status-group {
+  flex-shrink: 0;
+}
+
+/* 订单类型滑块 - 使用默认的蓝色渐变 */
+.order-type-slider .sub-tab-indicator {
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
+}
+
+/* 订单状态滑块 - 使用紫色渐变以区分 */
+.status-tab-slider .sub-tab-indicator {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* 响应式布局 - 窄屏下换行显示 */
+@media (max-width: 768px) {
+  .order-tab-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .order-tab-group {
+    justify-content: center;
+  }
+  
+  .order-type-group,
+  .order-status-group {
+    width: 100%;
+  }
+  
+  .order-type-group .sub-tab-slider,
+  .order-status-group .sub-tab-slider {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 极窄视口下的额外调整 */
+@media (max-width: 480px) {
+  .order-tab-row {
+    gap: 8px;
+  }
+  
+  .order-tab-group .sub-tab-item {
+    padding: 0 12px;
+    font-size: 12px;
+  }
+}

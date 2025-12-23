@@ -7,7 +7,7 @@
 /* 搜索筛选区域 */
 .search-filter-section {
   background: white;
-  padding: 24px;
+  padding: 16px 24px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   margin-bottom: 24px;
@@ -15,8 +15,293 @@
 
 .filter-controls {
   width: 100%;
-  justify-content: flex-start;
-  gap: 12px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* 筛选组 */
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-group-type {
+  flex-shrink: 0;
+}
+
+.filter-group-price {
+  flex-shrink: 0;
+}
+
+/* 筛选标签 */
+.filter-label {
+  color: #8c8c8c;
+  font-size: 13px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+/* 分隔线 */
+.filter-divider {
+  width: 1px;
+  height: 28px;
+  background: linear-gradient(180deg, transparent 0%, #e0e0e0 20%, #e0e0e0 80%, transparent 100%);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* 搜索类型切换 - 参考首页热门商品/最新发布的滑块效果 */
+.search-type-switch {
+  position: relative;
+  display: inline-flex;
+  background: #f0f4f8;
+  border-radius: var(--radius-full, 9999px);
+  padding: 6px;
+  gap: 0;
+}
+
+.search-type-switch .switch-slider {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: calc(50% - 6px);
+  height: calc(100% - 12px);
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  border-radius: var(--radius-full, 9999px);
+  box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 1;
+}
+
+.search-type-switch .switch-btn {
+  position: relative;
+  z-index: 2;
+  height: 48px;
+  min-width: 90px;
+  padding: 0 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, #7F8C8D);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: var(--radius-full, 9999px);
+  letter-spacing: 0.5px;
+  overflow: hidden;
+}
+
+.search-type-switch .switch-btn.active {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.search-type-switch .switch-btn:hover:not(.active) {
+  color: var(--campus-primary-dark, #4A69BD);
+  background: rgba(107, 141, 214, 0.12);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 141, 214, 0.15);
+}
+
+.search-type-switch .switch-btn:active:not(.active) {
+  transform: translateY(0) scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* 切换按钮图标动画 */
+.search-type-switch .switch-btn .switch-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  vertical-align: text-bottom;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.search-type-switch .switch-btn.active .switch-icon {
+  animation: iconPulse 0.4s ease-out;
+  filter: brightness(0) invert(1);
+}
+
+.search-type-switch .switch-btn:hover:not(.active) .switch-icon {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+/* Ant Design 图标样式覆盖 */
+.search-type-switch .switch-btn .anticon {
+  font-size: 16px;
+  margin-right: 8px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.search-type-switch .switch-btn.active .anticon {
+  animation: iconPulse 0.4s ease-out;
+}
+
+.search-type-switch .switch-btn:hover:not(.active) .anticon {
+  transform: scale(1.15) rotate(-5deg);
+}
+
+@keyframes iconPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 筛选下拉框样式 */
+.filter-select {
+  min-width: 110px;
+}
+
+.filter-select-wide {
+  min-width: 130px;
+}
+
+.filter-select .ant-select-selector {
+  height: 36px !important;
+  border-radius: 18px !important;
+  background: #f5f7fa !important;
+  border: 1.5px solid #e8e8e8 !important;
+  padding: 0 14px !important;
+  transition: all 0.25s ease !important;
+}
+
+.filter-select .ant-select-selector:hover {
+  background: #ffffff !important;
+  border-color: #4FACFE !important;
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.15) !important;
+}
+
+.filter-select.ant-select-focused .ant-select-selector {
+  background: #ffffff !important;
+  border-color: #4FACFE !important;
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.2) !important;
+}
+
+.filter-select .ant-select-selection-item {
+  line-height: 32px !important;
+  font-weight: 500;
+  color: #262626;
+}
+
+.filter-select .ant-select-selection-placeholder {
+  line-height: 32px !important;
+  color: #bfbfbf;
+}
+
+/* 自定义下拉箭头 - 动态效果 */
+.filter-select .custom-arrow {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid #8c8c8c;
+  border-bottom: 2px solid #8c8c8c;
+  transform: rotate(45deg) translateY(-3px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-select:hover .custom-arrow {
+  border-color: #4FACFE;
+}
+
+.filter-select.ant-select-open .custom-arrow {
+  transform: rotate(-135deg) translateY(0);
+  border-color: #4FACFE;
+}
+
+/* 下拉菜单样式 */
+.filter-dropdown .ant-select-item {
+  border-radius: 8px;
+  margin: 2px 4px;
+  padding: 8px 12px;
+  transition: all 0.2s ease;
+}
+
+/* 选中状态 - 默认显示高亮 */
+.filter-dropdown .ant-select-item-option-selected {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.15) 0%, rgba(0, 242, 254, 0.15) 100%);
+  font-weight: 600;
+  color: var(--campus-primary-dark, #4A69BD);
+}
+
+/* 当下拉菜单中有其他选项被悬停时，取消选中项的高亮背景 */
+.filter-dropdown:has(.ant-select-item-option-active:not(.ant-select-item-option-selected)) .ant-select-item-option-selected:not(.ant-select-item-option-active) {
+  background: transparent !important;
+}
+
+/* 悬停状态 - 使用与页面一致的渐变背景色 */
+.filter-dropdown .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.18) 0%, rgba(0, 242, 254, 0.12) 100%) !important;
+  color: var(--campus-primary-dark, #4A69BD);
+  box-shadow: inset 0 0 0 1px rgba(79, 172, 254, 0.2);
+}
+
+/* 选中且悬停状态 */
+.filter-dropdown .ant-select-item-option-selected.ant-select-item-option-active {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.25) 0%, rgba(0, 242, 254, 0.18) 100%) !important;
+  font-weight: 600;
+  color: var(--campus-primary-dark, #4A69BD);
+}
+
+/* 价格筛选区域 */
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-separator {
+  color: #bfbfbf;
+  font-size: 12px;
+}
+
+/* 价格输入框 */
+.price-input.ant-input {
+  width: 85px;
+  height: 36px;
+  border-radius: 18px;
+  background: #f5f7fa;
+  border: 1.5px solid #e8e8e8;
+  text-align: center;
+  transition: all 0.25s ease;
+  padding: 0 12px;
+  font-weight: 500;
+}
+
+.price-input.ant-input:hover {
+  background: #ffffff;
+  border-color: #4FACFE;
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.15);
+}
+
+.price-input.ant-input:focus {
+  background: #ffffff;
+  border-color: #4FACFE;
+  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.2);
+}
+
+.price-input.ant-input::placeholder {
+  color: #bfbfbf;
+  font-weight: 400;
+}
+
+/* 隐藏数字输入框的上下箭头 */
+.price-input.ant-input[type="number"]::-webkit-inner-spin-button,
+.price-input.ant-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.price-input.ant-input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 /* 结果区域 */

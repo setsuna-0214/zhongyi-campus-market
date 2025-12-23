@@ -7,10 +7,118 @@
   position: sticky;
   top: 0;
   z-index: 1000;
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* 透明模式 - 首页轮播图区域 */
+.app-header.header-transparent {
+  background: transparent !important;
+  box-shadow: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+}
+
+/* 过渡动画类 */
+.app-header.header-transitioning {
+  transition: background 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* 透明模式下的 Logo 文字 */
+.app-header.header-transparent .logo-text {
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.app-header.header-transitioning .logo-text {
+  transition: all 0.5s ease;
+}
+
+/* 透明模式下的搜索框 */
+.app-header.header-transparent .header-search .ant-space-compact .ant-input-affix-wrapper,
+.app-header.header-transparent .header-search .ant-space-compact .ant-input {
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.app-header.header-transparent .header-search .ant-space-compact .ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.app-header.header-transparent .header-search .ant-space-compact .ant-input-affix-wrapper:hover,
+.app-header.header-transparent .header-search .ant-space-compact .ant-input:hover,
+.app-header.header-transparent .header-search .ant-space-compact .ant-input:focus {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.app-header.header-transparent .header-search .ant-space-compact .ant-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-left: none;
+  backdrop-filter: blur(10px);
+}
+
+.app-header.header-transparent .header-search .ant-space-compact .ant-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* 透明模式下的用户头像 */
+.app-header.header-transparent .user-entry {
+  color: white;
+}
+
+.app-header.header-transparent .user-entry .ant-avatar {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.app-header.header-transparent .user-entry .ant-avatar .anticon {
+  color: white;
+}
+
+.app-header.header-transparent .user-entry:hover {
+  background-color: transparent;
+}
+
+.app-header.header-transparent .user-entry:hover .ant-avatar {
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
+}
+
+/* 过渡动画 */
+.app-header.header-transitioning .header-search .ant-space-compact .ant-input-affix-wrapper,
+.app-header.header-transitioning .header-search .ant-space-compact .ant-input,
+.app-header.header-transitioning .header-search .ant-space-compact .ant-btn,
+.app-header.header-transitioning .user-entry,
+.app-header.header-transitioning .user-entry .ant-avatar {
+  transition: all 0.5s ease;
+}
+
+/* 所有元素默认添加过渡 */
+.app-header .logo-text,
+.app-header .header-search .ant-space-compact .ant-input-affix-wrapper,
+.app-header .header-search .ant-space-compact .ant-input,
+.app-header .header-search .ant-space-compact .ant-btn,
+.app-header .user-entry,
+.app-header .user-entry .ant-avatar {
+  transition: all 0.5s ease;
 }
 
 .ant-layout-header.app-header {
   background: #fafafa !important;
+  transition: background 0.5s ease;
+}
+
+/* 透明模式下覆盖 ant-layout-header 背景 */
+.ant-layout-header.app-header.header-transparent {
+  background: transparent !important;
 }
 
 .header-content {
@@ -39,8 +147,8 @@
 
 .header-search .ant-space-compact .ant-input-affix-wrapper {
   overflow: hidden;
-  border: 1px solid var(--ant-border-color, #d9d9d9);
-  border-right: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .header-search .ant-space-compact .ant-input {
@@ -49,21 +157,32 @@
 
 .header-search .ant-space-compact .ant-input-affix-wrapper,
 .header-search .ant-space-compact .ant-input {
-  height: 40px;
-  border-radius: 20px 0 0 20px;
+  height: 42px;
+  border-radius: 21px 0 0 21px;
+  background: #f5f7fa;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.header-search .ant-space-compact .ant-input-affix-wrapper:hover,
+.header-search .ant-space-compact .ant-input:hover,
+.header-search .ant-space-compact .ant-input:focus {
   background: #ffffff;
-  display: flex;
-  align-items: center;
-  line-height: normal;
-  margin: 0;
+  border-color: #4FACFE;
 }
 
 .header-search .ant-space-compact .ant-btn {
-  height: 40px;
-  border-radius: 0 20px 20px 0;
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
+  height: 42px;
+  border-radius: 0 21px 21px 0;
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  border: none;
+  font-weight: 600;
+  padding: 0 24px;
+}
+
+.header-search .ant-space-compact .ant-btn:hover {
+  background: linear-gradient(135deg, #439ae8 0%, #00dce6 100%);
+  opacity: 0.9;
 }
 
 .header-search .ant-input::placeholder {
@@ -86,18 +205,12 @@
   padding: 0;
 }
 
-.logo-icon {
-  height: 40px;
-  width: auto;
-  margin-right: 8px;
-}
-
 .logo-text {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: 0.5px;
-  color: #1890ff;
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  color: #4FACFE;
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -131,6 +244,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  position: relative;
 }
 
 .header-actions .ant-space {
@@ -153,26 +267,26 @@
   display: inline-flex;
   align-items: center;
   cursor: pointer;
-  padding: 12px 12px;
-  border-radius: 24px;
+  padding: 0;
+  border-radius: 50%;
   background: transparent;
   color: #1f1f1f;
   box-shadow: none;
   border: none;
   outline: none;
-  height: 100%;
   line-height: normal;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .user-entry:hover {
-  background-color: #1890ff;
-  color: #1890ff;
+  background-color: transparent;
+  color: inherit;
+  transform: scale(1.05);
 }
 
 .user-entry:focus-visible {
-  background-color: #1890ff;
-  color: #ffffff;
+  background-color: transparent;
+  color: inherit;
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.35);
 }
 
@@ -247,4 +361,149 @@
 .user-entry.user-entry--guest .ant-avatar-icon .anticon,
 .user-entry.user-entry--guest .anticon {
   transition: color 400ms ease-in-out;
+}
+
+
+/* ===================== 用户下拉菜单样式 ===================== */
+
+/* 头像包装器 */
+.user-avatar-wrapper {
+  cursor: pointer;
+  position: relative;
+}
+
+.user-avatar-wrapper .header-avatar {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  position: relative;
+  z-index: 10;
+}
+
+/* 头像放大效果 */
+.user-avatar-wrapper.active .header-avatar {
+  transform: scale(1.8) translateX(-10px) translateY(10px);
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.3);
+}
+
+/* 下拉菜单覆盖层 - 渲染在 header-actions 内部 */
+.user-dropdown-overlay {
+  position: absolute !important;
+  z-index: 5 !important;
+}
+
+.user-dropdown-overlay .ant-dropdown-arrow {
+  display: none;
+}
+
+/* 下拉菜单 */
+.user-dropdown-menu.ant-dropdown-menu {
+  min-width: 180px;
+  padding: 4px 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: none;
+  background: #fff;
+  margin-top: -16px;
+}
+
+/* 用户信息头部 */
+.user-menu-header {
+  padding: 12px 12px 8px;
+  cursor: default;
+}
+
+.user-menu-info {
+  text-align: left;
+  padding-right: 40px;
+}
+
+.user-menu-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu-welcome {
+  font-size: 11px;
+  color: #4FACFE;
+  line-height: 1.4;
+}
+
+/* 菜单项标签 */
+.menu-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.menu-arrow {
+  font-size: 9px;
+  color: #ccc;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: all 0.2s ease;
+}
+
+/* 菜单项样式 */
+.user-dropdown-menu .ant-dropdown-menu-item-group-title {
+  padding: 0;
+}
+
+.user-dropdown-menu .ant-dropdown-menu-item {
+  padding: 8px 12px;
+  margin: 2px 4px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #444;
+  transition: all 0.2s ease;
+}
+
+.user-dropdown-menu .ant-dropdown-menu-item:hover {
+  background: rgba(79, 172, 254, 0.1);
+  color: #4FACFE;
+}
+
+.user-dropdown-menu .ant-dropdown-menu-item:hover .menu-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: #4FACFE;
+}
+
+.user-dropdown-menu .ant-dropdown-menu-item .anticon {
+  font-size: 14px;
+  margin-right: 8px;
+  color: #888;
+}
+
+.user-dropdown-menu .ant-dropdown-menu-item:hover .anticon {
+  color: #4FACFE;
+}
+
+/* 危险操作项 */
+.user-dropdown-menu .ant-dropdown-menu-item-danger {
+  color: #ff6b6b;
+}
+
+.user-dropdown-menu .ant-dropdown-menu-item-danger:hover {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff4757;
+}
+
+.user-dropdown-menu .ant-dropdown-menu-item-danger .anticon {
+  color: #ff6b6b;
+}
+
+.user-dropdown-menu .ant-dropdown-menu-item-danger:hover .anticon,
+.user-dropdown-menu .ant-dropdown-menu-item-danger:hover .menu-arrow {
+  color: #ff4757;
+}
+
+/* 分割线 */
+.user-dropdown-menu .ant-dropdown-menu-item-divider {
+  margin: 4px 12px;
+  background: #f0f0f0;
 }
