@@ -1,0 +1,168 @@
+/**
+ * 全局表单验证样式配置
+ * 统一管理错误提示、必填项标记等样式
+ */
+
+/* ===================== 隐藏必填项星号标记 ===================== */
+.ant-form-item-required::before {
+  display: none !important;
+}
+
+/* ===================== 错误提示文字 ===================== */
+.ant-form-item-explain-error {
+  color: #f56c6c !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  margin-top: 4px !important;
+  padding-left: 4px;
+  position: relative;
+  z-index: 1;
+  animation: shakeError 0.4s ease;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+
+/* ===================== 错误状态输入框 ===================== */
+.ant-form-item-has-error .ant-input,
+.ant-form-item-has-error .ant-input-affix-wrapper,
+.ant-form-item-has-error .ant-input-password,
+.ant-form-item-has-error .ant-input-textarea .ant-input,
+.ant-form-item-has-error .ant-input-number,
+.ant-form-item-has-error .ant-select .ant-select-selector {
+  border-color: #ffa39e !important;
+  background-color: #fff8f7 !important;
+}
+
+.ant-form-item-has-error .ant-input:focus,
+.ant-form-item-has-error .ant-input-affix-wrapper:focus,
+.ant-form-item-has-error .ant-input-affix-wrapper-focused,
+.ant-form-item-has-error .ant-input-password:focus,
+.ant-form-item-has-error .ant-input-textarea .ant-input:focus,
+.ant-form-item-has-error .ant-input-number-focused,
+.ant-form-item-has-error .ant-select-focused .ant-select-selector {
+  border-color: #ff7875 !important;
+  box-shadow: 0 0 0 3px rgba(255, 120, 117, 0.15) !important;
+}
+
+.ant-form-item-has-error .ant-input:hover,
+.ant-form-item-has-error .ant-input-affix-wrapper:hover,
+.ant-form-item-has-error .ant-input-textarea .ant-input:hover,
+.ant-form-item-has-error .ant-input-number:hover,
+.ant-form-item-has-error .ant-select:hover .ant-select-selector {
+  border-color: #ff7875 !important;
+}
+
+/* ===================== 警告状态 ===================== */
+.ant-form-item-has-warning .ant-input,
+.ant-form-item-has-warning .ant-input-affix-wrapper {
+  border-color: #ffc069 !important;
+  background-color: #fffbe6 !important;
+}
+
+.ant-form-item-explain-warning {
+  color: #fa8c16 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+/* ===================== 成功状态 ===================== */
+.ant-form-item-has-success .ant-input,
+.ant-form-item-has-success .ant-input-affix-wrapper {
+  border-color: #95de64 !important;
+}
+
+/* ===================== 验证中状态 ===================== */
+.ant-form-item-is-validating .ant-input,
+.ant-form-item-is-validating .ant-input-affix-wrapper {
+  border-color: #91caff !important;
+}
+
+/* ===================== 反馈图标 ===================== */
+.ant-form-item-feedback-icon-error {
+  color: #ff7875 !important;
+}
+
+.ant-form-item-feedback-icon-warning {
+  color: #ffc069 !important;
+}
+
+.ant-form-item-feedback-icon-success {
+  color: #73d13d !important;
+}
+
+.ant-form-item-feedback-icon-validating {
+  color: #69b1ff !important;
+}
+
+/* ===================== 提示信息（非错误） ===================== */
+.ant-form-item-explain {
+  font-size: 12px;
+  line-height: 1.5;
+  min-height: 20px;
+}
+
+/* ===================== 表单项间距调整 ===================== */
+/* 预留错误提示空间，防止布局跳动 */
+
+/* 使用高优先级选择器覆盖 Ant Design 样式 */
+.ant-form .ant-form-item {
+  margin-bottom: 24px !important;
+}
+
+.ant-form .ant-form-item-row {
+  row-gap: 0 !important;
+}
+
+/* 错误提示容器 - 固定高度预留空间 */
+.ant-form .ant-form-item .ant-form-item-control {
+  flex: 1;
+}
+
+.ant-form .ant-form-item .ant-form-item-explain,
+.ant-form .ant-form-item .ant-form-item-extra {
+  min-height: 0 !important;
+}
+
+/* 关键：禁用 Ant Design 的 margin 补偿机制 */
+.ant-form .ant-form-item-with-help {
+  margin-bottom: 24px !important;
+  transition: none !important;
+}
+
+.ant-form .ant-form-item-with-help .ant-form-item-explain {
+  height: auto !important;
+  opacity: 1 !important;
+  transition: none !important;
+}
+
+/* 禁用错误提示的滑入动画 */
+.ant-form .ant-form-item-explain-connected {
+  min-height: 0 !important;
+  transition: none !important;
+}
+
+.ant-form .ant-form-item-explain > div,
+.ant-form .ant-form-item-explain-error {
+  transform: none !important;
+  transition: none !important;
+}
+
+/* 覆盖 Ant Design 的 margin-offset 负边距补偿 */
+.ant-form .ant-form-item-margin-offset {
+  margin-bottom: 0 !important;
+  display: none !important;
+}
+
+/* 覆盖所有验证状态下的 margin */
+.ant-form .ant-form-item-has-error,
+.ant-form .ant-form-item-has-warning,
+.ant-form .ant-form-item-has-success,
+.ant-form .ant-form-item-is-validating {
+  margin-bottom: 24px !important;
+}

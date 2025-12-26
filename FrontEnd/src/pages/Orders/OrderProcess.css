@@ -2,15 +2,19 @@
 /* 订单处理页面样式 - 与个人中心设计语言保持一致 */
 
 .order-process-page {
-  padding: 24px;
-  max-width: 900px;
-  margin: 0 auto;
+  width: 100%;
   min-height: calc(100vh - 64px);
-  /* 添加与首页一致的渐变背景 */
-  background-image:
-    radial-gradient(at 0% 0%, rgba(107, 141, 214, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(255, 143, 94, 0.06) 0px, transparent 50%);
+  padding: var(--page-padding);
+  display: flex;
+  justify-content: center;
+  background: var(--page-bg-color);
+  background-image: var(--page-bg-gradient);
   background-attachment: fixed;
+}
+
+.order-process-page > .container {
+  width: 100%;
+  max-width: var(--content-max-width-md);
 }
 
 /* ===================== Back Button ===================== */

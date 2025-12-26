@@ -1,0 +1,118 @@
+/**
+ * 全局滚动条样式配置
+ * 统一所有页面的滚动条外观
+ */
+
+/* ===================== 全局滚动条基础样式 ===================== */
+/* Webkit 浏览器 (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(79, 172, 254, 0.3);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 172, 254, 0.5);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(79, 172, 254, 0.7);
+}
+
+/* 滚动条角落 */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox 滚动条 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(79, 172, 254, 0.3) transparent;
+}
+
+/* ===================== 细滚动条变体 ===================== */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+}
+
+/* ===================== 隐藏滚动条 ===================== */
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* ===================== 浅色背景滚动条 ===================== */
+.scrollbar-light::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.4);
+}
+
+.scrollbar-light::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.6);
+}
+
+.scrollbar-light {
+  scrollbar-color: rgba(150, 150, 150, 0.4) transparent;
+}
+
+/* ===================== 深色背景滚动条 ===================== */
+.scrollbar-dark::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.scrollbar-dark::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.scrollbar-dark {
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+/* ===================== 特定容器滚动条 ===================== */
+/* 聊天消息区域 */
+.messages-container::-webkit-scrollbar,
+.conversation-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* 侧边栏 */
+.ant-layout-sider::-webkit-scrollbar,
+.user-sider::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* 下拉菜单 */
+.ant-dropdown::-webkit-scrollbar,
+.ant-select-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* 模态框内容 */
+.ant-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* 表格容器 */
+.ant-table-body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}

@@ -4,7 +4,6 @@ import {
   Input,
   Button,
   Card,
-  Typography,
   message,
   Row,
   Col,
@@ -17,8 +16,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
 import { register, sendCode, checkUsernameExists, checkEmailExists } from '../../api/auth';
-
-const { Title, Text } = Typography;
+import VerificationCodeInput from '../../components/VerificationCodeInput';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -173,14 +171,14 @@ const Register = () => {
           help={usernameStatus.error || undefined}
           hasFeedback={usernameStatus.validating || !!usernameStatus.error}
           rules={[
-            { required: true, message: '请输入用户名' },
-            { min: 3, max: 20, message: '用户名长度为3-20个字符' },
-            { pattern: /^[a-zA-Z][a-zA-Z0-9_-]*$/, message: '用户名必须以字母开头，只能包含字母、数字、下划线和连字符' },
+            { required: true, message: '用户名不能空着哦~' },
+            { min: 3, max: 20, message: '用户名要3-20个字符才行呢' },
+            { pattern: /^[a-zA-Z][a-zA-Z0-9_-]*$/, message: '用户名要以字母开头，只可以用字母、数字、下划线哦' },
           ]}
         >
           <Input
             prefix={<UserOutlined />}
-            placeholder="请输入用户名"
+            placeholder="给自己取个好记的名字吧"
             onChange={handleUsernameChange}
           />
         </Form.Item>
@@ -192,13 +190,13 @@ const Register = () => {
           help={emailStatus.error || undefined}
           hasFeedback={emailStatus.validating || !!emailStatus.error}
           rules={[
-            { required: true, message: '请输入邮箱' },
-            { type: 'email', message: '请输入有效的邮箱地址' },
+            { required: true, message: '邮箱是必填的哦~' },
+            { type: 'email', message: '这个邮箱格式好像不太对' },
           ]}
         >
           <Input
             prefix={<MailOutlined />}
-            placeholder="请输入邮箱"
+            placeholder="填写常用邮箱，用于接收验证码"
             onChange={handleEmailChange}
           />
         </Form.Item>
@@ -207,15 +205,15 @@ const Register = () => {
           name="password"
           label="密码"
           rules={[
-            { required: true, message: '请输入密码' },
-            { min: 6, message: '密码至少6个字符' },
+            { required: true, message: '设置一个密码吧~' },
+            { min: 6, message: '密码太短啦，至少6位才安全' },
             {
               pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-              message: '密码必须包含大小写字母和数字',
+              message: '密码要包含大小写字母和数字哦',
             },
           ]}
         >
-          <Input.Password prefix={<LockOutlined />} placeholder="请输入密码" />
+          <Input.Password prefix={<LockOutlined />} placeholder="设置登录密码" />
         </Form.Item>
 
         <Form.Item
@@ -223,41 +221,39 @@ const Register = () => {
           label="确认密码"
           dependencies={["password"]}
           rules={[
-            { required: true, message: '请确认密码' },
+            { required: true, message: '再输入一次密码确认下~' },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue('password') === value) {
                   return Promise.resolve();
                 }
-                return Promise.reject(new Error('两次输入的密码不一致'));
+                return Promise.reject(new Error('两次密码不一样，再检查下？'));
               },
             }),
           ]}
         >
-          <Input.Password prefix={<LockOutlined />} placeholder="请再次输入密码" />
+          <Input.Password prefix={<LockOutlined />} placeholder="再次输入密码" />
         </Form.Item>
 
         <Form.Item
           name="verificationCode"
           label="邮箱验证码"
-          rules={[{ required: true, message: '请输入验证码' }]}
+          rules={[
+            { required: true, message: '验证码不能少~' },
+            { len: 6, message: '验证码是6位数字哦' },
+          ]}
         >
-          <Row gutter={8}>
-            <Col span={16}>
-              <Input placeholder="请输入验证码" />
-            </Col>
-            <Col span={8}>
-              <Button
-                onClick={sendVerificationCode}
-                loading={loading}
-                disabled={countdown > 0}
-                block
-                className="verify-code-btn"
-              >
-                {countdown > 0 ? `重新发送(${countdown}s)` : '发送验证码'}
-              </Button>
-            </Col>
-          </Row>
+          <div className="verification-code-row">
+            <VerificationCodeInput />
+            <Button
+              onClick={sendVerificationCode}
+              loading={loading}
+              disabled={countdown > 0}
+              className="verify-code-btn"
+            >
+              {countdown > 0 ? `${countdown}s` : '发送'}
+            </Button>
+          </div>
         </Form.Item>
       </>
     );
@@ -265,9 +261,7 @@ const Register = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-background">
-        <div className="auth-overlay"></div>
-      </div>
+      <div className="auth-background" />
 
       <div className="auth-content">
         <Row justify="center" align="middle" style={{ minHeight: '100vh', padding: '12px 0' }}>
@@ -277,8 +271,6 @@ const Register = () => {
                 <div className="auth-logo">
                   <span className="logo-text">中易</span>
                 </div>
-                <Title level={2} className="auth-title">加入中易</Title>
-                <Text className="auth-subtitle">创建您的中易账户</Text>
               </div>
 
               <Form
@@ -305,10 +297,8 @@ const Register = () => {
               </Form>
 
               <div className="auth-footer">
-                <Text>
-                  已有账户？
-                  <Link to="/login" className="auth-link">立即登录</Link>
-                </Text>
+                已有账户？
+                <Link to="/login" className="auth-link">立即登录</Link>
               </div>
             </Card>
           </Col>

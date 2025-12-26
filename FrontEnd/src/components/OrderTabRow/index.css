@@ -31,10 +31,10 @@
   box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
 }
 
-/* 订单状态滑块 - 使用紫色渐变以区分 */
+/* 订单状态滑块 - 使用相同的蓝色渐变 */
 .status-tab-slider .sub-tab-indicator {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  box-shadow: 0 4px 16px rgba(79, 172, 254, 0.4);
 }
 
 /* 响应式布局 - 窄屏下换行显示 */

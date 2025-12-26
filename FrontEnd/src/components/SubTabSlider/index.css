@@ -56,7 +56,7 @@
 
 /* 标签项悬停效果 */
 .sub-tab-item:hover:not(.active) {
-  color: var(--campus-primary-dark, #5a7dc0);
+  color: var(--campus-primary-dark, #3a9fe8);
 }
 
 /* 选中状态的标签项 */
@@ -77,12 +77,6 @@
 /* 标签文字 */
 .sub-tab-label {
   letter-spacing: 1px;
-}
-
-/* 订单状态滑块 - 使用不同颜色 */
-.sub-tab-slider.status-tab-slider .sub-tab-indicator {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
 }
 
 /* 减少动画偏好 */

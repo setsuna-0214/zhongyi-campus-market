@@ -2,19 +2,22 @@
 
 .slider-menu {
   position: relative;
-  padding: 8px;
+  padding: 12px;
 }
 
 /* 滑块指示器 */
 .slider-indicator {
   position: absolute;
-  left: 8px;
-  right: 8px;
-  top: 8px;
+  left: 12px;
+  right: 12px;
+  top: 12px;
   background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
-  border-radius: 8px;
+  border-radius: 12px;
   z-index: 0;
-  box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);
+  box-shadow: 
+    0 4px 16px rgba(79, 172, 254, 0.35),
+    0 2px 8px rgba(0, 242, 254, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* 初始加载时禁用动画 */
@@ -41,22 +44,25 @@
   align-items: center;
   justify-content: center;
   padding: 0 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: color 0.3s ease, background-color 0.3s ease;
+  transition: color 0.3s ease, background 0.3s ease;
   color: var(--text-primary, #2C3E50);
   font-weight: 500;
   user-select: none;
+  position: relative;
 }
 
 /* 菜单项悬停效果 */
 .slider-menu-item:hover:not(.active) {
-  background: rgba(102, 126, 234, 0.08);
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.06) 100%);
+  color: #4FACFE;
 }
 
 /* 选中状态的菜单项 */
 .slider-menu-item.active {
   color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* 菜单图标 */
@@ -65,14 +71,27 @@
   align-items: center;
   justify-content: center;
   margin-right: 12px;
-  font-size: 16px;
+  font-size: 17px;
   flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 悬停时图标放大 */
+.slider-menu-item:hover:not(.active) .slider-menu-icon {
+  transform: scale(1.15);
+}
+
+/* 点击时图标缩小反馈 */
+.slider-menu-item:active:not(.active) .slider-menu-icon {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
 }
 
 /* 菜单文字 */
 .slider-menu-label {
   letter-spacing: 4px;
   white-space: nowrap;
+  font-size: 14px;
 }
 
 /* 减少动画偏好 */
@@ -81,23 +100,34 @@
   .slider-indicator.animated {
     transition: none;
   }
+  
+  .slider-menu-item,
+  .slider-menu-icon {
+    transition: none;
+  }
+  
+  .slider-menu-item:hover:not(.active) .slider-menu-icon,
+  .slider-menu-item:active:not(.active) .slider-menu-icon {
+    transform: none;
+  }
 }
 
 /* 响应式调整 - 768px 断点 */
 @media (max-width: 768px) {
   .slider-menu {
-    padding: 6px;
+    padding: 8px;
   }
 
   .slider-indicator {
-    left: 6px;
-    right: 6px;
-    border-radius: 6px;
+    left: 8px;
+    right: 8px;
+    top: 8px;
+    border-radius: 10px;
   }
 
   .slider-menu-item {
     padding: 0 12px;
-    border-radius: 6px;
+    border-radius: 10px;
   }
 
   .slider-menu-icon {
@@ -114,17 +144,20 @@
 /* 响应式调整 - 576px 断点 */
 @media (max-width: 576px) {
   .slider-menu {
-    padding: 4px;
+    padding: 6px;
   }
 
   .slider-indicator {
-    left: 4px;
-    right: 4px;
+    left: 6px;
+    right: 6px;
+    top: 6px;
+    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(79, 172, 254, 0.25);
   }
 
   .slider-menu-item {
     padding: 0 8px;
+    border-radius: 8px;
   }
 
   .slider-menu-icon {

@@ -20,6 +20,17 @@ export async function getFollows() {
   return follows;
 }
 
+export async function getFollowers() {
+  ensureMockState();
+  // Mock: 返回一些模拟的粉丝数据
+  // 实际场景中，这应该从后端获取关注当前用户的人
+  const mockFollowers = mockSellers.slice(0, 3).map(seller => ({
+    ...seller,
+    followedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+  }));
+  return mockFollowers;
+}
+
 export async function checkIsFollowing(sellerId) {
   ensureMockState();
   const followIds = readMockList('mock_follows', []);
@@ -104,8 +115,21 @@ export async function getUserCollections() {
   };
 }
 
-export async function uploadAvatar() {
-  const avatarUrl = '/images/avatars/avatar-1.svg';
+export async function uploadAvatar(file) {
+  // 将上传的文件转换为 base64 数据URL
+  const avatarUrl = await new Promise((resolve, reject) => {
+    if (!file) {
+      // 如果没有传入文件，返回默认头像
+      resolve('/images/avatars/avatar-1.svg');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('文件读取失败'));
+    reader.readAsDataURL(file);
+  });
+  
   try {
     const raw = localStorage.getItem('authUser');
     const user = raw ? JSON.parse(raw) : mockUserDebug;
@@ -200,3 +224,21 @@ export async function searchUsers(params = {}) {
   };
 }
 
+
+
+// 账号注销
+export async function deleteAccount({ verificationCode }) {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  if (!verificationCode || verificationCode.length !== 6) {
+    throw new Error('验证码无效');
+  }
+  // Mock: 清除本地存储的用户数据
+  try {
+    localStorage.removeItem('authUser');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('mock_favorites');
+    localStorage.removeItem('mock_orders');
+    localStorage.removeItem('mock_follows');
+  } catch {}
+  return { success: true, message: '账号已注销' };
+}

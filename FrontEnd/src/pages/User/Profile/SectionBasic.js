@@ -3,6 +3,7 @@ import { Card, Avatar, Button, Form, Input, Checkbox, Row, Col, Space, Typograph
 import { UserOutlined, CameraOutlined, PictureOutlined } from '@ant-design/icons';
 import { PROFILE_BANNER_OPTIONS } from '../../../config/profile';
 import { GENDER_OPTIONS } from '../../../utils/labels';
+import { resolveAvatar } from '../../../utils/images';
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -25,7 +26,7 @@ const userFieldLabels = {
 };
 
 // 不显示的字段
-const excludedFields = ['id', 'token', 'avatar', 'profileBanner'];
+const excludedFields = ['id', 'token', 'avatar', 'profileBanner', 'school', 'studentId', 'followersCount', 'followingCount'];
 // 不可编辑的字段
 const nonEditableKeys = ['id', 'username', 'email', 'token', 'joinDate', 'lastLoginAt'];
 // 字段显示顺序
@@ -61,7 +62,11 @@ export default function SectionBasic({
   onChangeBannerKey, 
   onOpenAvatarModal, 
   loading,
-  isReadOnly = false 
+  isReadOnly = false,
+  followersCount = 0,
+  followingCount = 0,
+  onFollowersClick,
+  onFollowingClick
 }) {
   // 背景图淡入淡出状态
   const [displayedBgUrl, setDisplayedBgUrl] = useState(bannerBgUrl);
@@ -104,7 +109,7 @@ export default function SectionBasic({
       >
         <div className="avatar-wrapper">
           <div className="avatar-box">
-            <Avatar size={120} src={userInfo.avatar} icon={<UserOutlined />} className="user-avatar" />
+            <Avatar size={120} src={resolveAvatar(userInfo.avatar)} icon={<UserOutlined />} className="user-avatar" />
             {!isReadOnly && (
               <Button shape="circle" size="small" type="default" icon={<CameraOutlined />} aria-label="更换头像" onClick={onOpenAvatarModal} className="avatar-edit-icon" />
             )}
@@ -113,6 +118,29 @@ export default function SectionBasic({
         {!isReadOnly && (
           <Button shape="circle" size="small" type="default" icon={<PictureOutlined />} aria-label="切换背景图" onClick={handleCycleBanner} className="banner-settings-icon" />
         )}
+        
+        {/* 关注数和粉丝数统计 */}
+        <div className="banner-stats">
+          <div 
+            className="banner-stat-item" 
+            onClick={onFollowingClick}
+            role="button"
+            tabIndex={0}
+          >
+            <span className="banner-stat-value">{followingCount}</span>
+            <span className="banner-stat-label">关注</span>
+          </div>
+          <div className="banner-stat-divider" />
+          <div 
+            className="banner-stat-item" 
+            onClick={onFollowersClick}
+            role="button"
+            tabIndex={0}
+          >
+            <span className="banner-stat-value">{followersCount}</span>
+            <span className="banner-stat-label">粉丝</span>
+          </div>
+        </div>
       </div>
       <div style={{ marginTop: 12 }}>
         <Form
@@ -166,7 +194,10 @@ export default function SectionBasic({
                           </div>
                         ) : (
                           <Form.Item name={key} style={{ marginTop: 8, marginBottom: 8 }}>
-                            <TextArea rows={4} />
+                            <TextArea 
+                              autoSize={{ minRows: 4, maxRows: 10 }}
+                              placeholder="请输入个人简介..."
+                            />
                           </Form.Item>
                         )}
                       </div>

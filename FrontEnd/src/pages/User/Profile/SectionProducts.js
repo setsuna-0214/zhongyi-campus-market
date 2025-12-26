@@ -49,6 +49,7 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
                 <div className="product-item">
                   <ProductCard
                     imageSrc={resolveImageSrc({ product: item, item })}
+                    images={item.images}
                     title={item.title}
                     price={item.price}
                     category={item.category}
@@ -91,6 +92,7 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
             <div className="product-item">
               <ProductCard
                 imageSrc={resolveImageSrc({ product: item, item })}
+                images={item.images}
                 title={item.title || item.productName || item.name || '商品'}
                 price={item.price ?? item.currentPrice}
                 category={item.category || (Array.isArray(item.tags) ? item.tags[0] : '')}
@@ -116,14 +118,16 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
 
   return (
     <Card className="section-card">
-      {/* 顶部子选项标签 */}
-      <div className="section-products-header">
-        <SubTabSlider
-          tabs={productTabs}
-          activeKey={showType}
-          onChange={handleTabChange}
-        />
-      </div>
+      {/* 顶部子选项标签 - 只读模式下隐藏 */}
+      {!isReadOnly && (
+        <div className="section-products-header">
+          <SubTabSlider
+            tabs={productTabs}
+            activeKey={showType}
+            onChange={handleTabChange}
+          />
+        </div>
+      )}
       
       {/* 商品列表内容 */}
       <div className="section-products-content">

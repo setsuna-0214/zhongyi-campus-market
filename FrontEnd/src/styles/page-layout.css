@@ -1,0 +1,78 @@
+/* ===================== 页面布局统一配置 ===================== */
+/* 全屏背景 + 内容居中的通用布局样式 */
+
+/* CSS 变量配置 */
+:root {
+  /* 背景渐变配置 */
+  --page-bg-color: var(--campus-bg, #f7f8fa);
+  --page-bg-gradient: 
+    radial-gradient(at 0% 0%, rgba(79, 172, 254, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 143, 94, 0.06) 0px, transparent 50%);
+  
+  /* 内容区域最大宽度 - 统一标准 */
+  --content-max-width: 1200px;      /* 标准页面宽度 */
+  --content-max-width-md: 1200px;   /* 兼容旧引用 */
+  
+  /* 页面内边距 */
+  --page-padding: 24px;
+  --page-padding-sm: 16px;
+}
+
+/* ===================== 全屏背景基础样式 ===================== */
+.page-fullscreen-bg {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  background: var(--page-bg-color);
+  background-image: var(--page-bg-gradient);
+  background-attachment: fixed;
+}
+
+/* ===================== 内容居中容器 ===================== */
+/* 标准内容区域 (1200px) */
+.page-center,
+.page-center-md {
+  display: flex;
+  justify-content: center;
+  padding: var(--page-padding);
+}
+
+.page-center > .page-inner,
+.page-center > *:first-child,
+.page-center-md > .page-inner,
+.page-center-md > *:first-child {
+  width: 100%;
+  max-width: var(--content-max-width);
+}
+
+/* ===================== 垂直布局变体 ===================== */
+/* 用于需要垂直排列多个子元素的页面 */
+.page-center-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--page-padding);
+}
+
+.page-center-column > * {
+  width: 100%;
+  max-width: var(--content-max-width);
+}
+
+/* ===================== 响应式适配 ===================== */
+@media (max-width: 768px) {
+  :root {
+    --page-padding: 16px;
+    --page-padding-sm: 12px;
+  }
+  
+  .page-fullscreen-bg {
+    min-height: calc(100vh - 56px);
+  }
+}
+
+@media (max-width: 576px) {
+  :root {
+    --page-padding: 12px;
+    --page-padding-sm: 10px;
+  }
+}

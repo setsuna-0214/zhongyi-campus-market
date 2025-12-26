@@ -13,3 +13,4 @@ export const createConversation = impl.createConversation;
 export const deleteConversation = impl.deleteConversation;
 export const uploadChatImage = impl.uploadChatImage;
 export const markConversationAsRead = impl.markConversationAsRead;
+export const clearConversationsCache = impl.clearConversationsCache;

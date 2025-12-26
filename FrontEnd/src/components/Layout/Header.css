@@ -483,23 +483,33 @@
   color: #4FACFE;
 }
 
-/* 危险操作项 */
-.user-dropdown-menu .ant-dropdown-menu-item-danger {
-  color: #ff6b6b;
+/* 危险操作项（退出登录） - 使用高优先级选择器覆盖 Ant Design 默认样式 */
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item-danger,
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item.ant-dropdown-menu-item-danger {
+  color: #666 !important;
 }
 
-.user-dropdown-menu .ant-dropdown-menu-item-danger:hover {
-  background: rgba(255, 107, 107, 0.1);
-  color: #ff4757;
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item-danger .anticon,
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item.ant-dropdown-menu-item-danger .anticon {
+  color: #888 !important;
 }
 
-.user-dropdown-menu .ant-dropdown-menu-item-danger .anticon {
-  color: #ff6b6b;
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item-danger:hover,
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover {
+  background: rgba(255, 77, 79, 0.08) !important;
+  color: #ff4d4f !important;
 }
 
-.user-dropdown-menu .ant-dropdown-menu-item-danger:hover .anticon,
-.user-dropdown-menu .ant-dropdown-menu-item-danger:hover .menu-arrow {
-  color: #ff4757;
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item-danger:hover .anticon,
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover .anticon {
+  color: #ff4d4f !important;
+}
+
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item-danger:hover .menu-arrow,
+.user-dropdown-menu.ant-dropdown-menu .ant-dropdown-menu-item.ant-dropdown-menu-item-danger:hover .menu-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: #ff4d4f !important;
 }
 
 /* 分割线 */

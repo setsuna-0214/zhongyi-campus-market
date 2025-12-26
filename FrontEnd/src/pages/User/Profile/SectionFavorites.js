@@ -12,9 +12,10 @@ const CATEGORY_OPTIONS = [
   ...Object.entries(CATEGORY_CODE_TO_LABEL).map(([code, label]) => ({ label, value: code }))
 ];
 
-export default function SectionFavorites({ favorites, onRemoveFavorite, onNavigate }) {
+export default function SectionFavorites({ favorites, onRemoveFavorite, onBatchRemoveFavorites, onNavigate }) {
   const [filters, setFilters] = useState({ category: '', keyword: '', timeRange: 'all', sortBy: 'addTime' });
   const [selectedIds, setSelectedIds] = useState([]);
+  const [batchRemoving, setBatchRemoving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
 
@@ -80,7 +81,17 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
     });
   };
 
-  
+  // 批量移除收藏
+  const handleBatchRemove = async () => {
+    if (selectedIds.length === 0 || batchRemoving) return;
+    setBatchRemoving(true);
+    try {
+      await onBatchRemoveFavorites([...selectedIds]);
+      setSelectedIds([]);
+    } finally {
+      setBatchRemoving(false);
+    }
+  };
 
   return (
     <>
@@ -99,7 +110,7 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
             <div className="batch-actions-inline">
               <Checkbox checked={isAllSelected} indeterminate={isIndeterminate} onChange={(e) => handleSelectAll(e.target.checked)}>全选当前页</Checkbox>
               <Text type="secondary" className="selected-count">{selectedIds.length > 0 ? `已选 ${selectedIds.length} 项` : '\u00A0'}</Text>
-              <Button className="batch-remove-btn" onClick={() => { const toRemove = [...selectedIds]; toRemove.forEach(id => onRemoveFavorite(id)); setSelectedIds([]); }} disabled={selectedIds.length === 0}>批量移除</Button>
+              <Button className="batch-remove-btn" onClick={handleBatchRemove} disabled={selectedIds.length === 0} loading={batchRemoving}>批量移除</Button>
             </div>
           )}
         </div>
@@ -111,6 +122,7 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
               <Col key={item.id} xs={24} sm={12} md={8} lg={8} xl={8} xxl={8}>
                 <ProductCard
                   imageSrc={resolveImageSrc({ item })}
+                  images={item.images}
                   title={item.productName}
                   price={item.currentPrice}
                   category={getCategoryLabel(item.category || (Array.isArray(item.tags) ? item.tags[0] : ''))}
@@ -121,8 +133,7 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
                   sellerAvatar={item.seller?.avatar || item.sellerAvatar}
                   publishedAt={item.publishedAt || item.publishTime || item.createdAt}
                   favoriteAt={item.addTime}
-                  views={item.sales}
-                  overlayType={'views-left'}
+                  overlayType="none"
                   dateFormat={'ymd'}
                   onClick={() => onNavigate(`/products/${item.productId}`)}
                   showCheckbox
@@ -134,14 +145,15 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onNaviga
                   showDeleteButton
                   onDelete={() => onRemoveFavorite(item.id)}
                   deleteButtonText="取消收藏"
-                  deleteConfirmText="确定要取消收藏吗？"
+                  deleteConfirmText="不喜欢它了吗？取消收藏后可以随时再收藏哦~"
+                  deleteConfirmIcon={<span className="popconfirm-emoji popconfirm-emoji-heart">💔</span>}
                 />
               </Col>
             ))}
           </Row>
         ) : (
           <Empty description="还没有收藏任何商品" image={Empty.PRESENTED_IMAGE_SIMPLE}>
-            <Button type="primary" onClick={() => onNavigate('/search?type=products')}>去逛逛</Button>
+            <Button type="primary" onClick={() => onNavigate('/search')}>去逛逛</Button>
           </Empty>
         )}
       </Card>

@@ -42,6 +42,7 @@ export function normalizeMockFavorite(item) {
     category: item?.category || product?.category || 'other',
     productImage: imageSrc,
     coverImage: item?.coverImage || imageSrc,
+    images: item?.images || product?.images || (imageSrc ? [imageSrc] : []),
     currentPrice,
     publishedAt:
       item?.publishedAt || product?.publishTime || product?.publishedAt || product?.createdAt,
@@ -94,6 +95,7 @@ export function createMockFavorite(productId) {
     category: product?.category || 'other',
     coverImage: imageSrc,
     productImage: imageSrc,
+    images: product?.images || (imageSrc ? [imageSrc] : []),
     currentPrice: product?.price ?? 0,
     addTime: now,
     isAvailable: (product?.status || '在售') === '在售',
@@ -128,7 +130,10 @@ export function normalizeFavorites(list) {
 }
 
 export function normalizePurchases(list) {
-  return Array.isArray(list) ? list.map(normalizeMockPurchase) : [];
+  if (!Array.isArray(list)) return [];
+  // 只返回已完成的订单中的商品
+  const completedOrders = list.filter(order => order?.status === 'completed');
+  return completedOrders.map(normalizeMockPurchase);
 }
 
 export function safeNumber(value, fallback = 0) {

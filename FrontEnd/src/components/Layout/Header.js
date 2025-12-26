@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Layout, Avatar, Dropdown, Input, Button, Space } from 'antd';
 import {
   UserOutlined,
   LogoutOutlined,
   SearchOutlined,
-  ShopOutlined,
+  ShoppingOutlined,
   HeartOutlined,
-  MessageOutlined,
-  QuestionCircleOutlined,
+  OrderedListOutlined,
+  TeamOutlined,
   SettingOutlined,
   RightOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
 import { getCurrentUser } from '../../api/user';
+import { isLoggedIn as checkIsLoggedIn, getCurrentUser as getLocalUser, clearAuth } from '../../utils/auth';
 
 const { Header: AntHeader } = Layout;
 
@@ -41,8 +42,7 @@ const Header = () => {
     let cancelled = false;
     (async () => {
       try {
-        const raw = localStorage.getItem('authUser');
-        if (!raw) {
+        if (!checkIsLoggedIn()) {
           setIsLoggedIn(false);
           setUser(null);
           return;
@@ -55,14 +55,12 @@ const Header = () => {
         }
       } catch (e) {
         // 失败时退回到本地存储的原始数据
-        try {
-          const raw = localStorage.getItem('authUser');
-          if (raw && !cancelled) {
+        if (!cancelled) {
+          const localUser = getLocalUser();
+          if (localUser) {
             setIsLoggedIn(true);
-            setUser(JSON.parse(raw));
-          }
-        } catch {
-          if (!cancelled) {
+            setUser(localUser);
+          } else {
             setIsLoggedIn(false);
             setUser(null);
           }
@@ -95,30 +93,47 @@ const Header = () => {
   useEffect(() => {
     if (isHomePage) {
       // 检查是否已登录（登录用户默认展开）
-      const authUser = localStorage.getItem('authUser');
-      setHomeExpanded(!!authUser);
+      setHomeExpanded(checkIsLoggedIn());
     } else {
       setHomeExpanded(true); // 非首页视为展开状态
     }
   }, [isHomePage]);
 
+  // 监听用户信息更新事件
+  useEffect(() => {
+    const handleUserUpdated = (event) => {
+      if (event.detail) {
+        setUser(event.detail);
+      }
+    };
+    window.addEventListener('userUpdated', handleUserUpdated);
+    return () => {
+      window.removeEventListener('userUpdated', handleUserUpdated);
+    };
+  }, []);
+
 
   const handleSearch = (value) => {
     const keyword = (value || '').trim();
-    if (!keyword) {
-      navigate('/search?type=products');
-      return;
+    // 获取当前搜索类型（如果在搜索页面）
+    const currentParams = new URLSearchParams(location.search);
+    const currentType = location.pathname === '/search' ? (currentParams.get('type') || 'products') : 'products';
+    
+    // 构建简洁的URL参数
+    const params = new URLSearchParams();
+    if (currentType !== 'products') {
+      params.set('type', currentType);
     }
-    const params = new URLSearchParams({ 
-      type: 'products',
-      keyword 
-    }).toString();
-    navigate(`/search?${params}`);
+    if (keyword) {
+      params.set('q', keyword);
+    }
+    
+    const queryString = params.toString();
+    navigate(queryString ? `/search?${queryString}` : '/search');
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('authUser');
-    localStorage.removeItem('adminVerified');
+    clearAuth();
     setIsLoggedIn(false);
     setUser(null);
     navigate('/');
@@ -148,35 +163,35 @@ const Header = () => {
       onClick: () => navigate('/profile')
     },
     {
-      key: 'publish',
-      icon: <ShopOutlined />,
-      label: <span className="menu-label">发布商品<RightOutlined className="menu-arrow" /></span>,
-      onClick: () => navigate('/publish')
+      key: 'products',
+      icon: <ShoppingOutlined />,
+      label: <span className="menu-label">商品管理<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/profile?t=products')
+    },
+    {
+      key: 'orders',
+      icon: <OrderedListOutlined />,
+      label: <span className="menu-label">订单管理<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/profile?t=orders')
     },
     {
       key: 'favorites',
       icon: <HeartOutlined />,
       label: <span className="menu-label">我的收藏<RightOutlined className="menu-arrow" /></span>,
-      onClick: () => navigate('/profile?tab=favorites')
+      onClick: () => navigate('/profile?t=favorites')
     },
     {
-      key: 'messages',
-      icon: <MessageOutlined />,
-      label: <span className="menu-label">我的消息<RightOutlined className="menu-arrow" /></span>,
-      onClick: () => navigate('/chat')
+      key: 'follows',
+      icon: <TeamOutlined />,
+      label: <span className="menu-label">我的关注<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/profile?t=follows')
     },
     { type: 'divider' },
     {
       key: 'settings',
       icon: <SettingOutlined />,
-      label: <span className="menu-label">账号设置<RightOutlined className="menu-arrow" /></span>,
-      onClick: () => navigate('/profile?tab=account')
-    },
-    {
-      key: 'help',
-      icon: <QuestionCircleOutlined />,
-      label: <span className="menu-label">帮助中心<RightOutlined className="menu-arrow" /></span>,
-      onClick: () => navigate('/help')
+      label: <span className="menu-label">账户设置<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/profile?t=account')
     },
     { type: 'divider' },
     {
@@ -205,7 +220,7 @@ const Header = () => {
         <div className="header-search">
           <Space.Compact>
             <Input
-              placeholder="搜索商品或卖家"
+              placeholder="开始探索"
               size="large"
               value={headerKeyword}
               onChange={(e) => setHeaderKeyword(e.target.value)}

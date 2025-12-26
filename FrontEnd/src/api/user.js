@@ -20,8 +20,12 @@ export const getUserPublished = impl.getUserPublished;
 
 // 关注功能
 export const getFollows = impl.getFollows;
+export const getFollowers = impl.getFollowers;
 export const checkIsFollowing = impl.checkIsFollowing;
 export const followUser = impl.followUser;
 export const unfollowUser = impl.unfollowUser;
 
 export const searchUsers = impl.searchUsers;
+
+// 账号注销
+export const deleteAccount = impl.deleteAccount;

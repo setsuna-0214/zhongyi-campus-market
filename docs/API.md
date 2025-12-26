@@ -725,19 +725,43 @@
     }
     ```
 
+### 注销账号
+- `POST /user/me/delete`
+  - Request:
+    ```json
+    {
+      "verificationCode": "123456"
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "success": true,
+      "message": "账号已注销"
+    }
+    ```
+  - 说明：
+    - 需要先调用 `/auth/send-code` 发送验证码到用户邮箱
+    - 注销后账号数据将被删除，已发布的商品将被下架
+    - 未完成的订单将被取消（已完成的订单记录保留）
+    - 其他用户访问已注销用户的个人主页时，会显示"用户不存在"
+
 ### 获取指定用户信息
 - `GET /user/:id`
   - Response:
     ```json
     {
       "id": 1,
-      "username": "张同学",
+      "username": "zhang_student",
       "nickname": "张同学",
       "avatar": "/images/avatars/avatar-1.svg",
       "joinDate": "2024-01-01",
-      "bio": "个人简介内容"
+      "bio": "个人简介内容",
+      "followersCount": 128,
+      "followingCount": 45
     }
     ```
+  - 说明：`followersCount` 和 `followingCount` 为可选字段，前端会优雅处理缺失情况
 
 ### 获取指定用户发布的商品
 - `GET /user/:id/published`
@@ -769,15 +793,19 @@
       "items": [
         {
           "id": 1,
-          "username": "张同学",
+          "username": "zhang_student",
           "nickname": "张同学",
           "avatar": "/images/avatars/avatar-1.svg",
-          "school": "北京大学"
+          "school": "北京大学",
+          "bio": "个人简介",
+          "followersCount": 128,
+          "followingCount": 45
         }
       ],
       "total": 10
     }
     ```
+  - 说明：`followersCount` 和 `followingCount` 为可选字段，前端会优雅处理缺失情况
 
 ### 获取关注列表
 - `GET /user/follows`
@@ -786,12 +814,34 @@
     [
       {
         "id": 2,
-        "username": "李同学",
+        "username": "li_student",
         "nickname": "李同学",
-        "avatar": "/images/avatars/avatar-2.svg"
+        "avatar": "/images/avatars/avatar-2.svg",
+        "bio": "个人简介",
+        "followersCount": 128,
+        "followingCount": 45
       }
     ]
     ```
+  - 说明：`followersCount` 和 `followingCount` 为可选字段，前端会优雅处理缺失情况
+
+### 获取粉丝列表
+- `GET /user/followers`
+  - Response:
+    ```json
+    [
+      {
+        "id": 3,
+        "username": "wang_student",
+        "nickname": "王同学",
+        "avatar": "/images/avatars/avatar-3.svg",
+        "bio": "个人简介",
+        "followersCount": 56,
+        "followingCount": 32
+      }
+    ]
+    ```
+  - 说明：`followersCount` 和 `followingCount` 为可选字段，前端会优雅处理缺失情况
 
 ### 检查关注状态
 - `GET /user/follows/:id/check`
@@ -862,6 +912,7 @@
       "createdAt": "2024-01-15T10:30:00Z"
     }
     ```
+  - 说明：如果与该用户的会话已存在，后端应返回已存在的会话而不是创建新的
 
 ### 获取会话消息
 - `GET /chat/conversations/:id/messages`
@@ -900,9 +951,138 @@
       "createdAt": "2024-01-15T10:30:00Z"
     }
     ```
+  - 说明：
+    - `type` 可选值：`text`（文本）、`image`（图片）、`product`（商品卡片）
+    - 当 `type` 为 `product` 时，`content` 为商品卡片的 JSON 字符串
 
 ### 删除会话
 - `DELETE /chat/conversations/:id`
+  - Response:
+    ```json
+    {
+      "success": true
+    }
+    ```
+
+### 上传聊天图片
+- `POST /chat/upload-image`
+  - Content-Type: `multipart/form-data`
+  - Request:
+    - `file` - 图片文件
+  - Response:
+    ```json
+    {
+      "url": "/images/chat/uploaded-image.jpg"
+    }
+    ```
+
+### 标记会话为已读
+- `PUT /chat/conversations/:id/read`
+  - Response:
+    ```json
+    {
+      "success": true
+    }
+    ```
+
+## AI 功能
+
+### AI 生成商品描述
+- `POST /ai/generate-description`
+  - Request:
+    ```json
+    {
+      "title": "iPhone 14 Pro 128GB",
+      "category": "electronics",
+      "images": [
+        { "type": "url", "data": "https://example.com/image1.jpg" },
+        { "type": "base64", "data": "data:image/jpeg;base64,/9j/4AAQ..." }
+      ]
+    }
+    ```
+  - Response:
+    ```json
+    {
+      "code": 200,
+      "data": {
+        "description": "【iPhone 14 Pro 128GB】\n\n这是一款性能优良的电子设备..."
+      }
+    }
+    ```
+  - 说明：
+    - `title`：商品标题（可选，但建议提供）
+    - `category`：商品分类代码（可选）
+    - `images`：图片数组（可选），每个图片包含：
+      - `type`：`url`（已有图片的URL）或 `base64`（新上传图片的base64数据）
+      - `data`：图片URL或base64字符串
+    - 后端可根据标题、分类和图片内容，使用 AI 模型生成商品描述
+    - 前端会将生成的描述填入商品描述输入框，用户可以修改完善
+
+## 系统消息 System Messages
+
+### 获取系统消息列表
+- `GET /system-messages`
+  - Response:
+    ```json
+    [
+      {
+        "id": 1,
+        "type": "new_order",
+        "title": "收到新订单",
+        "content": "用户「小明」购买了您的商品「MacBook Pro」",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "isRead": false,
+        "link": "/orders/456",
+        "linkText": "处理订单"
+      }
+    ]
+    ```
+  - 说明：
+    - `type` 可选值：
+      - 商品相关：`product_published`、`product_sold`、`product_unlocked`
+      - 订单相关（买家）：`order_created`、`order_processed`、`order_completed`、`order_cancelled`
+      - 订单相关（卖家）：`new_order`、`buyer_confirmed`、`buyer_cancelled`
+      - 社交相关：`new_follower`、`product_favorited`
+    - 也支持返回 `{ items: Message[] }`，前端会自动兼容
+
+### 获取未读系统消息数量
+- `GET /system-messages/unread-count`
+  - Response:
+    ```json
+    {
+      "count": 5
+    }
+    ```
+
+### 标记系统消息为已读
+- `PUT /system-messages/:id/read`
+  - Response:
+    ```json
+    {
+      "success": true
+    }
+    ```
+
+### 标记所有系统消息为已读
+- `PUT /system-messages/read-all`
+  - Response:
+    ```json
+    {
+      "success": true
+    }
+    ```
+
+### 删除系统消息
+- `DELETE /system-messages/:id`
+  - Response:
+    ```json
+    {
+      "success": true
+    }
+    ```
+
+### 清空所有系统消息
+- `DELETE /system-messages/all`
   - Response:
     ```json
     {

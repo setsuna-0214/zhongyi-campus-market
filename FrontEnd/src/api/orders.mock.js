@@ -74,6 +74,7 @@ export async function createOrder({ productId, quantity = 1 }) {
       id: product?.id || productId,
       title: product?.title || '商品',
       coverImage: Array.isArray(product?.images) ? product.images[0] : product?.coverImage,
+      images: product?.images || [],
       price: product?.price ?? 0,
       quantity,
       category: product?.category,

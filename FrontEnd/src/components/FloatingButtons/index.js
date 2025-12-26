@@ -1,41 +1,53 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button, Badge, Tooltip } from 'antd';
 import { 
-  PlusOutlined, 
-  MessageOutlined, 
-  QuestionCircleOutlined 
+  PlusOutlined,
+  CommentOutlined,
+  BulbOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { listConversations } from '../../api/chat';
+import { listSystemMessages } from '../../api/systemMessage';
+import { isLoggedIn as checkIsLoggedIn } from '../../utils/auth';
 import './index.css';
 
 const FloatingButtons = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [messageCount, setMessageCount] = useState(0);
-  const isLoggedIn = !!localStorage.getItem('authUser');
+  const loggedIn = checkIsLoggedIn();
 
-  // 获取未读消息总数
+  // 获取未读消息总数（包括普通会话和系统消息）
   const fetchUnreadCount = useCallback(async () => {
-    if (!isLoggedIn) {
+    if (!loggedIn) {
       setMessageCount(0);
       return;
     }
     try {
-      const conversations = await listConversations();
-      const total = (conversations || []).reduce((sum, conv) => {
+      // 并行获取普通会话和系统消息
+      const [conversations, systemMessages] = await Promise.all([
+        listConversations(),
+        listSystemMessages()
+      ]);
+      
+      // 普通会话未读数
+      const chatUnread = (conversations || []).reduce((sum, conv) => {
         return sum + (conv.unreadCount || 0);
       }, 0);
-      setMessageCount(total);
+      
+      // 系统消息未读数
+      const systemUnread = (systemMessages || []).filter(m => !m.isRead).length;
+      
+      setMessageCount(chatUnread + systemUnread);
     } catch (err) {
       // 获取失败时不更新，保持当前值
       console.warn('获取未读消息数失败:', err);
     }
-  }, [isLoggedIn]);
+  }, [loggedIn]);
 
   // 初始加载和定时刷新
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!loggedIn) return;
 
     // 初始加载
     fetchUnreadCount();
@@ -43,15 +55,24 @@ const FloatingButtons = () => {
     // 每30秒刷新一次未读消息数
     const interval = setInterval(fetchUnreadCount, 30000);
 
-    return () => clearInterval(interval);
-  }, [isLoggedIn, fetchUnreadCount]);
+    // 监听未读数变化事件（从聊天页面触发）
+    const handleUnreadCountChanged = () => {
+      fetchUnreadCount();
+    };
+    window.addEventListener('unreadCountChanged', handleUnreadCountChanged);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('unreadCountChanged', handleUnreadCountChanged);
+    };
+  }, [loggedIn, fetchUnreadCount]);
 
   // 当从聊天页面返回时，刷新未读消息数
   useEffect(() => {
-    if (isLoggedIn && location.pathname !== '/chat') {
+    if (loggedIn && location.pathname !== '/chat') {
       fetchUnreadCount();
     }
-  }, [location.pathname, isLoggedIn, fetchUnreadCount]);
+  }, [location.pathname, loggedIn, fetchUnreadCount]);
 
   const handlePublish = () => {
     navigate('/publish');
@@ -68,15 +89,14 @@ const FloatingButtons = () => {
   return (
     <div className="floating-buttons">
       <div className="floating-buttons-container">
-        {isLoggedIn && (
+        {loggedIn && (
           <>
             <Tooltip 
               title="发布商品" 
               placement="left"
-              mouseEnterDelay={0.5}
+              mouseEnterDelay={0.15}
               mouseLeaveDelay={0.1}
-              classNames={{ root: 'floating-tooltip' }}
-              destroyOnHidden
+              overlayClassName="floating-tooltip"
             >
               <Button
                 icon={<PlusOutlined />}
@@ -89,24 +109,21 @@ const FloatingButtons = () => {
             </Tooltip>
             
             <Tooltip 
-              title={`消息${messageCount > 0 ? `(${messageCount})` : ''}`} 
+              title={`消息通知${messageCount > 0 ? `(${messageCount})` : ''}`} 
               placement="left"
-              mouseEnterDelay={0.5}
+              mouseEnterDelay={0.15}
               mouseLeaveDelay={0.1}
-              classNames={{ root: 'floating-tooltip' }}
-              destroyOnHidden
+              overlayClassName="floating-tooltip"
             >
-              <Button
-                icon={
-                  <Badge count={messageCount} size="small" offset={[8, -8]}>
-                    <MessageOutlined />
-                  </Badge>
-                }
-                onClick={handleChat}
-                shape="circle"
-                size="large"
-                className="floating-button message-btn"
-              />
+              <Badge count={messageCount} size="small" className="message-badge">
+                <Button
+                  icon={<CommentOutlined />}
+                  onClick={handleChat}
+                  shape="circle"
+                  size="large"
+                  className="floating-button message-btn"
+                />
+              </Badge>
             </Tooltip>
           </>
         )}
@@ -114,13 +131,12 @@ const FloatingButtons = () => {
         <Tooltip 
           title="帮助与反馈" 
           placement="left"
-          mouseEnterDelay={0.5}
+          mouseEnterDelay={0.15}
           mouseLeaveDelay={0.1}
-          classNames={{ root: 'floating-tooltip' }}
-          destroyOnHidden
+          overlayClassName="floating-tooltip"
         >
           <Button
-            icon={<QuestionCircleOutlined />}
+            icon={<BulbOutlined />}
             onClick={handleHelp}
             shape="circle"
             size="large"

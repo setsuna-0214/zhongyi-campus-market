@@ -128,7 +128,7 @@ const Help = () => {
   };
 
   return (
-    <div className="page-container help-page">
+    <div className="help-page">
       <div className="help-header">
         <Title level={2}>
           <QuestionCircleOutlined /> 帮助与反馈

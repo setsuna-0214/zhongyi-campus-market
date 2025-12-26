@@ -1,0 +1,488 @@
+/* ===================== Avatar Upload Modal ===================== */
+/* Modal 组件样式 - 使用 wrapClassName */
+.avatar-upload-modal-wrap .ant-modal-content {
+  border-radius: 28px !important;
+  overflow: hidden !important;
+  box-shadow: 
+    0 32px 100px rgba(0, 0, 0, 0.15),
+    0 12px 40px rgba(79, 172, 254, 0.2) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.99) 0%,
+    rgba(250, 252, 255, 0.98) 100%
+  ) !important;
+  border: none !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.avatar-upload-modal-wrap .ant-modal-header {
+  background: transparent !important;
+  border-bottom: none !important;
+  padding: 28px 28px 16px !important;
+  position: relative;
+  text-align: center !important;
+}
+
+/* 标题底部装饰线 */
+.avatar-upload-modal-wrap .ant-modal-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(79, 172, 254, 0.4), transparent);
+  border-radius: 1px;
+}
+
+.avatar-upload-modal-wrap .ant-modal-title {
+  font-weight: 700 !important;
+  font-size: 20px !important;
+  letter-spacing: 2px !important;
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  filter: drop-shadow(0 2px 4px rgba(79, 172, 254, 0.2));
+  display: inline-block;
+}
+
+.avatar-upload-modal-wrap .ant-modal-body {
+  padding: 32px !important;
+  position: relative;
+}
+
+/* 裁剪模式下减少内边距 */
+.avatar-upload-modal-wrap.crop-mode .ant-modal-body {
+  padding: 20px 24px 24px !important;
+}
+
+/* 裁剪模式下标题区域也减少内边距 */
+.avatar-upload-modal-wrap.crop-mode .ant-modal-header {
+  padding: 20px 24px 12px !important;
+}
+
+/* 裁剪模式下禁用模糊滤镜以提升性能 */
+.avatar-upload-modal-wrap.crop-mode .ant-modal-content {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 弹窗内容区域装饰背景 */
+.avatar-upload-modal-wrap .ant-modal-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(79, 172, 254, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.avatar-upload-modal-wrap .ant-modal-close {
+  top: 14px !important;
+  right: 14px !important;
+}
+
+.avatar-upload-modal-wrap .ant-modal-close-x {
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+}
+
+.avatar-upload-modal-wrap .ant-modal-close:hover .ant-modal-close-x {
+  background: linear-gradient(135deg, rgba(79, 172, 254, 0.15) 0%, rgba(0, 242, 254, 0.1) 100%);
+  border-color: rgba(79, 172, 254, 0.3);
+  color: #4FACFE;
+  transform: rotate(90deg) scale(1.05);
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.2);
+}
+
+.avatar-upload-modal-wrap .ant-modal-close:active .ant-modal-close-x {
+  transform: rotate(90deg) scale(0.95);
+}
+
+/* 覆盖 Ant Design 默认的悬停背景 */
+.avatar-upload-modal-wrap .ant-modal-close:hover {
+  background: transparent !important;
+}
+
+.avatar-upload-modal-wrap .ant-modal-close:focus {
+  outline: none;
+}
+
+/* 头像上传内容区域 */
+.avatar-upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  position: relative;
+  z-index: 1;
+}
+
+/* 头像预览 - 增强视觉效果 */
+.avatar-upload-content .avatar-preview {
+  position: relative;
+  padding: 5px;
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 50%, #4FACFE 100%);
+  background-size: 200% 200%;
+  animation: avatarGradientShift 3s ease infinite;
+  border-radius: 50%;
+  box-shadow: 
+    0 12px 40px rgba(79, 172, 254, 0.4),
+    0 4px 16px rgba(0, 242, 254, 0.2);
+}
+
+@keyframes avatarGradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* 头像外圈装饰 */
+.avatar-upload-content .avatar-preview::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px dashed rgba(79, 172, 254, 0.3);
+  animation: avatarRingSpin 20s linear infinite;
+}
+
+@keyframes avatarRingSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.avatar-upload-content .avatar-preview .ant-avatar {
+  border: 4px solid #fff;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 上传按钮 - 更精致的样式 */
+.avatar-upload-content .avatar-upload-btn.ant-btn {
+  height: 54px !important;
+  padding: 0 40px !important;
+  border-radius: 27px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important;
+  border: none !important;
+  box-shadow: 
+    0 8px 28px rgba(79, 172, 254, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 按钮光泽效果 */
+.avatar-upload-content .avatar-upload-btn.ant-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.avatar-upload-content .avatar-upload-btn.ant-btn:hover::before {
+  left: 100%;
+}
+
+.avatar-upload-content .avatar-upload-btn.ant-btn:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 
+    0 14px 40px rgba(79, 172, 254, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.avatar-upload-content .avatar-upload-btn.ant-btn:active {
+  transform: translateY(-1px) scale(0.99) !important;
+}
+
+/* 上传提示文字 - 更精致的卡片样式 */
+.avatar-upload-content .avatar-upload-tip {
+  margin: 0;
+  font-size: 13px;
+  color: #8c8c8c;
+  text-align: center;
+  padding: 12px 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(79, 172, 254, 0.06) 0%,
+    rgba(0, 242, 254, 0.03) 100%
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(79, 172, 254, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.avatar-upload-content .avatar-upload-tip:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(79, 172, 254, 0.1) 0%,
+    rgba(0, 242, 254, 0.05) 100%
+  );
+  border-color: rgba(79, 172, 254, 0.2);
+}
+
+/* 提示文字图标 */
+.avatar-upload-content .avatar-upload-tip .tip-icon {
+  font-size: 15px;
+  color: #4FACFE;
+}
+
+/* ===================== Avatar Crop Styles ===================== */
+.avatar-crop-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* 裁剪区域 */
+.crop-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f7fa;
+  border-radius: 16px;
+  padding: 16px;
+  min-height: 480px;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(79, 172, 254, 0.12);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
+  user-select: none;
+  /* 性能优化：创建独立图层 */
+  isolation: isolate;
+  contain: layout style paint;
+}
+
+/* 裁剪区域角落装饰 */
+.crop-area::before,
+.crop-area::after {
+  content: '';
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(79, 172, 254, 0.25);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.crop-area::before {
+  top: 8px;
+  left: 8px;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 6px 0 0 0;
+}
+
+.crop-area::after {
+  bottom: 8px;
+  right: 8px;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 6px 0;
+}
+
+/* 移除背景遮罩 */
+.avatar-upload-modal-wrap .crop-area .ReactCrop__child-wrapper {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.avatar-upload-modal-wrap .crop-area div.ReactCrop__child-wrapper {
+  background: none !important;
+}
+
+.avatar-upload-modal-wrap .crop-area .ReactCrop__child-wrapper::before,
+.avatar-upload-modal-wrap .crop-area .ReactCrop__child-wrapper::after {
+  display: none !important;
+}
+
+.crop-area .ReactCrop__image {
+  max-height: 520px;
+  border-radius: 6px;
+  display: block;
+  /* 性能优化：创建独立图层 */
+  will-change: auto;
+  contain: strict;
+}
+
+/* 裁剪选取框性能优化 */
+.crop-area .ReactCrop__crop-selection {
+  will-change: transform, width, height;
+}
+
+/* 裁剪遮罩 - 移除黑色半透明遮罩显示，但保留裁剪功能 */
+.avatar-upload-modal-wrap.crop-mode .crop-area .ReactCrop__crop-mask > rect {
+  fill-opacity: 0 !important;
+}
+
+/* 裁剪框样式优化 */
+.avatar-upload-modal-wrap.crop-mode .crop-area .ReactCrop__crop-selection {
+  border: 3px solid rgba(79, 172, 254, 0.9) !important;
+  box-shadow:
+    0 0 0 9999px rgba(0,0,0,0.5),
+    0 0 0 2px rgba(255, 255, 255, 0.8) !important;
+  cursor: move;
+  background: transparent !important;
+  /* 性能优化 */
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  contain: layout style;
+}
+
+/* 裁剪框内部鼠标样式 */
+.crop-area .ReactCrop__drag-handle {
+  cursor: nwse-resize;
+}
+
+/* 操作按钮区域 */
+.crop-actions {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+}
+
+.crop-actions .reset-btn {
+  flex: 1;
+  height: 46px;
+  border-radius: 23px;
+  font-weight: 600;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1.5px solid rgba(79, 172, 254, 0.3) !important;
+  color: #4FACFE !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.crop-actions .reset-btn:hover {
+  background: #fff !important;
+  border-color: #4FACFE !important;
+  color: #4FACFE !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.2);
+}
+
+.crop-actions .reset-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.crop-actions .confirm-btn {
+  flex: 1.2;
+  height: 46px;
+  border-radius: 23px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important;
+  border: none !important;
+  box-shadow: 
+    0 8px 24px rgba(79, 172, 254, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 确认按钮光泽效果 */
+.crop-actions .confirm-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.crop-actions .confirm-btn:hover::before {
+  left: 100%;
+}
+
+.crop-actions .confirm-btn:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 
+    0 12px 36px rgba(79, 172, 254, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.crop-actions .confirm-btn:active {
+  transform: translateY(-1px) scale(0.99) !important;
+}
+
+/* 响应式适配 */
+@media (max-width: 480px) {
+  .avatar-upload-modal-wrap .ant-modal-body {
+    padding: 24px 20px !important;
+  }
+  
+  .crop-area {
+    padding: 16px;
+    min-height: 280px;
+    border-radius: 16px;
+  }
+  
+  .crop-area::before,
+  .crop-area::after {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .crop-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .crop-actions .reset-btn,
+  .crop-actions .confirm-btn {
+    width: 100%;
+    height: 46px;
+    flex: none;
+  }
+  
+  .avatar-upload-content .avatar-upload-btn.ant-btn {
+    height: 50px !important;
+    padding: 0 32px !important;
+  }
+}

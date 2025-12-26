@@ -11,7 +11,6 @@ import {
   message,
   List,
   Avatar,
-  Button,
   Card
 } from 'antd';
 import { 
@@ -22,16 +21,20 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.css';
 import ProductCard from '../../components/ProductCard';
+import FollowButton from '../../components/FollowButton';
 import { resolveImageSrc } from '../../utils/images';
 import { searchProducts } from '../../api/products';
-import { searchUsers, checkIsFollowing, followUser, unfollowUser } from '../../api/user';
+import { searchUsers, checkIsFollowing, followUser, unfollowUser, getFollows } from '../../api/user';
 import { toCategoryCode } from '../../utils/labels';
+import { getCurrentUserId, isSelf } from '../../utils/auth';
+import { useLoginPrompt } from '../../components/LoginPromptModal';
 
 const { Option } = Select;
 
 const SearchPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { showLoginPrompt } = useLoginPrompt();
   
   // 搜索类型：products | users
   const searchType = searchParams.get('type') || 'products';
@@ -42,27 +45,29 @@ const SearchPage = () => {
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [followingMap, setFollowingMap] = useState({}); // 存储用户的关注状态 { [userId]: boolean }
-  const [currentPage, setCurrentPage] = useState(() => Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1));
+  const [currentPage, setCurrentPage] = useState(() => Math.max(1, parseInt(searchParams.get('p') || '1', 10) || 1));
   const [pageSize] = useState(12);
   
   // 初始分类参数（支持中文或代码），统一转为代码
-  const initialCategoryParam = searchParams.get('category') || '';
+  const initialCategoryParam = searchParams.get('c') || searchParams.get('category') || '';
   const normalizedCategory = toCategoryCode(initialCategoryParam) || '';
 
   const [filters, setFilters] = useState({
-    keyword: searchParams.get('keyword') || '',
+    keyword: searchParams.get('q') || searchParams.get('keyword') || '',
     category: normalizedCategory,
     priceRange: [0, 1000000],
-    location: searchParams.get('location') || '',
-    sortBy: searchParams.get('sortBy') || 'latest',
-    status: searchParams.get('status') || '在售'
+    location: searchParams.get('loc') || searchParams.get('location') || '',
+    sortBy: searchParams.get('sort') || searchParams.get('sortBy') || 'latest',
+    status: searchParams.get('s') || searchParams.get('status') || '在售',
+    // 用户搜索筛选
+    followStatus: searchParams.get('f') || searchParams.get('followStatus') || 'all' // all | following | not_following
   });
 
   useEffect(() => {
-    const nextPage = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1);
+    const nextPage = Math.max(1, parseInt(searchParams.get('p') || '1', 10) || 1);
     
-    // 价格区间处理
-    const priceRangeParamUrl = searchParams.get('priceRange');
+    // 价格区间处理 - 支持新旧参数名
+    const priceRangeParamUrl = searchParams.get('price') || searchParams.get('priceRange');
     const nextPriceRange = (() => {
       if (priceRangeParamUrl) {
         const parts = priceRangeParamUrl.split(',').map(n => Number(n));
@@ -72,12 +77,13 @@ const SearchPage = () => {
     })();
 
     const nextFilters = {
-      keyword: searchParams.get('keyword') || '',
-      category: toCategoryCode(searchParams.get('category') || '') || '',
+      keyword: searchParams.get('q') || searchParams.get('keyword') || '',
+      category: toCategoryCode(searchParams.get('c') || searchParams.get('category') || '') || '',
       priceRange: nextPriceRange,
-      location: searchParams.get('location') || '',
-      sortBy: searchParams.get('sortBy') || 'latest',
-      status: searchParams.get('status') || '在售'
+      location: searchParams.get('loc') || searchParams.get('location') || '',
+      sortBy: searchParams.get('sort') || searchParams.get('sortBy') || 'latest',
+      status: searchParams.get('s') || searchParams.get('status') || '在售',
+      followStatus: searchParams.get('f') || searchParams.get('followStatus') || 'all'
     };
 
     setFilters(nextFilters);
@@ -113,20 +119,83 @@ const SearchPage = () => {
         setProducts(items);
         setTotal(total);
       } else {
-        const { items, total } = await searchUsers({
-          keyword: filters.keyword,
-          page: currentPage,
-          pageSize,
-        });
-        setUsers(items);
-        setTotal(total);
+        const currentUserId = getCurrentUserId();
+        let followMap = {};
+        let followingIds = new Set();
 
-        // 批量检查关注状态
-        const checks = items.map(u => checkIsFollowing(u.id).then(isFollowing => ({ id: u.id, isFollowing })));
-        const results = await Promise.all(checks);
-        const map = {};
-        results.forEach(r => { map[r.id] = r.isFollowing; });
-        setFollowingMap(map);
+        // 如果需要筛选关注状态，先获取关注列表
+        if (currentUserId && filters.followStatus !== 'all') {
+          try {
+            const follows = await getFollows();
+            followingIds = new Set(follows.map(u => u.id));
+          } catch {
+            // 获取关注列表失败，忽略筛选
+          }
+        }
+
+        // 根据筛选条件决定请求策略
+        if (filters.followStatus === 'following' && currentUserId) {
+          // 筛选"已关注"：直接使用关注列表，按关键词过滤
+          const follows = await getFollows();
+          let filteredItems = follows;
+          
+          // 按关键词过滤
+          if (filters.keyword) {
+            const kw = filters.keyword.toLowerCase();
+            filteredItems = follows.filter(u => 
+              (u.nickname || '').toLowerCase().includes(kw) ||
+              (u.username || '').toLowerCase().includes(kw)
+            );
+          }
+
+          // 构建关注状态映射
+          filteredItems.forEach(u => { followMap[u.id] = true; });
+
+          // 客户端分页
+          const totalFiltered = filteredItems.length;
+          const startIndex = (currentPage - 1) * pageSize;
+          const paginatedItems = filteredItems.slice(startIndex, startIndex + pageSize);
+
+          setUsers(paginatedItems);
+          setTotal(totalFiltered);
+          setFollowingMap(followMap);
+        } else {
+          // 筛选"全部"或"未关注"：从搜索API获取用户
+          const { items: searchedItems, total: searchTotal } = await searchUsers({
+            keyword: filters.keyword,
+            page: filters.followStatus === 'not_following' ? 1 : currentPage,
+            pageSize: filters.followStatus === 'not_following' ? 200 : pageSize,
+          });
+
+          // 获取关注列表用于标记状态
+          if (currentUserId) {
+            try {
+              const follows = await getFollows();
+              followingIds = new Set(follows.map(u => u.id));
+              searchedItems.forEach(u => { followMap[u.id] = followingIds.has(u.id); });
+            } catch {
+              searchedItems.forEach(u => { followMap[u.id] = false; });
+            }
+          } else {
+            searchedItems.forEach(u => { followMap[u.id] = false; });
+          }
+
+          if (filters.followStatus === 'not_following') {
+            // 筛选未关注的用户
+            const filteredItems = searchedItems.filter(u => !followingIds.has(u.id));
+            const totalFiltered = filteredItems.length;
+            const startIndex = (currentPage - 1) * pageSize;
+            const paginatedItems = filteredItems.slice(startIndex, startIndex + pageSize);
+
+            setUsers(paginatedItems);
+            setTotal(totalFiltered);
+          } else {
+            // 全部用户，直接使用后端分页结果
+            setUsers(searchedItems);
+            setTotal(searchTotal);
+          }
+          setFollowingMap(followMap);
+        }
       }
     } catch (error) {
       message.error(error.message || '获取搜索结果失败');
@@ -149,45 +218,76 @@ const SearchPage = () => {
     updateSearchParams({ type, page: 1 });
   };
 
-  // 更新URL参数
+  // 更新URL参数 - 只保留非默认值的参数
   const updateSearchParams = (partial) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams();
     const currentType = partial.type ?? searchType;
     
-    const entries = {
-      type: currentType,
-      keyword: partial.keyword !== undefined ? partial.keyword : filters.keyword,
-      page: partial.page ?? currentPage
+    // 默认值定义
+    const defaults = {
+      type: 'products',
+      page: 1,
+      sortBy: 'latest',
+      status: '在售',
+      followStatus: 'all',
+      priceRange: [0, 1000000]
     };
 
-    // 只有商品搜索才需要这些筛选参数
-    if (currentType === 'products') {
-      Object.assign(entries, {
-        category: partial.category ?? filters.category,
-        priceRange: partial.priceRange ?? filters.priceRange,
-        location: partial.location ?? filters.location,
-        sortBy: partial.sortBy ?? filters.sortBy,
-        status: partial.status ?? filters.status,
-      });
-    } else {
-      // 切换到用户搜索时，清除商品特有的筛选参数
-      params.delete('category');
-      params.delete('priceRange');
-      params.delete('location');
-      params.delete('sortBy');
-      params.delete('status');
+    // type: 只有 users 时才显示
+    if (currentType !== defaults.type) {
+      params.set('type', currentType);
     }
 
-    Object.entries(entries).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        const val = value.join(',');
-        if (val) params.set(key, val); else params.delete(key);
-      } else if (value !== undefined && value !== null && String(value) !== '') {
-        params.set(key, String(value));
-      } else {
-        params.delete(key);
+    // keyword: 有值才显示
+    const keyword = partial.keyword !== undefined ? partial.keyword : filters.keyword;
+    if (keyword) {
+      params.set('q', keyword);
+    }
+
+    // page: 非第一页才显示
+    const page = partial.page ?? currentPage;
+    if (page > 1) {
+      params.set('p', String(page));
+    }
+
+    if (currentType === 'products') {
+      // category: 有值才显示
+      const category = partial.category ?? filters.category;
+      if (category) {
+        params.set('c', category);
       }
-    });
+
+      // status: 非默认值才显示
+      const status = partial.status ?? filters.status;
+      if (status && status !== defaults.status) {
+        params.set('s', status);
+      }
+
+      // sortBy: 非默认值才显示
+      const sortBy = partial.sortBy ?? filters.sortBy;
+      if (sortBy && sortBy !== defaults.sortBy) {
+        params.set('sort', sortBy);
+      }
+
+      // priceRange: 非默认值才显示
+      const priceRange = partial.priceRange ?? filters.priceRange;
+      if (priceRange[0] > 0 || priceRange[1] < 1000000) {
+        params.set('price', priceRange.join(','));
+      }
+
+      // location: 有值才显示
+      const location = partial.location ?? filters.location;
+      if (location) {
+        params.set('loc', location);
+      }
+    } else {
+      // followStatus: 非默认值才显示
+      const followStatus = partial.followStatus ?? filters.followStatus;
+      if (followStatus && followStatus !== defaults.followStatus) {
+        params.set('f', followStatus);
+      }
+    }
+
     setSearchParams(params);
   };
 
@@ -200,24 +300,16 @@ const SearchPage = () => {
     navigate(`/users/${userId}`);
   }, [navigate]);
 
-  // 获取当前登录用户ID
-  const getCurrentUserId = () => {
-    try {
-      const raw = localStorage.getItem('authUser');
-      if (raw) {
-        const user = JSON.parse(raw);
-        return user?.id;
-      }
-    } catch {}
-    return null;
-  };
-
   const handleFollow = async (e, userId) => {
     e.stopPropagation();
     // 检查是否关注自己
-    const currentUserId = getCurrentUserId();
-    if (currentUserId && String(currentUserId) === String(userId)) {
+    if (isSelf(userId)) {
       message.warning('不能关注自己');
+      return;
+    }
+    // 检查是否已登录
+    if (!getCurrentUserId()) {
+      showLoginPrompt({ message: '关注用户需要登录后才能进行' });
       return;
     }
     try {
@@ -240,6 +332,7 @@ const SearchPage = () => {
       <Col key={product.id || product._id || `${product.title || 'item'}-${index}`} xs={24} sm={12} md={6} lg={6} xl={6}>
         <ProductCard
           imageSrc={resolveImageSrc({ product })}
+          images={product.images}
           title={product.title}
           price={product.price}
           category={product.category}
@@ -288,6 +381,27 @@ const SearchPage = () => {
               </div>
             </div>
             
+            {searchType === 'users' && (
+              <>
+                <div className="filter-divider" />
+                
+                <div className="filter-group">
+                  <span className="filter-label">关注</span>
+                  <Select
+                    className="filter-select"
+                    popupClassName="filter-dropdown"
+                    suffixIcon={<span className="custom-arrow" />}
+                    value={filters.followStatus}
+                    onChange={(value) => handleFilterChange('followStatus', value)}
+                  >
+                    <Option value="all">全部用户</Option>
+                    <Option value="following">已关注</Option>
+                    <Option value="not_following">未关注</Option>
+                  </Select>
+                </div>
+              </>
+            )}
+
             {searchType === 'products' && (
               <>
                 <div className="filter-divider" />
@@ -417,31 +531,51 @@ const SearchPage = () => {
                   <List
                     grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3, xl: 4, xxl: 4 }}
                     dataSource={users}
+                    className="user-list"
                     renderItem={user => (
                       <List.Item>
-                        <Card hoverable onClick={() => handleUserClick(user.id)} bodyStyle={{ padding: 16 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
-                            <Avatar size={64} src={user.avatar} icon={<UserOutlined />} />
-                            <div style={{ marginLeft: 16, overflow: 'hidden' }}>
-                              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {user.nickname || user.username}
-                              </h3>
-                              <div style={{ color: '#999', fontSize: 12, marginTop: 4 }}>
-                                {user.school || '未知学校'}
+                        <Card 
+                          hoverable 
+                          onClick={() => handleUserClick(user.id)} 
+                          className="user-card"
+                          bodyStyle={{ padding: 0 }}
+                        >
+                          <div className="user-card-content">
+                            <Avatar 
+                              size={72} 
+                              src={user.avatar} 
+                              icon={<UserOutlined />} 
+                              className="user-card-avatar"
+                            />
+                            <div className="user-card-info">
+                              <div className="user-card-name">
+                                {user.nickname || user.username || '用户'}
+                              </div>
+                              {user.username && user.nickname && (
+                                <div className="user-card-username">@{user.username}</div>
+                              )}
+                              <div className="user-card-bio">
+                                {user.bio || '这个人很懒，什么都没写~'}
                               </div>
                             </div>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
-                            <div style={{ color: '#666', fontSize: 14, height: 42, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', flex: 1, marginRight: 8 }}>
-                              {user.bio || '这个人很懒，什么都没写'}
+                          <div className="user-card-footer">
+                            <div className="user-card-stats">
+                              <span className="stat-item">
+                                <span className="stat-value">{user.followersCount ?? 0}</span>
+                                <span className="stat-label">粉丝</span>
+                              </span>
+                              <span className="stat-divider" />
+                              <span className="stat-item">
+                                <span className="stat-value">{user.followingCount ?? 0}</span>
+                                <span className="stat-label">关注</span>
+                              </span>
                             </div>
-                            <Button 
-                              type={followingMap[user.id] ? 'default' : 'primary'}
+                            <FollowButton 
+                              isFollowing={followingMap[user.id]}
                               size="small"
                               onClick={(e) => handleFollow(e, user.id)}
-                            >
-                              {followingMap[user.id] ? '已关注' : '关注'}
-                            </Button>
+                            />
                           </div>
                         </Card>
                       </List.Item>

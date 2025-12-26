@@ -2,26 +2,22 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Layout,
-  Button,
-  Modal,
   Form,
-  Upload,
   message,
-  Avatar,
 } from 'antd';
 import {
   UserOutlined,
   ShoppingOutlined,
   HeartOutlined,
-  CameraOutlined,
   LockOutlined,
   OrderedListOutlined,
   TeamOutlined,
 } from '@ant-design/icons';
 import SliderMenu from '../../components/SliderMenu';
+import AvatarUpload from '../../components/AvatarUpload';
 import './Profile.css';
 import { PROFILE_BANNER_OPTIONS, DEFAULT_PROFILE_BANNER_KEY } from '../../config/profile';
-import { getCurrentUser, updateCurrentUser, uploadAvatar, getMyPublished, getMyPurchases, getFollows, unfollowUser } from '../../api/user';
+import { getCurrentUser, updateCurrentUser, getMyPublished, getMyPurchases, getFollows, getFollowers, unfollowUser } from '../../api/user';
 import { getFavorites, removeFromFavorites } from '../../api/favorites';
 import { toGenderLabel, toGenderNum } from '../../utils/labels';
 import SectionBasic from './Profile/SectionBasic';
@@ -48,10 +44,11 @@ const UserProfile = () => {
   const [isBasicDirty, setIsBasicDirty] = useState(false);
   const [selectedKey, setSelectedKey] = useState('profile');
 
-  // 子选项状态（用于商品管理和订单处理的子标签）
+  // 子选项状态（用于商品管理、订单处理和关注的子标签）
   const [productSubTab, setProductSubTab] = useState('published');
   const [orderSubTab, setOrderSubTab] = useState('purchase');
   const [orderStatus, setOrderStatus] = useState('pending');
+  const [followSubTab, setFollowSubTab] = useState('following');
 
   // 用户信息
   const [userInfo, setUserInfo] = useState({});
@@ -68,6 +65,9 @@ const UserProfile = () => {
   // 关注列表
   const [follows, setFollows] = useState([]);
 
+  // 粉丝列表（用于统计数量）
+  const [followers, setFollowers] = useState([]);
+
 
   useEffect(() => {
     const storedKey = localStorage.getItem('profileBannerKey');
@@ -81,36 +81,45 @@ const UserProfile = () => {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const tab = searchParams.get('tab');
+    // 支持新旧参数名
+    const tab = searchParams.get('t') || searchParams.get('tab');
     // 更新为扁平化菜单的有效 tab 值
     const validTabs = ['profile', 'account', 'products', 'orders', 'favorites', 'follows'];
     if (tab && validTabs.includes(tab)) {
       setSelectedKey(tab);
     }
 
-    // 从 URL 恢复子选项状态
-    const productSub = searchParams.get('productSubTab');
-    const orderSub = searchParams.get('orderSubTab');
-    const orderStat = searchParams.get('orderStatus');
+    // 从 URL 恢复子选项状态（使用简短参数名）
+    const productSub = searchParams.get('sub');
+    const orderSub = searchParams.get('type');
+    const orderStat = searchParams.get('status');
+    
+    // products tab
     if (productSub && ['published', 'purchases'].includes(productSub)) {
       setProductSubTab(productSub);
     }
+    // orders tab
     if (orderSub && ['purchase', 'sell'].includes(orderSub)) {
       setOrderSubTab(orderSub);
     }
     if (orderStat && ['pending', 'completed', 'cancelled'].includes(orderStat)) {
       setOrderStatus(orderStat);
     }
+    // follows tab
+    if (productSub && ['following', 'followers'].includes(productSub)) {
+      setFollowSubTab(productSub);
+    }
 
     (async () => {
       setLoading(true);
       try {
-        const [info, published, purchases, favs, followList] = await Promise.all([
+        const [info, published, purchases, favs, followList, followerList] = await Promise.all([
           getCurrentUser(),
           getMyPublished(),
           getMyPurchases(),
           getFavorites(),
-          getFollows()
+          getFollows(),
+          getFollowers()
         ]);
         // 统一字段：id, username, nickname, email, avatar, phone, address, bio, joinDate, gender, lastLoginAt
         // 后端未返回的字段显示为空
@@ -130,6 +139,7 @@ const UserProfile = () => {
         setPurchaseHistory(Array.isArray(purchases) ? purchases : []);
         setFavorites(Array.isArray(favs) ? favs : []);
         setFollows(Array.isArray(followList) ? followList : []);
+        setFollowers(Array.isArray(followerList) ? followerList : []);
       } catch (err) {
         message.error(err?.message || '获取个人中心数据失败');
       } finally {
@@ -151,18 +161,6 @@ const UserProfile = () => {
     if (payload.phone && !/^1\d{10}$/.test(payload.phone)) {
       message.error('手机号格式不正确，请输入11位手机号');
       return;
-    }
-
-    // 验证并转换生日格式
-    if (payload.birthday) {
-      // 支持多种格式：YYYYMMDD, YYYY-MM-DD, YYYY/MM/DD
-      const birthdayStr = String(payload.birthday).replace(/[\/\-]/g, '');
-      if (!/^\d{8}$/.test(birthdayStr)) {
-        message.error('生日格式不正确，请使用 YYYY-MM-DD 或 YYYYMMDD 格式');
-        return;
-      }
-      // 转换为 YYYY-MM-DD 格式
-      payload.birthday = `${birthdayStr.slice(0, 4)}-${birthdayStr.slice(4, 6)}-${birthdayStr.slice(6, 8)}`;
     }
 
     // 转换性别为数字
@@ -196,19 +194,13 @@ const UserProfile = () => {
     }
   };
 
-  // 头像上传
-  const handleAvatarUpload = async (file) => {
-    try {
-      const resp = await uploadAvatar(file);
-      const newAvatar = resp?.avatarUrl;
-      if (newAvatar) {
-        setUserInfo({ ...userInfo, avatar: newAvatar });
-      }
-      message.success('头像更新成功！');
-    } catch (error) {
-      message.error('头像上传失败');
-    }
-    return false;
+  // 头像上传成功回调
+  const handleAvatarSuccess = (newAvatar) => {
+    setUserInfo({ ...userInfo, avatar: newAvatar });
+    // 触发全局用户更新事件，通知 Header 等组件更新头像
+    window.dispatchEvent(new CustomEvent('userUpdated', { 
+      detail: { ...userInfo, avatar: newAvatar } 
+    }));
   };
 
   // 删除商品
@@ -225,10 +217,41 @@ const UserProfile = () => {
   const handleRemoveFavorite = async (favoriteItemId) => {
     try {
       await removeFromFavorites(favoriteItemId);
-      setFavorites(favorites.filter(item => item.id !== favoriteItemId));
+      setFavorites(prev => prev.filter(item => item.id !== favoriteItemId));
       message.success('已取消收藏');
     } catch (error) {
       message.error('操作失败');
+    }
+  };
+
+  // 批量取消收藏
+  const handleBatchRemoveFavorites = async (itemIds) => {
+    if (!itemIds || itemIds.length === 0) return;
+    
+    const results = await Promise.allSettled(
+      itemIds.map(id => removeFromFavorites(id))
+    );
+    
+    const successIds = [];
+    const failedCount = results.filter((r, i) => {
+      if (r.status === 'fulfilled') {
+        successIds.push(itemIds[i]);
+        return false;
+      }
+      return true;
+    }).length;
+    
+    // 移除成功的项
+    if (successIds.length > 0) {
+      setFavorites(prev => prev.filter(item => !successIds.includes(item.id)));
+    }
+    
+    if (failedCount === 0) {
+      message.success(`已取消 ${successIds.length} 个收藏`);
+    } else if (successIds.length > 0) {
+      message.warning(`成功取消 ${successIds.length} 个，${failedCount} 个失败`);
+    } else {
+      message.error('批量取消收藏失败');
     }
   };
 
@@ -247,42 +270,71 @@ const UserProfile = () => {
   // 扁平化菜单项配置（移除子菜单结构）
   const menuItems = [
     { key: 'profile', icon: <UserOutlined />, label: '基本信息' },
-    { key: 'account', icon: <LockOutlined />, label: '账户安全' },
+    { key: 'account', icon: <LockOutlined />, label: '账户设置' },
     { key: 'products', icon: <ShoppingOutlined />, label: '商品管理' },
-    { key: 'orders', icon: <OrderedListOutlined />, label: '订单处理' },
-    { key: 'favorites', icon: <HeartOutlined />, label: '商品收藏' },
+    { key: 'orders', icon: <OrderedListOutlined />, label: '订单管理' },
+    { key: 'favorites', icon: <HeartOutlined />, label: '我的收藏' },
     { key: 'follows', icon: <TeamOutlined />, label: '我的关注' },
   ];
 
   // 移除 openKeys 相关逻辑，因为不再有子菜单
 
-  // 更新 URL 参数的辅助函数
-  const updateUrlParams = (updates) => {
-    const params = new URLSearchParams(location.search);
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.set(key, value);
+  // 更新 URL 参数的辅助函数 - 只保留当前 tab 相关的参数，使用简短参数名
+  const updateUrlParams = (updates, currentTab = selectedKey) => {
+    const params = new URLSearchParams();
+    // profile 是默认值，不需要 t 参数
+    if (currentTab !== 'profile') {
+      params.set('t', currentTab);
+    }
+    
+    // 根据当前 tab 只添加相关的子参数
+    if (currentTab === 'products') {
+      const productSub = updates.productSubTab ?? productSubTab;
+      if (productSub && productSub !== 'published') {
+        params.set('sub', productSub);
       }
-    });
-    navigate(`/profile?${params.toString()}`, { replace: true });
+    } else if (currentTab === 'orders') {
+      const orderSub = updates.orderSubTab ?? orderSubTab;
+      const orderStat = updates.orderStatus ?? orderStatus;
+      if (orderSub && orderSub !== 'purchase') {
+        params.set('type', orderSub);
+      }
+      if (orderStat && orderStat !== 'pending') {
+        params.set('status', orderStat);
+      }
+    } else if (currentTab === 'follows') {
+      const followSub = updates.followSubTab ?? followSubTab;
+      if (followSub && followSub !== 'following') {
+        params.set('sub', followSub);
+      }
+    }
+    
+    const queryString = params.toString();
+    navigate(queryString ? `/profile?${queryString}` : '/profile', { replace: true });
   };
 
   // 处理商品子选项切换
   const handleProductSubTabChange = (subTab) => {
     setProductSubTab(subTab);
-    updateUrlParams({ productSubTab: subTab });
+    updateUrlParams({ productSubTab: subTab }, 'products');
   };
 
   // 处理订单子选项切换
   const handleOrderSubTabChange = (subTab) => {
     setOrderSubTab(subTab);
-    updateUrlParams({ orderSubTab: subTab });
+    updateUrlParams({ orderSubTab: subTab }, 'orders');
   };
 
   // 处理订单状态切换
   const handleOrderStatusChange = (status) => {
     setOrderStatus(status);
-    updateUrlParams({ orderStatus: status });
+    updateUrlParams({ orderStatus: status }, 'orders');
+  };
+
+  // 处理关注子选项切换
+  const handleFollowSubTabChange = (subTab) => {
+    setFollowSubTab(subTab);
+    updateUrlParams({ followSubTab: subTab }, 'follows');
   };
 
   useEffect(() => {
@@ -295,7 +347,7 @@ const UserProfile = () => {
   }, [userInfo, basicForm]);
 
   return (
-    <div className="page-container user-page">
+    <div className="user-page">
       <Layout className="user-layout">
         <Sider className="user-sider" width={220} theme="light">
           <div className="user-sider-header">
@@ -306,10 +358,9 @@ const UserProfile = () => {
             selectedKey={selectedKey}
             onSelect={(key) => {
               setSelectedKey(key);
-              // 更新 URL 参数，保持状态同步
-              const params = new URLSearchParams(location.search);
-              params.set('tab', key);
-              navigate(`/profile?${params.toString()}`, { replace: true });
+              // 切换 tab 时只保留 tab 参数，清除其他子参数
+              // profile 是默认值，不需要参数
+              navigate(key === 'profile' ? '/profile' : `/profile?t=${key}`, { replace: true });
             }}
           />
         </Sider>
@@ -326,6 +377,18 @@ const UserProfile = () => {
               onChangeBannerKey={async (key) => { try { setBannerKey(key); localStorage.setItem('profileBannerKey', key); await updateCurrentUser({ profileBanner: key }); } catch {} }}
               onOpenAvatarModal={() => setAvatarModalVisible(true)}
               loading={loading}
+              followersCount={followers.length}
+              followingCount={follows.length}
+              onFollowersClick={() => {
+                setSelectedKey('follows');
+                setFollowSubTab('followers');
+                navigate('/profile?t=follows&sub=followers', { replace: true });
+              }}
+              onFollowingClick={() => {
+                setSelectedKey('follows');
+                setFollowSubTab('following');
+                navigate('/profile?t=follows', { replace: true });
+              }}
             />
           )}
 
@@ -353,11 +416,21 @@ const UserProfile = () => {
           )}
 
           {selectedKey === 'favorites' && (
-            <SectionFavorites favorites={favorites} onRemoveFavorite={handleRemoveFavorite} onNavigate={navigate} />
+            <SectionFavorites 
+              favorites={favorites} 
+              onRemoveFavorite={handleRemoveFavorite} 
+              onBatchRemoveFavorites={handleBatchRemoveFavorites}
+              onNavigate={navigate} 
+            />
           )}
 
           {selectedKey === 'follows' && (
-            <SectionFollows follows={follows} onUnfollow={handleUnfollow} />
+            <SectionFollows 
+              follows={follows} 
+              onUnfollow={handleUnfollow}
+              followSubTab={followSubTab}
+              onSubTabChange={handleFollowSubTabChange}
+            />
           )}
 
           {selectedKey === 'account' && (
@@ -365,27 +438,12 @@ const UserProfile = () => {
           )}
 
           {/* 更换头像 */}
-          <Modal
-            title="更换头像"
-            open={avatarModalVisible}
-            onCancel={() => setAvatarModalVisible(false)}
-            footer={null}
-            className="avatar-upload-modal"
-            centered
-            width={400}
-          >
-            <div className="avatar-upload-content">
-              <div className="avatar-preview">
-                <Avatar size={100} src={userInfo.avatar} icon={<UserOutlined />} />
-              </div>
-              <Upload name="avatar" showUploadList={false} beforeUpload={handleAvatarUpload}>
-                <Button type="primary" icon={<CameraOutlined />} size="large" className="avatar-upload-btn">
-                  选择图片并上传
-                </Button>
-              </Upload>
-              <p className="avatar-upload-tip">支持 JPG、PNG 格式，建议尺寸 200x200 像素</p>
-            </div>
-          </Modal>
+          <AvatarUpload
+            visible={avatarModalVisible}
+            onClose={() => setAvatarModalVisible(false)}
+            currentAvatar={userInfo.avatar}
+            onSuccess={handleAvatarSuccess}
+          />
         </Content>
       </Layout>
     </div>

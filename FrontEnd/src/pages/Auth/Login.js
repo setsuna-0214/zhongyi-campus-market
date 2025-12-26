@@ -1,26 +1,24 @@
-import React, { useState } from 'react';
-import { 
-  Form, 
-  Input, 
-  Button, 
-  Card, 
-  Typography, 
+import { useState } from 'react';
+import {
+  Form,
+  Input,
+  Button,
+  Card,
   message,
   Row,
   Col
 } from 'antd';
-import { 
-  UserOutlined, 
+import {
+  UserOutlined,
   LockOutlined
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import './Auth.css';
 import { login } from '../../api/auth';
-
-const { Title, Text } = Typography;
+import { setAuthUser } from '../../utils/auth';
 
 const Login = () => {
-  
+
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
@@ -38,21 +36,16 @@ const Login = () => {
       const loginPayload = isEmail(input)
         ? { email: input, password: values.password }
         : { username: input, password: values.password };
-      
+
       const res = await login(loginPayload);
-      
+
       // 后端返回格式: { code: 200, message: "登录成功", data: { token, user } }
       if (res?.code !== 200) {
         throw new Error(res?.message || '登录失败');
       }
-      
+
       const { token, user } = res.data || {};
-      if (token) {
-        localStorage.setItem('authToken', token);
-      }
-      if (user) {
-        localStorage.setItem('authUser', JSON.stringify(user));
-      }
+      setAuthUser(user, token);
       message.success('登录成功！');
       window.location.href = '/';
     } catch (error) {
@@ -65,10 +58,8 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-background">
-        <div className="auth-overlay"></div>
-      </div>
-      
+      <div className="auth-background" />
+
       <div className="auth-content">
         <Row justify="center" align="middle" style={{ minHeight: '100vh', padding: '12px 0' }}>
           <Col xs={22} sm={20} md={16} lg={12} xl={8}>
@@ -77,30 +68,26 @@ const Login = () => {
                 <div className="auth-logo">
                   <span className="logo-text">中易</span>
                 </div>
-                <Title level={2} className="auth-title">
-                  欢迎回来
-                </Title>
-                <Text className="auth-subtitle">
-                  登录您的中易账户
-                </Text>
               </div>
 
-              <div className="login-form-container">
-                <Form
-                  form={form}
-                  name="login"
-                  onFinish={onFinish}
-                  layout="vertical"
-                  size="large"
-                  className="auth-form"
-                >
+              <Form
+                form={form}
+                name="login"
+                onFinish={onFinish}
+                layout="vertical"
+                size="large"
+                className="auth-form"
+              >
                 <Form.Item
                   name="username"
                   label="用户名/邮箱"
+                  rules={[
+                    { required: true, message: '输入用户名或邮箱登录吧~' },
+                  ]}
                 >
-                  <Input 
-                    prefix={<UserOutlined />} 
-                    placeholder="请输入用户名或邮箱"
+                  <Input
+                    prefix={<UserOutlined />}
+                    placeholder="用户名或邮箱"
                     autoComplete="username"
                   />
                 </Form.Item>
@@ -108,10 +95,13 @@ const Login = () => {
                 <Form.Item
                   name="password"
                   label="密码"
+                  rules={[
+                    { required: true, message: '密码不能空着哦~' },
+                  ]}
                 >
-                  <Input.Password 
-                    prefix={<LockOutlined />} 
-                    placeholder="请输入密码"
+                  <Input.Password
+                    prefix={<LockOutlined />}
+                    placeholder="输入密码"
                     autoComplete="current-password"
                   />
                 </Form.Item>
@@ -125,9 +115,9 @@ const Login = () => {
                 </Form.Item>
 
                 <Form.Item>
-                  <Button 
-                    type="primary" 
-                    htmlType="submit" 
+                  <Button
+                    type="primary"
+                    htmlType="submit"
                     loading={loading}
                     className="auth-button"
                     block
@@ -135,17 +125,13 @@ const Login = () => {
                     登录
                   </Button>
                 </Form.Item>
-                </Form>
-
-              </div>
+              </Form>
 
               <div className="auth-footer">
-                <Text>
-                  还没有账户？ 
-                  <Link to="/register" className="auth-link">
-                    立即注册
-                  </Link>
-                </Text>
+                还没有账户？
+                <Link to="/register" className="auth-link">
+                  立即注册
+                </Link>
               </div>
             </Card>
           </Col>
