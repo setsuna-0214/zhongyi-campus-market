@@ -19,14 +19,15 @@ import { useNavigate } from 'react-router-dom';
 import './index.css';
 import ProductCard from '../../components/ProductCard';
 import { getHotProducts, getLatestProducts } from '../../api/home';
-import { getCategoryBackground, getCategoryIcons } from '../../utils/theme';
+import { getCategoryIcons } from '../../utils/theme';
 import { message } from 'antd';
 import { getStatusLabel } from '../../utils/labels';
+import { isLoggedIn as checkIsLoggedIn } from '../../utils/auth';
 
 const { Title, Paragraph } = Typography;
 
-// 粒子组件
-const Particles = ({ count = 50 }) => {
+// 粒子组件 - 使用 React.memo 避免不必要的重渲染
+const Particles = React.memo(({ count = 30 }) => {
   const particles = useMemo(() => {
     return Array.from({ length: count }, (_, i) => ({
       id: i,
@@ -58,15 +59,41 @@ const Particles = ({ count = 50 }) => {
       ))}
     </div>
   );
-};
+});
 
 const PAGE_SIZE = 12;
+
+// 将 formatRelativeTime 移到组件外部，避免重复创建
+const formatRelativeTime = (iso) => {
+  try {
+    if (!iso) return '刚刚';
+    const t = new Date(iso).getTime();
+    const now = Date.now();
+    const diff = Math.max(0, now - t);
+    const sec = Math.floor(diff / 1000);
+    if (sec < 60) return '刚刚';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min}分钟前`;
+    const hour = Math.floor(min / 60);
+    if (hour < 24) return `${hour}小时前`;
+    const day = Math.floor(hour / 24);
+    if (day === 1) return '昨天';
+    if (day < 7) return `${day}天前`;
+    const d = new Date(t);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dd}`;
+  } catch {
+    return '刚刚';
+  }
+};
 
 
 const Home = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('hot');
-  const isLoggedIn = !!localStorage.getItem('authUser');
+  const loggedIn = checkIsLoggedIn();
   
   // 热门商品状态
   const [hotProducts, setHotProducts] = useState([]);
@@ -88,10 +115,19 @@ const Home = () => {
   const observerRef = useRef(null);
   
   // 页面展开状态
-  const [isExpanded, setIsExpanded] = useState(isLoggedIn);
+  const [isExpanded, setIsExpanded] = useState(loggedIn);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionDirection, setTransitionDirection] = useState(null);
   const heroRef = useRef(null);
+  
+  // 使用 ref 追踪加载状态和页码，避免闭包问题
+  const hotLoadingRef = useRef(false);
+  const recentLoadingRef = useRef(false);
+  const hotPageRef = useRef(1);
+  const recentPageRef = useRef(1);
+  const hotHasMoreRef = useRef(true);
+  const recentHasMoreRef = useRef(true);
+  const activeTabRef = useRef('hot');
 
   // 检查是否可以触发返回过渡
   const canTriggerCollapse = useCallback(() => {
@@ -245,34 +281,25 @@ const Home = () => {
     // 状态重置将由 onAnimationEnd 处理
   }, [isTransitioning]);
 
-  const formatRelativeTime = (iso) => {
-    try {
-      if (!iso) return '刚刚';
-      const t = new Date(iso).getTime();
-      const now = Date.now();
-      const diff = Math.max(0, now - t);
-      const sec = Math.floor(diff / 1000);
-      if (sec < 60) return '刚刚';
-      const min = Math.floor(sec / 60);
-      if (min < 60) return `${min}分钟前`;
-      const hour = Math.floor(min / 60);
-      if (hour < 24) return `${hour}小时前`;
-      const day = Math.floor(hour / 24);
-      if (day === 1) return '昨天';
-      if (day < 7) return `${day}天前`;
-      const d = new Date(t);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${y}-${m}-${dd}`;
-    } catch {
-      return '刚刚';
-    }
-  };
+  // 同步 ref 值
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+  
+  useEffect(() => {
+    hotPageRef.current = hotPage;
+    hotHasMoreRef.current = hotHasMore;
+  }, [hotPage, hotHasMore]);
+  
+  useEffect(() => {
+    recentPageRef.current = recentPage;
+    recentHasMoreRef.current = recentHasMore;
+  }, [recentPage, recentHasMore]);
 
   // 加载热门商品
   const loadHotProducts = useCallback(async (page = 1, append = false) => {
-    if (hotLoading) return;
+    if (hotLoadingRef.current) return;
+    hotLoadingRef.current = true;
     setHotLoading(true);
     try {
       const res = await getHotProducts(page, PAGE_SIZE);
@@ -281,7 +308,12 @@ const Home = () => {
       
       startTransition(() => {
         if (append) {
-          setHotProducts(prev => [...prev, ...filtered]);
+          // 使用 id 去重，防止重复数据
+          setHotProducts(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const newItems = filtered.filter(p => !existingIds.has(p.id));
+            return [...prev, ...newItems];
+          });
         } else {
           setHotProducts(filtered);
         }
@@ -291,13 +323,15 @@ const Home = () => {
     } catch (e) {
       if (page === 1) message.info('热门商品暂不可用');
     } finally {
+      hotLoadingRef.current = false;
       setHotLoading(false);
     }
-  }, [hotLoading]);
+  }, []);
 
   // 加载最新发布
   const loadRecentProducts = useCallback(async (page = 1, append = false) => {
-    if (recentLoading) return;
+    if (recentLoadingRef.current) return;
+    recentLoadingRef.current = true;
     setRecentLoading(true);
     try {
       const res = await getLatestProducts(page, PAGE_SIZE);
@@ -306,7 +340,12 @@ const Home = () => {
       
       startTransition(() => {
         if (append) {
-          setRecentProducts(prev => [...prev, ...filtered]);
+          // 使用 id 去重，防止重复数据
+          setRecentProducts(prev => {
+            const existingIds = new Set(prev.map(p => p.id));
+            const newItems = filtered.filter(p => !existingIds.has(p.id));
+            return [...prev, ...newItems];
+          });
         } else {
           setRecentProducts(filtered);
         }
@@ -316,18 +355,23 @@ const Home = () => {
     } catch (e) {
       if (page === 1) message.info('最新发布暂不可用');
     } finally {
+      recentLoadingRef.current = false;
       setRecentLoading(false);
     }
-  }, [recentLoading]);
+  }, []);
 
-  // 加载更多
+  // 加载更多 - 使用 ref 避免依赖变化导致重新创建
   const loadMore = useCallback(() => {
-    if (activeTab === 'hot' && hotHasMore && !hotLoading) {
-      loadHotProducts(hotPage + 1, true);
-    } else if (activeTab === 'recent' && recentHasMore && !recentLoading) {
-      loadRecentProducts(recentPage + 1, true);
+    if (activeTabRef.current === 'hot') {
+      if (hotHasMoreRef.current && !hotLoadingRef.current) {
+        loadHotProducts(hotPageRef.current + 1, true);
+      }
+    } else {
+      if (recentHasMoreRef.current && !recentLoadingRef.current) {
+        loadRecentProducts(recentPageRef.current + 1, true);
+      }
     }
-  }, [activeTab, hotHasMore, hotLoading, hotPage, recentHasMore, recentLoading, recentPage, loadHotProducts, loadRecentProducts]);
+  }, [loadHotProducts, loadRecentProducts]);
 
   // 初始加载
   useEffect(() => {
@@ -343,32 +387,31 @@ const Home = () => {
     })();
   }, []);
 
-  // 无限滚动 - IntersectionObserver
+  // 无限滚动 - IntersectionObserver（使用稳定的 loadMore 引用）
   useEffect(() => {
     if (!isExpanded) return;
     
     const currentLoadMoreRef = loadMoreRef.current;
     
-    if (observerRef.current) {
-      observerRef.current.disconnect();
+    // 只在 observer 不存在时创建
+    if (!observerRef.current) {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            loadMore();
+          }
+        },
+        { rootMargin: '200px' }
+      );
     }
-    
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
-        }
-      },
-      { rootMargin: '200px' }
-    );
     
     if (currentLoadMoreRef) {
       observerRef.current.observe(currentLoadMoreRef);
     }
     
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
+      if (currentLoadMoreRef && observerRef.current) {
+        observerRef.current.unobserve(currentLoadMoreRef);
       }
     };
   }, [isExpanded, loadMore]);
@@ -378,7 +421,7 @@ const Home = () => {
       title: '欢迎来到中易校园交易平台',
       subtitle: '安全、便捷、高效的校园交易体验',
       image: '/images/carousel/banner1-Vjwxq.jpg',
-      action: () => navigate('/search?type=products')
+      action: () => navigate('/search')
     },
     {
       title: '发布你的闲置物品',
@@ -394,11 +437,25 @@ const Home = () => {
     }
   ];
 
+  // 商品点击处理 - 使用 useCallback 避免重复创建
+  const handleProductClick = useCallback((productId) => {
+    navigate(`/products/${productId}`);
+  }, [navigate]);
+
+  // 预计算相对时间，避免在 useMemo 中重复计算
+  const recentProductsWithTime = useMemo(() => {
+    return recentProducts.map(product => ({
+      ...product,
+      relativeTime: formatRelativeTime(product.publishTime)
+    }));
+  }, [recentProducts]);
+
   const hotCards = useMemo(() => (
     hotProducts.map((product) => (
       <Col xs={24} sm={12} md={6} lg={6} xl={6} key={`hot-${product.id}`}>
         <ProductCard
           imageSrc={product.image}
+          images={product.images}
           title={product.title}
           price={product.price}
           category={product.category}
@@ -411,17 +468,18 @@ const Home = () => {
           views={product.views}
           overlayType={'views-left'}
           dateFormat={'ymd'}
-          onClick={() => navigate(`/products/${product.id}`)}
+          onClick={() => handleProductClick(product.id)}
         />
       </Col>
     ))
-  ), [hotProducts, navigate]);
+  ), [hotProducts, handleProductClick]);
 
   const recentCards = useMemo(() => (
-    recentProducts.map((product) => (
+    recentProductsWithTime.map((product) => (
       <Col xs={24} sm={12} md={6} lg={6} xl={6} key={`recent-${product.id}`}>
         <ProductCard
           imageSrc={product.image}
+          images={product.images}
           title={product.title}
           price={product.price}
           category={product.category}
@@ -433,13 +491,13 @@ const Home = () => {
           publishedAt={product.publishTime}
           views={product.views}
           overlayType={'publish-right'}
-          publishedOverlayText={formatRelativeTime(product.publishTime)}
+          publishedOverlayText={product.relativeTime}
           dateFormat={'ymd'}
-          onClick={() => navigate(`/products/${product.id}`)}
+          onClick={() => handleProductClick(product.id)}
         />
       </Col>
     ))
-  ), [recentProducts, navigate]);
+  ), [recentProductsWithTime, handleProductClick]);
 
   // 当前是否正在加载
   const isLoadingMore = activeTab === 'hot' ? hotLoading : recentLoading;
@@ -461,7 +519,7 @@ const Home = () => {
         className={`auth-carousel-section ${isExpanded ? 'as-background' : ''} ${isTransitioning ? 'fading' : ''}`}
         ref={heroRef}
       >
-        <Particles count={60} />
+        <Particles count={30} />
         <Carousel
           autoplay
           autoplaySpeed={4000}
@@ -470,6 +528,9 @@ const Home = () => {
           dotPosition="bottom"
           infinite={true}
           effect="fade"
+          pauseOnHover={false}
+          pauseOnFocus={false}
+          pauseOnDotsHover={false}
         >
           {bannerItems.map((item, index) => (
             <div key={index} className="auth-carousel-item">
@@ -497,7 +558,7 @@ const Home = () => {
           ))}
         </Carousel>
         {/* 注册、登录按钮区域（仅未登录时显示） */}
-        {!isLoggedIn && (
+        {!loggedIn && (
           <div className={`auth-fixed-buttons ${isTransitioning ? 'fade-out' : ''}`}>
             <div className="auth-buttons-container">
               <Button
@@ -539,7 +600,7 @@ const Home = () => {
                     <Card
                       className={`category-card category-${category.code}`}
                       hoverable
-                      onClick={() => navigate(`/search?type=products&category=${category.code}`)}
+                      onClick={() => navigate(`/search?c=${category.code}`)}
                     >
                       <div className="category-content">
                         <div className="category-icon">
@@ -596,7 +657,7 @@ const Home = () => {
             </Space>
             <Button
               type="link"
-              onClick={() => navigate(activeTab === 'hot' ? '/search?type=products' : '/search?type=products&sortBy=latest')}
+              onClick={() => navigate(activeTab === 'hot' ? '/search' : '/search?sort=latest')}
               icon={<RightOutlined />}
             >
               查看更多

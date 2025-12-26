@@ -7,11 +7,13 @@ import App from './App';
 import ScrollToTop from './components/ScrollToTop';
 import 'antd/dist/reset.css';
 import './index.css';
+import './utils/scrollbar.css';
+import './utils/form-validation.css';
 
 // 配置 Ant Design 主题
 const theme = {
   token: {
-    colorPrimary: '#667eea',
+    colorPrimary: '#4FACFE',
     colorSuccess: '#52c41a',
     colorWarning: '#faad14',
     colorError: '#ff4d4f',

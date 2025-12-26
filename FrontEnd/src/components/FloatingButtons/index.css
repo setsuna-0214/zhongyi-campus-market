@@ -15,34 +15,199 @@
 .floating-button {
   width: 56px !important;
   height: 56px !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12), 0 0 0 0 rgba(24, 144, 255, 0) !important;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+              background 0.3s ease !important;
   border: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 修复图标居中 */
+.floating-button.ant-btn {
+  padding: 0 !important;
+}
+
+.floating-button .ant-btn-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+}
+
+/* 按钮光效层 */
+.floating-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.floating-button:hover::after {
+  width: 120%;
+  height: 120%;
+  opacity: 1;
 }
 
 .floating-button:hover {
-  transform: scale(1.02) !important;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+  transform: scale(1.12) translateY(-2px) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18), 0 0 0 4px rgba(24, 144, 255, 0.15) !important;
 }
 
-.floating-button.ant-btn-primary {
-  background: linear-gradient(135deg, #1890ff, #40a9ff) !important;
+.floating-button:active {
+  transform: scale(0.95) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.1s ease !important;
 }
 
-.floating-button.ant-btn-primary:hover {
-  background: linear-gradient(135deg, #40a9ff, #69c0ff) !important;
+/* 发布按钮 - 主色渐变 */
+.floating-button.publish-btn.ant-btn-primary {
+  background: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%) !important;
 }
 
-.publish-btn {
-  position: relative;
+.floating-button.publish-btn.ant-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #69c0ff 100%) !important;
+  box-shadow: 0 8px 28px rgba(24, 144, 255, 0.35), 0 0 0 4px rgba(24, 144, 255, 0.2) !important;
 }
 
-.message-btn {
-  position: relative;
+/* 消息按钮 - 青色渐变 */
+.floating-button.message-btn {
+  background: linear-gradient(135deg, #13c2c2 0%, #36cfc9 100%) !important;
+  color: #fff !important;
 }
 
-.help-btn {
-  position: relative;
+.floating-button.message-btn:hover {
+  background: linear-gradient(135deg, #36cfc9 0%, #5cdbd3 100%) !important;
+  box-shadow: 0 8px 28px rgba(19, 194, 194, 0.35), 0 0 0 4px rgba(19, 194, 194, 0.2) !important;
+}
+
+.floating-button.message-btn .anticon {
+  color: #fff !important;
+}
+
+/* 帮助按钮 - 金黄色渐变 */
+.floating-button.help-btn {
+  background: linear-gradient(135deg, #faad14 0%, #ffc53d 100%) !important;
+  color: #fff !important;
+}
+
+.floating-button.help-btn:hover {
+  background: linear-gradient(135deg, #ffc53d 0%, #ffd666 100%) !important;
+  box-shadow: 0 8px 28px rgba(250, 173, 20, 0.4), 0 0 0 4px rgba(250, 173, 20, 0.2) !important;
+}
+
+.floating-button.help-btn .anticon {
+  color: #fff !important;
+}
+
+/* 图标基础样式 - 增强过渡效果 */
+.floating-button .anticon {
+  font-size: 24px !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              filter 0.4s ease,
+              opacity 0.3s ease !important;
+}
+
+/* 发布按钮 - 加号旋转弹跳动画 */
+@keyframes plusPop {
+  0% {
+    transform: rotate(0deg) scale(1.1);
+  }
+  25% {
+    transform: rotate(90deg) scale(1.2);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.1);
+  }
+  75% {
+    transform: rotate(270deg) scale(1.2);
+  }
+  100% {
+    transform: rotate(360deg) scale(1.1);
+  }
+}
+
+.floating-button.publish-btn:hover .anticon {
+  animation: plusPop 1.5s ease-in-out infinite;
+}
+
+/* 消息按钮 - 活泼摇摆弹跳动画 */
+@keyframes messageWobble {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1.08);
+  }
+  15% {
+    transform: translateY(-5px) rotate(-8deg) scale(1.12);
+  }
+  30% {
+    transform: translateY(-2px) rotate(6deg) scale(1.1);
+  }
+  45% {
+    transform: translateY(-6px) rotate(-4deg) scale(1.14);
+  }
+  60% {
+    transform: translateY(-1px) rotate(3deg) scale(1.08);
+  }
+  75% {
+    transform: translateY(-4px) rotate(-2deg) scale(1.12);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1.08);
+  }
+}
+
+.floating-button.message-btn:hover .anticon {
+  animation: messageWobble 1.5s ease-in-out infinite;
+}
+
+/* 帮助按钮 - 灯泡闪耀摇晃动画 */
+@keyframes bulbShine {
+  0% {
+    transform: scale(1.1) rotate(0deg);
+    filter: drop-shadow(0 0 4px rgba(255, 214, 102, 0.6));
+  }
+  25% {
+    transform: scale(1.18) rotate(-8deg);
+    filter: drop-shadow(0 0 12px rgba(255, 214, 102, 1));
+  }
+  50% {
+    transform: scale(1.12) rotate(6deg);
+    filter: drop-shadow(0 0 6px rgba(255, 214, 102, 0.8));
+  }
+  75% {
+    transform: scale(1.2) rotate(-4deg);
+    filter: drop-shadow(0 0 14px rgba(255, 214, 102, 1));
+  }
+  100% {
+    transform: scale(1.1) rotate(0deg);
+    filter: drop-shadow(0 0 4px rgba(255, 214, 102, 0.6));
+  }
+}
+
+.floating-button.help-btn:hover .anticon {
+  animation: bulbShine 1.8s ease-in-out infinite;
+}
+
+/* 鼠标移开时图标平滑回归 */
+.floating-button:not(:hover) .anticon {
+  animation: none;
+  transform: scale(1) rotate(0deg) translateY(0);
 }
 
 /* 响应式设计 */
@@ -51,6 +216,10 @@
     width: 48px !important;
     height: 48px !important;
   }
+  
+  .floating-button .anticon {
+    font-size: 20px !important;
+  }
 }
 
 @media (max-width: 576px) {
@@ -58,101 +227,185 @@
     width: 44px !important;
     height: 44px !important;
   }
+  
+  .floating-button .anticon {
+    font-size: 18px !important;
+  }
 }
 
-/* 动画效果 - 修复tooltip闪烁问题 */
-@keyframes float {
+/* 入场动画 */
+@keyframes floatIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 待机浮动动画 - 柔和上下浮动 */
+@keyframes gentleFloat {
   0%, 100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
   }
 }
 
-.floating-buttons-container {
-  animation: float 4s ease-in-out infinite;
+.floating-button {
+  animation: floatIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) backwards,
+             gentleFloat 3s ease-in-out infinite;
+  animation-delay: 0s, 0.6s;
 }
 
-/* 悬浮时停止动画，防止tooltip闪烁 */
-.floating-buttons-container:hover {
-  animation: none;
-  transform: translateY(0);
+.floating-button.publish-btn {
+  animation-delay: 0.1s, 0.7s;
+}
+
+.floating-button.message-btn {
+  animation-delay: 0.2s, 0.9s;
+}
+
+.floating-button.help-btn {
+  animation-delay: 0.3s, 1.1s;
+}
+
+/* 悬停时暂停待机动画，应用悬停效果 */
+.floating-button:hover {
+  animation-play-state: paused;
+  transform: scale(1.12) translateY(-2px) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18), 0 0 0 4px rgba(24, 144, 255, 0.15) !important;
+}
+
+/* 悬浮时停止待机动画 */
+.floating-buttons-container:hover .floating-button:not(:hover) {
+  animation-play-state: running;
 }
 
 /* 徽章样式 */
 .floating-buttons .ant-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 消息按钮徽章 - 移到右上角外侧 */
+.floating-buttons .message-badge {
+  position: relative;
+}
+
+.floating-buttons .message-badge .ant-badge-count {
+  position: absolute !important;
+  top: -4px !important;
+  right: -4px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+  padding: 0 5px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%) !important;
+  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.95) !important;
+  border: none !important;
+  transform: scale(1);
+  animation: badgePulse 2s ease-in-out infinite;
+  z-index: 10;
 }
 
 .floating-buttons .ant-badge-count {
-  font-size: 10px;
-  min-width: 16px;
-  height: 16px;
-  line-height: 16px;
-  padding: 0 4px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  line-height: 18px !important;
+  padding: 0 5px !important;
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%) !important;
+  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.9) !important;
+  border: none !important;
+  transform: scale(1);
+  animation: badgePulse 2s ease-in-out infinite;
 }
 
-/* 自定义提示框样式 - 白色背景紧凑设计 */
+/* 徽章脉冲动画 */
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(255, 77, 79, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.9);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 3px 12px rgba(255, 77, 79, 0.7), 0 0 0 2px rgba(255, 255, 255, 0.9);
+  }
+}
+
+/* 悬停时徽章效果增强 */
+.floating-button.message-btn:hover .ant-badge-count {
+  animation: badgeBounce 0.6s ease-in-out infinite;
+}
+
+@keyframes badgeBounce {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.15) translateY(-2px);
+  }
+}
+
+/* 自定义提示框样式 */
 .floating-tooltip {
   z-index: 1001 !important;
-  pointer-events: none !important;
 }
 
 .floating-tooltip .ant-tooltip-inner {
-  background-color: #ffffff !important;
-  color: #333333 !important;
-  font-size: 12px !important;
-  font-weight: 400 !important;
-  padding: 4px 8px !important;
-  border-radius: 4px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-  border: 1px solid #e8e8e8 !important;
-  max-width: 80px !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%) !important;
+  color: #1f2937 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 8px 14px !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+  border: none !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  max-width: 120px !important;
   min-width: auto !important;
   text-align: center !important;
   white-space: nowrap !important;
-  line-height: 1.2 !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.3px !important;
 }
 
 .floating-tooltip .ant-tooltip-arrow {
   display: none !important;
 }
 
-/* 确保提示框稳定显示 */
-.floating-tooltip.ant-tooltip-hidden {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-}
-
-/* 提示框动画 - 减少动画时间防止闪烁 */
-.floating-tooltip {
-  transition: opacity 0.1s ease-out, visibility 0.1s ease-out !important;
-}
-
-/* 修复提示框位置，使其紧贴按钮左边 */
+/* 修复提示框位置，增加间距防止闪烁 */
 .floating-tooltip.ant-tooltip-placement-left {
-  margin-right: 8px !important;
+  padding-right: 8px !important;
 }
 
-.floating-tooltip.ant-tooltip-placement-left .ant-tooltip-inner {
-  margin-right: 0 !important;
+.floating-tooltip.ant-tooltip-placement-left .ant-tooltip-content {
+  margin-right: 4px !important;
 }
 
-/* 增加按钮的触发区域稳定性 */
-.floating-button {
-  position: relative !important;
-}
-
-.floating-button::before {
-  content: '';
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  pointer-events: none;
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .floating-button {
+    animation: none !important;
+    transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+  }
+  
+  .floating-button::after {
+    display: none;
+  }
+  
+  .floating-button .anticon {
+    transition: none !important;
+  }
 }

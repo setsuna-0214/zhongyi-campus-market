@@ -28,21 +28,51 @@ export async function uploadAvatar(file) {
   const { data } = await client.post('/user/me/avatar', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
-  return data;
+  
+  // 同步更新 localStorage 中的用户头像
+  const avatarUrl = data?.data?.avatarUrl || data?.avatarUrl;
+  if (avatarUrl) {
+    try {
+      const raw = localStorage.getItem('authUser');
+      if (raw) {
+        const user = JSON.parse(raw);
+        user.avatar = avatarUrl;
+        localStorage.setItem('authUser', JSON.stringify(user));
+      }
+    } catch {}
+  }
+  
+  return data?.data || data;
+}
+
+// 标准化商品数据，确保字段一致
+function normalizeProduct(item) {
+  if (!item) return item;
+  const coverImage = item.image || item.coverImage;
+  const images = item.images || (coverImage ? [coverImage] : []);
+  return {
+    ...item,
+    image: coverImage,
+    images,
+    status: item.status ?? item.saleStatus ?? '在售',
+  };
 }
 
 export async function getMyPublished() {
   const { data } = await client.get('/user/published');
   // 后端返回格式: { code: 200, message: "成功", data: [...] }
   const items = data?.data || data;
-  return Array.isArray(items) ? items : (items?.items || []);
+  const arr = Array.isArray(items) ? items : (items?.items || []);
+  return arr.map(normalizeProduct);
 }
 
 export async function getMyPurchases() {
   const { data } = await client.get('/user/purchases');
   // 后端返回格式: { code: 200, message: "成功", data: [...] }
+  // 注意：此接口应只返回已完成的订单商品
   const items = data?.data || data;
-  return Array.isArray(items) ? items : (items?.items || []);
+  const arr = Array.isArray(items) ? items : (items?.items || []);
+  return arr.map(normalizeProduct);
 }
 
 export async function getUser(id) {
@@ -56,7 +86,8 @@ export async function getUserPublished(userId) {
   const { data } = await client.get(`/user/${userId}/published`);
   // 后端返回格式: { code: 200, message: "成功", data: [...] }
   const items = data?.data || data;
-  return Array.isArray(items) ? items : (items?.items || []);
+  const arr = Array.isArray(items) ? items : (items?.items || []);
+  return arr.map(normalizeProduct);
 }
 
 export async function requestEmailChange({ newEmail }) {
@@ -77,6 +108,13 @@ export async function changePassword({ currentPassword, newPassword, verificatio
 // 关注功能
 export async function getFollows() {
   const { data } = await client.get('/user/follows');
+  // 后端返回格式: { code: 200, message: "成功", data: [...] }
+  const items = data?.data || data;
+  return Array.isArray(items) ? items : [];
+}
+
+export async function getFollowers() {
+  const { data } = await client.get('/user/followers');
   // 后端返回格式: { code: 200, message: "成功", data: [...] }
   const items = data?.data || data;
   return Array.isArray(items) ? items : [];
@@ -107,4 +145,11 @@ export async function searchUsers(params) {
     items: result?.items || [],
     total: result?.total || 0
   };
+}
+
+
+// 账号注销
+export async function deleteAccount({ verificationCode }) {
+  const { data } = await client.post('/user/me/delete', { verificationCode });
+  return data;
 }

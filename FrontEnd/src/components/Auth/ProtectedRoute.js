@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import { Navigate, useLocation } from 'react-router-dom';
+import { getCurrentUser, isLoggedIn as checkIsLoggedIn, hasRole as checkHasRole } from '../../utils/auth';
 
 /**
  * ProtectedRoute
@@ -20,11 +21,8 @@ export default function ProtectedRoute({ children, allowRoles, redirectTo = '/lo
   const [serverOk, setServerOk] = useState(!serverCheck);
 
   // 本地校验：是否已登录、角色是否匹配
-  const authUserRaw = localStorage.getItem('authUser');
-  let authUser = null;
-  try { authUser = authUserRaw ? JSON.parse(authUserRaw) : null; } catch (_) {}
-  const isLoggedIn = Boolean(authUser);
-  const hasRole = !allowRoles || (authUser && allowRoles.includes(authUser.role));
+  const loggedIn = checkIsLoggedIn();
+  const hasRole = !allowRoles || checkHasRole(allowRoles);
 
   // 后端校验（预留接口）
   useEffect(() => {
@@ -54,7 +52,7 @@ export default function ProtectedRoute({ children, allowRoles, redirectTo = '/lo
   }
 
   // 未通过校验：未登录 或 角色不匹配 或 后端校验未通过
-  if (!isLoggedIn || !hasRole || !serverOk) {
+  if (!loggedIn || !hasRole || !serverOk) {
     return <Navigate to={redirectTo} replace state={{ from: location }} />;
   }
 

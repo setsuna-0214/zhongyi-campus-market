@@ -1,7 +1,18 @@
 .help-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  padding: var(--page-padding);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--page-bg-color);
+  background-image: var(--page-bg-gradient);
+  background-attachment: fixed;
+}
+
+.help-page > * {
+  width: 100%;
+  max-width: var(--content-max-width-md);
 }
 
 .help-header {

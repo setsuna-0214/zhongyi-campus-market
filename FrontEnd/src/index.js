@@ -11,7 +11,7 @@ import './index.css';
 // 配置 Ant Design 主题
 const theme = {
   token: {
-    colorPrimary: '#667eea',
+    colorPrimary: '#4FACFE',
     colorSuccess: '#52c41a',
     colorWarning: '#faad14',
     colorError: '#ff4d4f',

@@ -125,7 +125,7 @@ const OrderProcess = () => {
       }
     } catch (error) {
       message.error('加载订单信息失败');
-      navigate('/profile?tab=orders');
+      navigate('/profile?t=orders');
     } finally {
       setLoading(false);
     }
@@ -276,7 +276,7 @@ const OrderProcess = () => {
             if (window.history.length > 1) {
               navigate(-1);
             } else {
-              navigate('/profile?tab=orders');
+              navigate('/profile?t=orders');
             }
           }}
           style={{ marginBottom: 16 }}

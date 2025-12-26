@@ -33,10 +33,19 @@ export async function listOrders(params = {}) {
       seller = { id: order.product.sellerId };
     }
     
+    // 确保 product.images 字段存在
+    const product = order.product || {};
+    const coverImage = product.coverImage || product.image;
+    const images = product.images || (coverImage ? [coverImage] : []);
+    
     return {
       ...order,
       buyer,
       seller,
+      product: {
+        ...product,
+        images,
+      },
     };
   });
 }
@@ -99,7 +108,9 @@ export async function createOrder({ productId, quantity = 1, skipDuplicateCheck 
   }
   
   const { data } = await client.post('/orders', { productId, quantity });
-  return data;
+  // 后端返回格式: { code: 200, message: "成功", data: {...} }
+  const orderData = data?.data || data;
+  return orderData;
 }
 
 
@@ -119,10 +130,19 @@ export async function getOrderDetail(orderId) {
     seller = { id: orderData.sellerId };
   }
   
+  // 确保 product.images 字段存在
+  const product = orderData.product || {};
+  const coverImage = product.coverImage || product.image;
+  const images = product.images || (coverImage ? [coverImage] : []);
+  
   return {
     ...orderData,
     buyer,
     seller,
+    product: {
+      ...product,
+      images,
+    },
   };
 }
 

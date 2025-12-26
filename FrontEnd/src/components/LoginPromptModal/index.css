@@ -1,0 +1,106 @@
+/* 登录提示弹窗样式 */
+.login-prompt-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.login-prompt-modal .ant-modal-body {
+  padding: 0;
+}
+
+.login-prompt-modal .ant-modal-confirm-body {
+  display: block;
+}
+
+.login-prompt-modal .ant-modal-confirm-btns {
+  margin-top: 0;
+  padding: 0 24px 24px;
+  display: flex;
+  gap: 12px;
+}
+
+.login-prompt-content {
+  padding: 32px 24px 24px;
+  text-align: center;
+}
+
+.login-prompt-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(79, 172, 254, 0.3);
+}
+
+.login-prompt-icon .anticon {
+  font-size: 28px;
+  color: white;
+}
+
+.login-prompt-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.login-prompt-message {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+/* 按钮样式 */
+.login-prompt-modal .ant-btn {
+  flex: 1;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.login-prompt-ok-btn {
+  background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important;
+  border: none !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.35);
+}
+
+.login-prompt-ok-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.45) !important;
+}
+
+.login-prompt-cancel-btn {
+  border: 1px solid #e5e7eb !important;
+  color: #6b7280 !important;
+  background: white !important;
+}
+
+.login-prompt-cancel-btn:hover {
+  border-color: #d1d5db !important;
+  color: #374151 !important;
+  background: #f9fafb !important;
+}
+
+/* 动画效果 */
+.login-prompt-modal .ant-modal {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}

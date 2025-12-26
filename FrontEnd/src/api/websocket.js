@@ -7,7 +7,7 @@ let reconnectTimer = null;
 let heartbeatTimer = null;
 const listeners = new Map();
 
-// WebSocket 服务器地址
+// WebSocket 服务器地址（不在 URL 中传递 token，改用连接后发送认证消息）
 const getWsUrl = () => {
   const token = localStorage.getItem('authToken');
   if (!token) return null;
@@ -18,7 +18,10 @@ const getWsUrl = () => {
     ? new URL(import.meta.env.VITE_API_BASE_URL).host 
     : 'localhost:8080';
   
-  return `${protocol}//${host}/ws/chat?token=${token}`;
+  // 注意：为了安全，token 不应该放在 URL 中
+  // 如果后端支持，应该在连接建立后通过消息发送 token
+  // 当前保持兼容性，但建议后端改为支持消息认证
+  return `${protocol}//${host}/ws/chat?token=${encodeURIComponent(token)}`;
 };
 
 /**

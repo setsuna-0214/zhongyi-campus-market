@@ -1,24 +1,31 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Layout, Menu, message, Form, Button } from 'antd';
-import { UserOutlined, ShoppingOutlined } from '@ant-design/icons';
+import { Layout, message, Form, Button, Empty } from 'antd';
+import { UserOutlined, ShoppingOutlined, UserDeleteOutlined } from '@ant-design/icons';
 import { getUser, getUserPublished, checkIsFollowing, followUser, unfollowUser } from '../../api/user';
 import { toGenderLabel } from '../../utils/labels';
 import SectionBasic from './Profile/SectionBasic';
 import SectionProducts from './Profile/SectionProducts';
+import SliderMenu from '../../components/SliderMenu';
+import FollowButton from '../../components/FollowButton';
 import './Profile.css';
+import './SellerProfile.css';
 import { DEFAULT_PROFILE_BANNER_KEY, PROFILE_BANNER_OPTIONS } from '../../config/profile';
+import { getCurrentUserId, isSelf } from '../../utils/auth';
+import { useLoginPrompt } from '../../components/LoginPromptModal';
 
 const { Sider, Content } = Layout;
 
 const SellerProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showLoginPrompt } = useLoginPrompt();
   const [selectedKey, setSelectedKey] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [userInfo, setUserInfo] = useState({});
   const [myProducts, setMyProducts] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [userNotFound, setUserNotFound] = useState(false);
   
   // Banner related
   const [bannerKey, setBannerKey] = useState(DEFAULT_PROFILE_BANNER_KEY);
@@ -31,12 +38,21 @@ const SellerProfile = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      setUserNotFound(false);
       try {
         const [userData, userProducts, following] = await Promise.all([
           getUser(id),
           getUserPublished(id),
           checkIsFollowing(id)
         ]);
+        
+        // 检查用户是否存在或已注销
+        if (!userData || userData.deleted || userData.status === 'deleted') {
+          setUserNotFound(true);
+          setUserInfo({});
+          setMyProducts([]);
+          return;
+        }
         
         // 规范化用户信息
         const normalizedUser = userData || {};
@@ -51,7 +67,14 @@ const SellerProfile = () => {
           setBannerKey(userData.profileBanner);
         }
       } catch (error) {
-        message.error('获取卖家信息失败');
+        // 404 或用户不存在
+        if (error?.response?.status === 404 || error?.message?.includes('不存在')) {
+          setUserNotFound(true);
+          setUserInfo({});
+          setMyProducts([]);
+        } else {
+          message.error('获取用户信息失败');
+        }
       } finally {
         setLoading(false);
       }
@@ -75,34 +98,51 @@ const SellerProfile = () => {
   }, [userInfo, basicForm]);
 
   const menuItems = [
-    { key: 'profile', icon: <UserOutlined />, label: '基 本 信 息' },
-    { key: 'products', icon: <ShoppingOutlined />, label: '商 品 管 理' },
+    { key: 'profile', icon: <UserOutlined />, label: '基本信息' },
+    { key: 'products', icon: <ShoppingOutlined />, label: 'TA的商品' },
   ];
 
   const noOp = () => {};
 
-  // 获取当前登录用户ID
-  const getCurrentUserId = () => {
-    try {
-      const raw = localStorage.getItem('authUser');
-      if (raw) {
-        const user = JSON.parse(raw);
-        return user?.id;
-      }
-    } catch {}
-    return null;
-  };
+  // 用户不存在或已注销时的显示
+  const renderUserNotFound = () => (
+    <div className="user-not-found-container">
+      <div 
+        className="avatar-banner user-not-found-banner"
+        style={{ backgroundImage: `url(${PROFILE_BANNER_OPTIONS[0]?.path || '/images/banners/banner-1.jpg'})` }}
+      >
+        <div className="avatar-wrapper">
+          <div className="avatar-box">
+            <div className="user-avatar user-avatar-placeholder">
+              <UserDeleteOutlined />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="user-not-found-content">
+        <Empty
+          image={<UserDeleteOutlined style={{ fontSize: 64, color: '#bfbfbf' }} />}
+          description={
+            <div className="user-not-found-text">
+              <h3>用户不存在</h3>
+              <p>该用户可能已注销账号或从未存在</p>
+            </div>
+          }
+        >
+          <Button type="primary" onClick={() => navigate(-1)}>返回上一页</Button>
+        </Empty>
+      </div>
+    </div>
+  );
 
   const handleFollow = async () => {
     // 检查是否已登录
-    const currentUserId = getCurrentUserId();
-    if (!currentUserId) {
-      message.warning('请先登录后再关注');
-      navigate('/login');
+    if (!getCurrentUserId()) {
+      showLoginPrompt({ message: '关注用户需要登录后才能进行' });
       return;
     }
     // 检查是否关注自己
-    if (String(currentUserId) === String(id)) {
+    if (isSelf(id)) {
       message.warning('不能关注自己');
       return;
     }
@@ -122,79 +162,85 @@ const SellerProfile = () => {
   };
 
   return (
-    <div className="page-container user-page">
+    <div className="user-page">
       <Layout className="user-layout">
         <Sider className="user-sider" width={220} theme="light">
           <div className="user-sider-header">
             <span className="user-sider-title">个 人 中 心</span>
           </div>
-          <Menu
-            mode="inline"
-            selectedKeys={[selectedKey]}
-            onClick={(e) => setSelectedKey(e.key)}
+          <SliderMenu
             items={menuItems}
+            selectedKey={selectedKey}
+            onSelect={(key) => setSelectedKey(key)}
           />
         </Sider>
         <Content className="user-content">
-          {selectedKey === 'profile' && (
-            <div className="read-only-profile">
-              <SectionBasic
-                userInfo={userInfo}
-                bannerKey={bannerKey}
-                bannerBgUrl={bannerBgUrl}
-                basicForm={basicForm}
-                isBasicDirty={false}
-                onBasicDirtyChange={noOp}
-                onSaveBasic={noOp}
-                onChangeBannerKey={noOp}
-                onOpenAvatarModal={noOp}
-                loading={loading}
-                isReadOnly={true}
-              />
+          {userNotFound ? (
+            renderUserNotFound()
+          ) : (
+            <>
+              {selectedKey === 'profile' && (
+                <div className="read-only-profile">
+                  <SectionBasic
+                    userInfo={userInfo}
+                    bannerKey={bannerKey}
+                    bannerBgUrl={bannerBgUrl}
+                    basicForm={basicForm}
+                    isBasicDirty={false}
+                    onBasicDirtyChange={noOp}
+                    onSaveBasic={noOp}
+                    onChangeBannerKey={noOp}
+                    onOpenAvatarModal={noOp}
+                    loading={loading}
+                    isReadOnly={true}
+                    followersCount={userInfo.followersCount ?? 0}
+                    followingCount={userInfo.followingCount ?? 0}
+                  />
 
-              <div className="read-only-overlay" />
-              
-              <div style={{ marginTop: 16, textAlign: 'center', display: 'flex', justifyContent: 'center', gap: 16 }}>
-                <Button 
-                  type={isFollowing ? 'default' : 'primary'} 
-                  size="large" 
-                  onClick={handleFollow}
-                >
-                  {isFollowing ? '已关注' : '关注'}
-                </Button>
-                <Button 
-                  type="primary" 
-                  size="large" 
-                  onClick={() => {
-                    const currentUserId = getCurrentUserId();
-                    if (!currentUserId) {
-                      message.warning('请先登录后再联系卖家');
-                      navigate('/login');
-                      return;
-                    }
-                    const params = new URLSearchParams({
-                      sellerId: id,
-                      partnerName: userInfo.nickname || userInfo.username || '未知用户',
-                      partnerAvatar: userInfo.avatar || ''
-                    });
-                    navigate(`/chat?${params.toString()}`);
-                  }}
-                  ghost
-                >
-                  联系TA
-                </Button>
-              </div>
-            </div>
-          )}
+                  <div className="read-only-overlay" />
+                  
+                  <div style={{ marginTop: 16, textAlign: 'center', display: 'flex', justifyContent: 'center', gap: 16 }}>
+                    <FollowButton 
+                      isFollowing={isFollowing}
+                      size="large"
+                      onClick={handleFollow}
+                    />
+                    <Button 
+                      type="primary" 
+                      size="large" 
+                      onClick={() => {
+                        if (!getCurrentUserId()) {
+                          showLoginPrompt({ message: '联系TA需要登录后才能进行' });
+                          return;
+                        }
+                        const params = new URLSearchParams({
+                          sid: id,
+                          sname: userInfo.nickname || userInfo.username || '未知用户',
+                          savatar: userInfo.avatar || ''
+                        });
+                        navigate(`/chat?${params.toString()}`);
+                      }}
+                      ghost
+                    >
+                      联系TA
+                    </Button>
+                  </div>
+                </div>
+              )}
 
-          {selectedKey === 'products' && (
-            <SectionProducts 
-              myProducts={myProducts} 
-              purchaseHistory={[]}
-              onDeleteProduct={noOp}
-              onNavigate={navigate}
-              isReadOnly={true}
-            />
+              {selectedKey === 'products' && (
+                <SectionProducts 
+                  myProducts={myProducts} 
+                  purchaseHistory={[]}
+                  onDeleteProduct={noOp}
+                  onNavigate={navigate}
+                  isReadOnly={true}
+                  userInfo={userInfo}
+                  showType="published"
+                  onSubTabChange={noOp}
+                />
+              )}
+            </>
           )}
         </Content>
       </Layout>

@@ -1,0 +1,57 @@
+.verification-code-input {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.verification-code-input .code-box {
+  width: 100%;
+  max-width: 42px;
+  height: 44px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  background: #f9fafb;
+  color: #1f2937;
+  transition: all 0.25s ease;
+  outline: none;
+  caret-color: #4FACFE;
+}
+
+.verification-code-input .code-box:hover:not(:disabled) {
+  border-color: #d1d5db;
+  background: #f3f4f6;
+}
+
+.verification-code-input .code-box:focus {
+  border-color: #4FACFE;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.15);
+}
+
+.verification-code-input .code-box.filled {
+  border-color: #4FACFE;
+  background: #fff;
+}
+
+.verification-code-input .code-box:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+  .verification-code-input {
+    gap: 6px;
+  }
+  
+  .verification-code-input .code-box {
+    max-width: 36px;
+    height: 40px;
+    font-size: 18px;
+  }
+}

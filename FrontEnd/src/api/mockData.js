@@ -14,7 +14,9 @@ export const mockSellers = [
     address: '珠海校区',
     joinDate: '2023-09-01',
     gender: '男',
-    lastLoginAt: '2025-11-05T10:00:00.000Z'
+    lastLoginAt: '2025-11-05T10:00:00.000Z',
+    followersCount: 128,
+    followingCount: 45
   },
   {
     id: 's2',
@@ -27,7 +29,9 @@ export const mockSellers = [
     address: '广州校区',
     joinDate: '2024-02-15',
     gender: '女',
-    lastLoginAt: '2025-11-04T15:30:00.000Z'
+    lastLoginAt: '2025-11-04T15:30:00.000Z',
+    followersCount: 256,
+    followingCount: 89
   },
   {
     id: 's3',
@@ -40,7 +44,9 @@ export const mockSellers = [
     address: '深圳校区',
     joinDate: '2023-11-20',
     gender: '保密',
-    lastLoginAt: '2025-11-01T09:20:00.000Z'
+    lastLoginAt: '2025-11-01T09:20:00.000Z',
+    followersCount: 67,
+    followingCount: 23
   }
 ];
 
@@ -52,7 +58,7 @@ export const mockProducts = [
     category: 'electronics',
     price: 1599,
     location: '珠海校区 - 榕园9号',
-    images: ['/images/products/ipad.jpg'],
+    images: ['/images/products/ipad.jpg', '/images/products/keyboard.jpg', '/images/products/mouse.jpg'],
     views: 236,
     seller: mockSellers[0],
     status: '在售',
@@ -68,7 +74,7 @@ export const mockProducts = [
     category: 'books',
     price: 28,
     location: '珠海校区 - 荔园2号',
-    images: ['/images/products/math-textbook.jpg'],
+    images: ['/images/products/math-textbook.jpg', '/images/products/algebra.jpg', '/images/products/linear-algebra.jpg'],
     views: 98,
     seller: mockSellers[1],
     status: '已下架',
@@ -84,7 +90,7 @@ export const mockProducts = [
     category: 'daily',
     price: 89,
     location: '珠海校区 - 榕园8号',
-    images: ['/images/products/fan.jpg'],
+    images: ['/images/products/fan.jpg', '/images/products/kettle.jpg'],
     views: 172,
     seller: mockSellers[2],
     status: '已下架',
@@ -100,7 +106,7 @@ export const mockProducts = [
     category: 'electronics',
     price: 159,
     location: '广州校区 - 162栋',
-    images: ['/images/products/keyboard.jpg'],
+    images: ['/images/products/keyboard.jpg', '/images/products/mouse.jpg', '/images/products/lamp.jpg'],
     views: 64,
     seller: mockSellers[0],
     status: '在售',
@@ -132,7 +138,7 @@ export const mockProducts = [
     category: 'electronics',
     price: 2599,
     location: '广州校区 - 163栋',
-    images: ['/images/products/thinkpad.jpg'],
+    images: ['/images/products/thinkpad.jpg', '/images/products/keyboard.jpg'],
     views: 142,
     seller: mockSellers[0],
     status: '在售',
@@ -325,6 +331,7 @@ export const initialOrders = [
       id: 'p1003',
       title: '小米电风扇 静音款',
       coverImage: '/images/products/fan.jpg',
+      images: ['/images/products/fan.jpg', '/images/products/kettle.jpg'],
       price: 89,
       quantity: 1
     },
@@ -340,6 +347,7 @@ export const initialOrders = [
       id: 'p1002',
       title: '高等数学（第七版）上下册教材',
       coverImage: '/images/products/math-textbook.jpg',
+      images: ['/images/products/math-textbook.jpg', '/images/products/algebra.jpg', '/images/products/linear-algebra.jpg'],
       price: 28,
       quantity: 1
     },

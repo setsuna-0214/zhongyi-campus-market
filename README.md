@@ -31,18 +31,31 @@ zhongyi-campus-market/
 │   ├── src/
 │   │   ├── api/              # API接口层（含Mock实现）
 │   │   ├── components/       # 通用组件
+│   │   │   ├── Auth/         # 认证相关组件
+│   │   │   ├── AvatarUpload/ # 头像上传组件
+│   │   │   ├── FloatingButtons/ # 悬浮按钮组件
+│   │   │   ├── FollowButton/ # 关注按钮组件
+│   │   │   ├── Layout/       # 布局组件（Header）
+│   │   │   ├── LoginPromptModal/ # 登录提示弹窗
+│   │   │   ├── OrderTabRow/  # 订单标签行组件
+│   │   │   ├── ProductCard/  # 商品卡片组件
+│   │   │   ├── SliderMenu/   # 侧边菜单组件
+│   │   │   ├── SubTabSlider/ # 子标签切换组件
+│   │   │   └── VerificationCodeInput/ # 验证码输入组件
 │   │   ├── config/           # 配置文件
 │   │   ├── contexts/         # React Context
 │   │   ├── pages/            # 页面组件
-│   │   │   ├── Admin/        # 管理后台
 │   │   │   ├── Auth/         # 认证（登录/注册/找回密码）
-│   │   │   ├── Chat/         # 聊天
+│   │   │   ├── Chat/         # 聊天（含系统消息）
+│   │   │   ├── Help/         # 帮助中心
 │   │   │   ├── Home/         # 首页
-│   │   │   ├── Products/     # 商品（详情/发布）
+│   │   │   ├── Orders/       # 订单处理
+│   │   │   ├── Products/     # 商品（详情/发布/编辑）
 │   │   │   ├── Search/       # 搜索
 │   │   │   └── User/         # 用户中心
-│   │   ├── utils/            # 工具函数
-│   │   └── __tests__/        # 测试文件
+│   │   │       └── Profile/  # 个人中心子模块
+│   │   ├── styles/           # 全局样式
+│   │   └── utils/            # 工具函数
 │   ├── .env                  # 环境变量
 │   ├── .env.example          # 环境变量示例
 │   ├── package.json
@@ -169,11 +182,13 @@ mvn test             # 运行测试
 
 主要模块：
 - 认证：登录、注册、验证码、找回密码
-- 商品：搜索、详情、发布、相关推荐
-- 收藏：添加、删除、列表
-- 订单：创建、确认、取消、评价
-- 用户：个人信息、头像、关注
-- 聊天：会话、消息
+- 商品：搜索、详情、发布、编辑、相关推荐
+- 收藏：添加、删除、列表、批量操作
+- 订单：创建、确认、取消、删除、评价
+- 用户：个人信息、头像、关注、粉丝、账号注销
+- 聊天：会话、消息、图片、商品卡片分享
+- 系统消息：订单通知、商品通知、社交通知
+- AI：智能生成商品描述
 
 ## 常见问题
 

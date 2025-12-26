@@ -159,6 +159,7 @@ export default function SectionOrders({
             <div className="product-item">
               <ProductCard
                 imageSrc={resolveImageSrc({ product: p, item: p })}
+                images={p.images}
                 title={p.title || '商品'}
                 price={amount}
                 category={p.category}
@@ -173,8 +174,8 @@ export default function SectionOrders({
                 dateFormat={'ymd'}
                 onClick={() => onNavigate(`/orders/${order.id}`)}
                 imageHeight={200}
-                showOrderButton
-                onOrderClick={() => onNavigate(`/orders/${order.id}`)}
+                showProductDetailButton
+                onProductDetailClick={() => onNavigate(`/products/${p.id || order.productId}`)}
                 showOrderDeleteButton={isCancelled}
                 onOrderDelete={() => handleDeleteOrder(order.id)}
               />

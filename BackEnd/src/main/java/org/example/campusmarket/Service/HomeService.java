@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,10 +67,14 @@ public class HomeService {
                 Long viewCount = viewCounts.getOrDefault(productId, 0L);
                 // 卖家名称：优先昵称，其次用户名
                 String sellerName = r.getSeller() != null ? r.getSeller() : r.getSellerUsername();
+                // 解析图片列表
+                List<String> imageList = parseImageList(r.getImage());
+                String firstImage = imageList.isEmpty() ? null : imageList.get(0);
                 items.add(new HomeDto.HomeProduct(
                         r.getId(),
                         r.getTitle(),
-                        r.getImage(),
+                        firstImage,
+                        imageList,
                         priceInt,
                         "",
                         null,
@@ -105,11 +110,15 @@ public class HomeService {
                         Integer priceInt = parsePriceToInt(r.getPrice());
                         // 卖家名称：优先昵称，其次用户名
                         String sellerName = r.getSeller() != null ? r.getSeller() : r.getSellerUsername();
+                        // 解析图片列表
+                        List<String> imageList = parseImageList(r.getImage());
+                        String firstImage = imageList.isEmpty() ? null : imageList.get(0);
                         // 未被浏览过的商品，浏览量为 0
                         items.add(new HomeDto.HomeProduct(
                                 r.getId(),
                                 r.getTitle(),
-                                r.getImage(),
+                                firstImage,
+                                imageList,
                                 priceInt,
                                 "",
                                 null,
@@ -139,10 +148,14 @@ public class HomeService {
             Integer priceInt = parsePriceToInt(r.getPrice());
             // 卖家名称：优先昵称，其次用户名
             String sellerName = r.getSeller() != null ? r.getSeller() : r.getSellerUsername();
+            // 解析图片列表
+            List<String> imageList = parseImageList(r.getImage());
+            String firstImage = imageList.isEmpty() ? null : imageList.get(0);
             items.add(new HomeDto.HomeProduct(
                     r.getId(),
                     r.getTitle(),
-                    r.getImage(),
+                    firstImage,
+                    imageList,
                     priceInt,
                     "",
                     null,
@@ -172,11 +185,15 @@ public class HomeService {
             Integer priceInt = parsePriceToInt(r.getPrice());
             // 卖家名称：优先昵称，其次用户名
             String sellerName = r.getSeller() != null ? r.getSeller() : r.getSellerUsername();
+            // 解析图片列表
+            List<String> imageList = parseImageList(r.getImage());
+            String firstImage = imageList.isEmpty() ? null : imageList.get(0);
             // 构造返回条目
             items.add(new HomeDto.HomeProduct(
                     r.getId(),           // id：商品唯一标识
                     r.getTitle(),        // title：商品标题
-                    r.getImage(),        // image：商品图片
+                    firstImage,          // image：首张商品图片
+                    imageList,           // images：商品图片列表
                     priceInt,            // price：整数价格
                     null,                // publishedAt：最新接口不使用该字段
                     "",                 // publishTime：可选发布时间占位，留空字符串
@@ -206,5 +223,23 @@ public class HomeService {
             // 解析失败返回 null，避免抛出异常
             return null;
         }
+    }
+
+    // 将逗号分隔的图片字符串解析为列表
+    // imageStr：数据库中存储的图片路径，可能是单张或逗号分隔的多张
+    private List<String> parseImageList(String imageStr) {
+        if (imageStr == null || imageStr.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        // 按逗号分隔并过滤空字符串
+        String[] parts = imageStr.split(",");
+        List<String> result = new ArrayList<>();
+        for (String part : parts) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty()) {
+                result.add(trimmed);
+            }
+        }
+        return result;
     }
 }

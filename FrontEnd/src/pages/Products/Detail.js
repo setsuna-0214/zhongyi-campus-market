@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { 
   Row, 
   Col, 
@@ -8,7 +8,6 @@ import {
   Avatar, 
   Divider, 
   Image, 
-  Carousel, 
   Space,
   Modal,
   Input,
@@ -28,9 +27,9 @@ import {
   EnvironmentOutlined,
   ClockCircleOutlined,
   SafetyCertificateOutlined,
-  MailOutlined,
   HomeOutlined,
-  RightOutlined
+  RightOutlined,
+  LeftOutlined
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import './Detail.css';
@@ -38,23 +37,114 @@ import { getProduct, getRelatedProducts, updateProductStatus } from '../../api/p
 import { getCategoryLabel, getStatusLabel, getStatusColor, getTradeMethodLabel, parseTradeMethod } from '../../utils/labels';
 import { getFavorites, addToFavorites, removeFavoriteByProductId } from '../../api/favorites';
 import { checkIsFollowing, followUser, unfollowUser } from '../../api/user';
+import { createOrder } from '../../api/orders';
 import { resolveImageSrc, FALLBACK_IMAGE } from '../../utils/images';
 import { getComments, addComment } from '../../api/comments';
+import { getCurrentUserId, isSelf } from '../../utils/auth';
+import { useLoginPrompt } from '../../components/LoginPromptModal';
+import FollowButton from '../../components/FollowButton';
 
 const { TextArea } = Input;
+
+// 自定义图片轮播组件
+const ImageCarousel = ({ images, title, fallback }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const autoPlayRef = useRef(null);
+  const imageCount = images?.length || 0;
+
+  const goToSlide = (index) => {
+    setCurrentIndex(index);
+  };
+
+  // 自动播放
+  useEffect(() => {
+    if (imageCount <= 1) return;
+    
+    autoPlayRef.current = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % imageCount);
+    }, 4000);
+    
+    return () => clearInterval(autoPlayRef.current);
+  }, [imageCount]);
+
+  // 鼠标悬停暂停自动播放
+  const handleMouseEnter = () => clearInterval(autoPlayRef.current);
+  const handleMouseLeave = () => {
+    if (imageCount <= 1) return;
+    autoPlayRef.current = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % imageCount);
+    }, 4000);
+  };
+
+  if (!images || images.length === 0) {
+    return (
+      <div className="carousel-slide active">
+        <Image src={fallback} alt={title} width="100%" height={450} style={{ objectFit: 'cover', background: '#f8f9fa' }} />
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="custom-carousel"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <Image.PreviewGroup
+        preview={{
+          countRender: (current, total) => `${current} / ${total}`,
+          icons: { left: <LeftOutlined />, right: <RightOutlined /> },
+        }}
+      >
+        <div className="carousel-track">
+          {images.map((image, index) => (
+            <div 
+              key={index} 
+              className={`carousel-slide ${index === currentIndex ? 'active' : ''}`}
+            >
+              <Image
+                src={image}
+                alt={`${title} ${index + 1}`}
+                width="100%"
+                height={450}
+                fallback={fallback}
+                style={{ objectFit: 'cover', background: '#f8f9fa' }}
+                preview={{
+                  mask: <div className="preview-mask"><EyeOutlined /> 查看大图</div>
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </Image.PreviewGroup>
+      
+      {/* 自定义指示点 */}
+      {imageCount > 1 && (
+        <div className="carousel-dots">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              className={`carousel-dot ${index === currentIndex ? 'active' : ''}`}
+              onClick={() => goToSlide(index)}
+              aria-label={`切换到第 ${index + 1} 张图片`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { showLoginPrompt } = useLoginPrompt();
   
   // 状态管理
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
-  const [contactModalVisible, setContactModalVisible] = useState(false);
-  const [messageModalVisible, setMessageModalVisible] = useState(false);
-  const [chatMessage, setChatMessage] = useState('');
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
@@ -92,6 +182,12 @@ const ProductDetail = () => {
 
   // 初始化收藏状态
   const initFavoriteState = useCallback(async () => {
+    // 未登录时不请求收藏列表
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      setIsFavorited(false);
+      return;
+    }
     try {
       const favorites = await getFavorites();
       const exists = Array.isArray(favorites) && favorites.some(f => String(f.productId) === String(id));
@@ -114,6 +210,11 @@ const ProductDetail = () => {
 
   // 处理收藏
   const handleFavorite = async () => {
+    // 检查是否已登录
+    if (!getCurrentUserId()) {
+      showLoginPrompt({ message: '收藏商品需要登录后才能进行' });
+      return;
+    }
     try {
       if (isFavorited) {
         await removeFavoriteByProductId(id);
@@ -144,25 +245,11 @@ const ProductDetail = () => {
     }
   };
 
-  // 获取当前登录用户ID
-  const getCurrentUserId = () => {
-    try {
-      const raw = localStorage.getItem('authUser');
-      if (raw) {
-        const user = JSON.parse(raw);
-        return user?.id;
-      }
-    } catch {}
-    return null;
-  };
-
   const handleFollow = async (e) => {
     e.stopPropagation();
     // 检查是否已登录
-    const currentUserId = getCurrentUserId();
-    if (!currentUserId) {
-      message.warning('请先登录后再关注');
-      navigate('/login');
+    if (!getCurrentUserId()) {
+      showLoginPrompt({ message: '关注卖家需要登录后才能进行' });
       return;
     }
     if (!product?.seller?.id) {
@@ -170,7 +257,7 @@ const ProductDetail = () => {
       return;
     }
     // 检查是否关注自己
-    if (String(currentUserId) === String(product.seller.id)) {
+    if (isSelf(product.seller.id)) {
       message.warning('不能关注自己');
       return;
     }
@@ -189,38 +276,18 @@ const ProductDetail = () => {
     }
   };
 
-  const _unused = null;
-
-  // 发送消息
-  const sendMessage = () => {
-    const text = (chatMessage || '').trim();
-    if (!text) {
-      message.error('请输入消息内容');
-      return;
-    }
-    if (product?.seller?.id) {
-      navigate(`/chat?sellerId=${product.seller.id}&productId=${id}`);
-    } else {
-      navigate('/chat');
-    }
-    setMessageModalVisible(false);
-    setChatMessage('');
-  };
-
   const [purchaseConfirmVisible, setPurchaseConfirmVisible] = useState(false);
   const [purchaseResultVisible, setPurchaseResultVisible] = useState(false);
   const [createdOrderId, setCreatedOrderId] = useState(null);
 
   const handleBuyNow = () => {
     // 检查是否已登录
-    const currentUserId = getCurrentUserId();
-    if (!currentUserId) {
-      message.warning('请先登录后再购买');
-      navigate('/login');
+    if (!getCurrentUserId()) {
+      showLoginPrompt({ message: '购买商品需要登录后才能进行' });
       return;
     }
     // 检查是否购买自己的商品
-    if (product?.seller?.id && String(currentUserId) === String(product.seller.id)) {
+    if (product?.seller?.id && isSelf(product.seller.id)) {
       message.warning('不能购买自己发布的商品');
       return;
     }
@@ -229,16 +296,18 @@ const ProductDetail = () => {
 
   const gotoContactSeller = () => {
     // 检查是否已登录
-    const currentUserId = getCurrentUserId();
-    if (!currentUserId) {
-      message.warning('请先登录后再联系卖家');
-      navigate('/login');
+    if (!getCurrentUserId()) {
+      showLoginPrompt({ message: '联系卖家需要登录后才能进行' });
       return;
     }
     const sellerId = product?.seller?.id;
+    const sellerName = product?.seller?.nickname || product?.seller?.username || '';
+    const sellerAvatar = product?.seller?.avatar || '';
     if (sellerId) {
-      const params = new URLSearchParams({ sellerId, productId: id });
-      if (createdOrderId) params.set('orderId', String(createdOrderId));
+      const params = new URLSearchParams({ sid: sellerId, pid: id });
+      if (sellerName) params.set('sname', sellerName);
+      if (sellerAvatar) params.set('savatar', sellerAvatar);
+      if (createdOrderId) params.set('oid', String(createdOrderId));
       navigate(`/chat?${params.toString()}`);
     } else {
       navigate('/chat');
@@ -332,34 +401,25 @@ const ProductDetail = () => {
             <span onClick={() => navigate('/')}>首页</span>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <span onClick={() => navigate('/search?type=products')}>商品</span>
+            <span onClick={() => navigate('/search')}>商品</span>
           </Breadcrumb.Item>
           <Breadcrumb.Item>
-            <span onClick={() => navigate(`/search?type=products&category=${product.category}`)}>
+            <span onClick={() => navigate(`/search?c=${product.category}`)}>
               {getCategoryLabel(product.category)}
             </span>
           </Breadcrumb.Item>
           <Breadcrumb.Item>{product.title}</Breadcrumb.Item>
         </Breadcrumb>
 
-        <Row gutter={[24, 24]}>
+        <Row gutter={[20, 20]}>
           {/* 左侧：商品图片和基本信息 */}
-          <Col xs={24} lg={14}>
+          <Col xs={24} lg={15}>
             <Card className="product-images-card">
-              <Carousel autoplay dots={{ className: 'custom-dots' }}>
-                {(product.images || []).map((image, index) => (
-                  <div key={index} className="carousel-item">
-                    <Image
-                      src={image}
-                      alt={`${product.title} ${index + 1}`}
-                      width="100%"
-                      height={400}
-                      fallback={FALLBACK_IMAGE}
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </div>
-                ))}
-              </Carousel>
+              <ImageCarousel 
+                images={product.images} 
+                title={product.title} 
+                fallback={FALLBACK_IMAGE}
+              />
               
               <div className="product-actions">
                 <Space size="middle">
@@ -367,6 +427,7 @@ const ProductDetail = () => {
                     type={isFavorited ? 'primary' : 'default'}
                     icon={isFavorited ? <HeartFilled /> : <HeartOutlined />}
                     onClick={handleFavorite}
+                    className={isFavorited ? 'favorite-btn favorited' : 'favorite-btn'}
                   >
                     {isFavorited ? '已收藏' : '收藏'}
                   </Button>
@@ -410,14 +471,14 @@ const ProductDetail = () => {
             <Card title={`商品评论 (${comments.length})`} className="comments-card">
               <div className="comment-input">
                 <TextArea
-                  rows={3}
                   placeholder="写下你的问题或想法…"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   maxLength={500}
-                  showCount
+                  autoSize={{ minRows: 2, maxRows: 6 }}
+                  style={{ resize: 'none' }}
                 />
-                <div style={{ textAlign: 'right', marginTop: 8 }}>
+                <div style={{ textAlign: 'right', marginTop: 12 }}>
                   <Button type="primary" onClick={handleAddComment} loading={commentLoading}>提交评论</Button>
                 </div>
               </div>
@@ -432,7 +493,7 @@ const ProductDetail = () => {
                       title={
                         <span>
                           {item.userNickname || '用户'} · 
-                          <span style={{ color: '#999', fontWeight: 400, marginLeft: 4 }}>
+                          <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 4, fontSize: 12 }}>
                             {item.createdAt ? new Date(item.createdAt).toLocaleString('zh-CN') : ''}
                           </span>
                         </span>
@@ -446,7 +507,7 @@ const ProductDetail = () => {
           </Col>
 
           {/* 右侧：价格和购买信息 */}
-          <Col xs={24} lg={10}>
+          <Col xs={24} lg={9}>
             <Card className="purchase-card">
               <div className="product-header">
                 <h1 className="detail-title">{product.title}</h1>
@@ -509,14 +570,11 @@ const ProductDetail = () => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Button 
-                    type={isFollowing ? 'default' : 'primary'}
-                    shape="round"
+                  <FollowButton 
+                    isFollowing={isFollowing}
                     size="small"
                     onClick={handleFollow}
-                  >
-                    {isFollowing ? '已关注' : '关注'}
-                  </Button>
+                  />
                   <RightOutlined className="seller-arrow" />
                 </div>
               </div>
@@ -552,16 +610,16 @@ const ProductDetail = () => {
 
             {/* 相关商品 */}
             {relatedProducts.length > 0 && (
-              <Card title="相关商品" className="related-products-card">
+              <Card title="相关推荐" className="related-products-card">
                 <div className="related-products">
-                  {relatedProducts.map(item => (
+                  {relatedProducts.slice(0, 4).map(item => (
                     <div
                       key={item.id}
                       className="related-item"
                       onClick={() => navigate(`/products/${item.id}`)}
                     >
                       <img 
-                        src={resolveImageSrc({ item })} 
+                        src={resolveImageSrc({ item, product: item })} 
                         alt={item.title} 
                         onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }}
                       />
@@ -579,41 +637,12 @@ const ProductDetail = () => {
         </Row>
       </div>
 
-      {/* 联系卖家弹窗 */}
       <Modal
-        title="联系卖家"
-        open={contactModalVisible}
-        onCancel={() => setContactModalVisible(false)}
-        footer={null}
-        width={400}
-      >
-        <div className="contact-modal">
-          <div className="contact-item">
-            <MailOutlined />
-            <span>微信：zhang_student</span>
-            <Button size="small" type="link">复制</Button>
-          </div>
-          <div className="contact-item">
-            <MessageOutlined />
-            <span>QQ：123456789</span>
-            <Button size="small" type="link">复制</Button>
-          </div>
-          <div className="contact-note">
-            <p>温馨提示：</p>
-            <p>• 请通过平台内消息优先沟通</p>
-            <p>• 线下交易请注意安全</p>
-            <p>• 建议校内面交验货</p>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
-        title="是否确认购买？"
+        title={null}
         open={purchaseConfirmVisible}
         onCancel={() => setPurchaseConfirmVisible(false)}
         onOk={async () => {
           try {
-            const { createOrder } = await import('../../api/orders');
             const resp = await createOrder({ productId: id, quantity: 1 });
             const oid = resp?.id || resp?.orderId || null;
             setCreatedOrderId(oid);
@@ -631,46 +660,83 @@ const ProductDetail = () => {
             message.error(err?.message || '下单失败');
           }
         }}
-        okText="确认"
-        cancelText="取消"
+        okText="确认购买"
+        cancelText="再想想"
         centered
-      />
+        className="purchase-confirm-modal"
+        width={420}
+      >
+        <div className="purchase-confirm-content">
+          <div className="purchase-confirm-icon">
+            <ShoppingCartOutlined />
+          </div>
+          <h3 className="purchase-confirm-title">确认购买此商品？</h3>
+          <div className="purchase-confirm-product">
+            <img 
+              src={resolveImageSrc({ item: product, product })} 
+              alt={product?.title}
+              onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }}
+            />
+            <div className="purchase-confirm-info">
+              <div className="purchase-confirm-name">{product?.title}</div>
+              <div className="purchase-confirm-price">¥{product?.price}</div>
+            </div>
+          </div>
+          <p className="purchase-confirm-tip">
+            点击确认后将生成订单，请及时联系卖家完成交易
+          </p>
+        </div>
+      </Modal>
 
       <Modal
-        title="已通知卖家处理您的订单"
+        title={null}
         open={purchaseResultVisible}
         onCancel={() => setPurchaseResultVisible(false)}
         footer={null}
         centered
+        className="purchase-result-modal"
+        width={420}
       >
-        <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-          <Button
-            type="primary"
-            onClick={() => { gotoContactSeller(); setPurchaseResultVisible(false); }}
-          >
-            联系卖家
-          </Button>
-          <Button onClick={() => setPurchaseResultVisible(false)}>我知道了</Button>
-        </Space>
-      </Modal>
-
-      {/* 发送消息弹窗 */}
-      <Modal
-        title="发送消息"
-        open={messageModalVisible}
-        onOk={sendMessage}
-        onCancel={() => setMessageModalVisible(false)}
-        okText="发送"
-        cancelText="取消"
-      >
-        <TextArea
-          rows={4}
-          placeholder="请输入您想对卖家说的话..."
-          value={chatMessage}
-            onChange={(e) => setChatMessage(e.target.value)}
-          maxLength={500}
-          showCount
-        />
+        <div className="purchase-result-content">
+          <div className="purchase-result-icon success">
+            <SafetyCertificateOutlined />
+          </div>
+          <h3 className="purchase-result-title">订单已生成</h3>
+          <p className="purchase-result-desc">
+            已通知卖家处理您的订单，建议尽快联系卖家确认交易细节
+          </p>
+          <div className="purchase-result-actions">
+            <Button
+              type="primary"
+              size="large"
+              icon={<MessageOutlined />}
+              onClick={() => { gotoContactSeller(); setPurchaseResultVisible(false); }}
+            >
+              联系卖家
+            </Button>
+            <Button 
+              size="large"
+              className="view-order-btn"
+              icon={<EyeOutlined />}
+              onClick={() => { 
+                setPurchaseResultVisible(false);
+                if (createdOrderId) {
+                  navigate(`/orders/${createdOrderId}`);
+                } else {
+                  navigate('/profile?t=orders');
+                }
+              }}
+            >
+              查看订单
+            </Button>
+            <Button 
+              size="large"
+              onClick={() => setPurchaseResultVisible(false)}
+            >
+              稍后再说
+            </Button>
+          </div>
+        </div>
       </Modal>
 
     </div>

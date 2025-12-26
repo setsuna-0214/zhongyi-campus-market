@@ -16,9 +16,7 @@ import SearchPage from './pages/Search';
 import UserProfile from './pages/User/Profile';
 import SellerProfile from './pages/User/SellerProfile';
 import Chat from './pages/Chat';
-import AdminDashboard from './pages/Admin/Dashboard';
 import FloatingButtons from './components/FloatingButtons';
-import AdminGuard from './pages/Admin/Guard';
 import OrderProcess from './pages/Orders/OrderProcess';
 import Help from './pages/Help';
 
@@ -46,7 +44,6 @@ function App() {
           <Route path="/chat" element={<Chat />} />
           <Route path="/orders/:id" element={<OrderProcess />} />
           <Route path="/help" element={<Help />} />
-          <Route path="/admin" element={<AdminGuard><AdminDashboard /></AdminGuard>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Content>
