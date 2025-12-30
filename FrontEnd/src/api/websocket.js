@@ -14,9 +14,20 @@ const getWsUrl = () => {
   
   // 根据当前环境确定 WebSocket 地址
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const host = import.meta.env.VITE_API_BASE_URL 
-    ? new URL(import.meta.env.VITE_API_BASE_URL).host 
-    : 'localhost:8080';
+  
+  // 处理 API 地址，支持相对路径和绝对路径
+  let host = window.location.host; // 默认使用当前页面的 host
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  
+  if (apiBaseUrl && !apiBaseUrl.startsWith('/')) {
+    // 如果是完整 URL，提取 host
+    try {
+      host = new URL(apiBaseUrl).host;
+    } catch (e) {
+      console.warn('Invalid VITE_API_BASE_URL, using current host');
+    }
+  }
+  // 如果是相对路径（如 /api），使用当前页面的 host
   
   // 注意：为了安全，token 不应该放在 URL 中
   // 如果后端支持，应该在连接建立后通过消息发送 token

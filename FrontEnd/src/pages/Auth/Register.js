@@ -25,6 +25,7 @@ const Register = () => {
   const [countdown, setCountdown] = useState(0);
   const [usernameStatus, setUsernameStatus] = useState({ validating: false, error: '' });
   const [emailStatus, setEmailStatus] = useState({ validating: false, error: '' });
+  const [verificationCode, setVerificationCode] = useState('');
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -139,6 +140,11 @@ const Register = () => {
   };
 
   const onFinish = async (values) => {
+    // 验证验证码
+    if (!verificationCode || verificationCode.length !== 6) {
+      message.warning('请输入完整的6位验证码');
+      return;
+    }
     setLoading(true);
     try {
       const res = await register({
@@ -146,7 +152,7 @@ const Register = () => {
         email: values.email,
         password: values.password,
         confirmPassword: values.confirmPassword,
-        verificationCode: values.verificationCode,
+        verificationCode: verificationCode,
       });
       // 后端返回格式: { code: 200, message: "注册成功", data: {} }
       if (res?.code !== 200) {
@@ -235,16 +241,9 @@ const Register = () => {
           <Input.Password prefix={<LockOutlined />} placeholder="再次输入密码" />
         </Form.Item>
 
-        <Form.Item
-          name="verificationCode"
-          label="邮箱验证码"
-          rules={[
-            { required: true, message: '验证码不能少~' },
-            { len: 6, message: '验证码是6位数字哦' },
-          ]}
-        >
+        <Form.Item label="邮箱验证码" style={{ marginBottom: 16 }}>
           <div className="verification-code-row">
-            <VerificationCodeInput />
+            <VerificationCodeInput value={verificationCode} onChange={setVerificationCode} />
             <Button
               onClick={sendVerificationCode}
               loading={loading}
