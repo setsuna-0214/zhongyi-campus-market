@@ -19,6 +19,7 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [countdown, setCountdown] = useState(0);
+  const [verificationCode, setVerificationCode] = useState('');
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -49,6 +50,11 @@ const ForgotPassword = () => {
   };
 
   const onFinish = async (values) => {
+    // 验证验证码
+    if (!verificationCode || verificationCode.length !== 6) {
+      message.warning('请输入完整的6位验证码');
+      return;
+    }
     setLoading(true);
     try {
       if (values.newPassword !== values.confirmPassword) {
@@ -58,7 +64,7 @@ const ForgotPassword = () => {
       const res = await forgotPassword({
         username: values.username,
         email: values.email,
-        verificationCode: values.verificationCode,
+        verificationCode: verificationCode,
         newPassword: values.newPassword,
         confirmPassword: values.confirmPassword,
       });
@@ -120,16 +126,9 @@ const ForgotPassword = () => {
                   <Input prefix={<MailOutlined />} placeholder="注册时使用的邮箱" />
                 </Form.Item>
 
-                <Form.Item
-                  name="verificationCode"
-                  label="邮箱验证码"
-                  rules={[
-                    { required: true, message: '验证码不能少~' },
-                    { len: 6, message: '验证码是6位数字哦' },
-                  ]}
-                >
+                <Form.Item label="邮箱验证码" style={{ marginBottom: 16 }}>
                   <div className="verification-code-row">
-                    <VerificationCodeInput />
+                    <VerificationCodeInput value={verificationCode} onChange={setVerificationCode} />
                     <Button
                       onClick={handleSendCode}
                       loading={loading}
