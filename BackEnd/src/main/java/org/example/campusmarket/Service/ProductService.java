@@ -32,6 +32,9 @@ public class ProductService {
     @Autowired
     private ProductHotnessService productHotnessService;
 
+    @Autowired
+    private SystemMessageService systemMessageService;
+
     // 搜索商品的核心业务方法
     // keyword: 搜索关键词
     // category: 分类过滤
@@ -215,6 +218,19 @@ public class ProductService {
             productMapper.insertProduct(product);
             log.info("商品创建成功 - id: {}, name: {}, imageCount: {}", 
                      product.getPro_id(), product.getPro_name(), imageUrls.size());
+            
+            // 发送商品发布成功通知
+            if (product.getSaler_id() != null) {
+                systemMessageService.createMessage(
+                    product.getSaler_id(),
+                    "product_published",
+                    "商品发布成功",
+                    "您的商品「" + product.getPro_name() + "」已成功发布，快去看看吧！",
+                    "/products/" + product.getPro_id(),
+                    "查看商品"
+                );
+            }
+            
             return product.getPro_id();
         } catch (Exception e) {
             log.error("商品保存到数据库失败 - error: {}", e.getMessage());

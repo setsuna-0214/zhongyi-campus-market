@@ -26,6 +26,8 @@ public class OrdersService {
     private ProductMapper productMapper;
     @Autowired
     private UserInfoMapper userInfoMapper;
+    @Autowired
+    private SystemMessageService systemMessageService;
 
     /**
      * 查询当前用户订单列表（包括作为买家和卖家的订单），并按传入条件进行可选过滤。
@@ -188,6 +190,29 @@ public class OrdersService {
             product.getPro_id(), product.getPro_name(), unitPrice.intValue(), 
             product.getPicture(), product.getCategory(), location);
         
+        // 发送系统通知
+        String buyerName = buyerInfo != null ? (buyerInfo.getNickname() != null ? buyerInfo.getNickname() : buyerInfo.getUsername()) : "买家";
+        // 给买家发送订单创建成功通知
+        systemMessageService.createMessage(
+            userId,
+            "order_created",
+            "订单创建成功",
+            "您已成功下单购买「" + product.getPro_name() + "」，请等待卖家处理。",
+            "/orders/" + order.getId(),
+            "查看订单"
+        );
+        // 给卖家发送新订单通知
+        if (sellerId != null) {
+            systemMessageService.createMessage(
+                sellerId,
+                "new_order",
+                "收到新订单",
+                "用户「" + buyerName + "」购买了您的商品「" + product.getPro_name() + "」，请尽快处理订单。",
+                "/orders/" + order.getId(),
+                "处理订单"
+            );
+        }
+        
         LocalDateTime orderTime = order.getCreatedAt();
         return new OrderDto.Response(order.getId(), order.getProductId(), productSummary, 
             order.getQuantity(), totalPrice.intValue(), order.getStatus(), orderTime, order.getCreatedAt(), buyer, seller);
@@ -199,9 +224,42 @@ public class OrdersService {
      * 商品保持锁定状态（is_seal = true），表示已售出
      */
     public boolean confirmOrder(Integer userId, Integer id) {
+        // 先获取订单信息用于发送通知
+        Order order = ordersMapper.getOrderById(id);
+        if (order == null) {
+            return false;
+        }
+        
         // 更新订单状态
         int result = ordersMapper.updateStatus(id, userId, "completed");
-        // 商品保持锁定状态，不需要额外操作
+        if (result == 1) {
+            // 获取商品和用户信息
+            Product product = productMapper.findProductBasicById(order.getProductId());
+            UserInfo buyerInfo = userInfoMapper.findByUserId(userId);
+            String buyerName = buyerInfo != null ? (buyerInfo.getNickname() != null ? buyerInfo.getNickname() : buyerInfo.getUsername()) : "买家";
+            String productName = product != null ? product.getPro_name() : "商品";
+            
+            // 给卖家发送买家确认收货通知
+            if (order.getSellerId() != null) {
+                systemMessageService.createMessage(
+                    order.getSellerId(),
+                    "buyer_confirmed",
+                    "买家已确认收货",
+                    "买家「" + buyerName + "」已确认收到您的商品「" + productName + "」，交易完成！",
+                    "/profile?t=orders",
+                    "查看详情"
+                );
+            }
+            // 给买家发送订单完成通知
+            systemMessageService.createMessage(
+                userId,
+                "order_completed",
+                "订单已完成",
+                "您购买的「" + productName + "」订单已完成，感谢您的购买！欢迎对商品进行评价。",
+                "/orders/" + id,
+                "去评价"
+            );
+        }
         return result == 1;
     }
 
@@ -229,6 +287,34 @@ public class OrdersService {
         if (result == 1) {
             // 解锁商品，允许其他用户购买
             productMapper.updateProductSealStatus(targetOrder.getProductId(), false);
+            
+            // 获取商品和用户信息用于发送通知
+            Product product = productMapper.findProductBasicById(targetOrder.getProductId());
+            UserInfo buyerInfo = userInfoMapper.findByUserId(userId);
+            String buyerName = buyerInfo != null ? (buyerInfo.getNickname() != null ? buyerInfo.getNickname() : buyerInfo.getUsername()) : "买家";
+            String productName = product != null ? product.getPro_name() : "商品";
+            
+            // 给卖家发送买家取消订单通知
+            if (targetOrder.getSellerId() != null) {
+                systemMessageService.createMessage(
+                    targetOrder.getSellerId(),
+                    "buyer_cancelled",
+                    "买家取消订单",
+                    "买家「" + buyerName + "」取消了商品「" + productName + "」的订单，商品已恢复上架。",
+                    "/profile?t=orders",
+                    "查看详情"
+                );
+            }
+            // 给买家发送订单取消通知
+            systemMessageService.createMessage(
+                userId,
+                "order_cancelled",
+                "订单已取消",
+                "您购买的「" + productName + "」订单已取消，商品已恢复上架。",
+                "/profile?t=orders",
+                "查看详情"
+            );
+            
             return true;
         }
         return false;
@@ -311,7 +397,34 @@ public class OrdersService {
      */
     public boolean updateOrderStatus(Integer orderId, String status, String sellerMessage, List<String> sellerImages) {
         String imagesStr = sellerImages != null && !sellerImages.isEmpty() ? String.join(",", sellerImages) : null;
-        return ordersMapper.updateOrderStatusWithMessage(orderId, status, sellerMessage, imagesStr) == 1;
+        boolean result = ordersMapper.updateOrderStatusWithMessage(orderId, status, sellerMessage, imagesStr) == 1;
+        
+        // 如果是卖家处理订单（状态变为 pending_buyer），发送通知给买家
+        if (result && "pending_buyer".equals(status)) {
+            Order order = ordersMapper.getOrderById(orderId);
+            if (order != null && order.getUserId() != null) {
+                Product product = productMapper.findProductBasicById(order.getProductId());
+                String productName = product != null ? product.getPro_name() : "商品";
+                
+                systemMessageService.createMessage(
+                    order.getUserId(),
+                    "order_processed",
+                    "卖家已处理订单",
+                    "卖家已处理您购买的「" + productName + "」订单，请查看详情并确认收货。",
+                    "/orders/" + orderId,
+                    "确认收货"
+                );
+            }
+        }
+        
+        return result;
+    }
+
+    /**
+     * 删除订单（仅允许删除已取消的订单）
+     */
+    public boolean deleteOrder(Integer userId, Integer orderId) {
+        return ordersMapper.deleteOrder(orderId, userId) == 1;
     }
 
     /**

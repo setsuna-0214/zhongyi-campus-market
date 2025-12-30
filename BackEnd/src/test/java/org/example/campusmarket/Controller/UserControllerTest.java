@@ -87,7 +87,7 @@ class UserControllerTest {
 
         mockMvc.perform(post("/user/follows/2").with(authentication(createAuth(1))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
+                .andExpect(jsonPath("$.code").value(200));
     }
 
     @Test
@@ -96,7 +96,7 @@ class UserControllerTest {
 
         mockMvc.perform(delete("/user/follows/2").with(authentication(createAuth(1))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
+                .andExpect(jsonPath("$.code").value(200));
     }
 
     @Test
@@ -105,7 +105,7 @@ class UserControllerTest {
 
         mockMvc.perform(get("/user/follows").with(authentication(createAuth(1))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
+                .andExpect(jsonPath("$.code").value(200));
     }
 
     @Test

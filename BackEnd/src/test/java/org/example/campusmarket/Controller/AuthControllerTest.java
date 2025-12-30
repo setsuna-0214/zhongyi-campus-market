@@ -49,7 +49,7 @@ class AuthControllerTest {
     @Test
     @WithMockUser
     void testSendCode_Success() throws Exception {
-        doNothing().when(authService).SendRegisterCode("test@test.com");
+        when(authService.SendCode("test@test.com")).thenReturn(new Result(200, "验证码发送成功", null));
 
         Map<String, String> body = new HashMap<>();
         body.put("email", "test@test.com");
@@ -87,8 +87,8 @@ class AuthControllerTest {
     @Test
     @WithMockUser
     void testSendCode_TooFrequent() throws Exception {
-        doThrow(new IllegalStateException("发送过于频繁"))
-                .when(authService).SendRegisterCode("test@test.com");
+        when(authService.SendCode("test@test.com"))
+                .thenThrow(new IllegalStateException("发送过于频繁"));
 
         Map<String, String> body = new HashMap<>();
         body.put("email", "test@test.com");

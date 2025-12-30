@@ -201,11 +201,13 @@ class AuthServiceTest {
      * 测试发送验证码
      */
     @Test
-    void testSendRegisterCode() {
+    void testSendCode() {
         doNothing().when(codeService).sendCode("test@test.com");
 
-        authService.SendRegisterCode("test@test.com");
+        Result result = authService.SendCode("test@test.com");
 
+        assertEquals(200, result.getCode());
+        assertEquals("验证码发送成功", result.getMessage());
         verify(codeService, times(1)).sendCode("test@test.com");
     }
 }

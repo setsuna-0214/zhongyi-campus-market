@@ -1,4 +1,5 @@
 import client from './client';
+import { isLoggedIn } from '../utils/auth';
 
 /**
  * 系统消息 API
@@ -73,6 +74,11 @@ let cacheTimestamp = 0;
  * @returns {Promise<Array>} 系统消息列表
  */
 export async function listSystemMessages(forceRefresh = false) {
+  // 未登录时直接返回空数组
+  if (!isLoggedIn()) {
+    return [];
+  }
+  
   const now = Date.now();
   
   // 使用缓存（未过期且非强制刷新）
@@ -92,11 +98,8 @@ export async function listSystemMessages(forceRefresh = false) {
     return messages;
   } catch (error) {
     console.error('获取系统消息失败:', error);
-    // 返回模拟数据用于开发
-    const mockData = getMockSystemMessages();
-    systemMessagesCache = mockData;
-    cacheTimestamp = now;
-    return mockData;
+    // API失败时返回空数组
+    return [];
   }
 }
 
@@ -182,108 +185,38 @@ export async function clearAllSystemMessages() {
 }
 
 /**
- * 模拟系统消息数据（开发用）
- * 根据实际订单流程设计：
- * - 订单状态：pending_seller → pending_buyer → completed (或 cancelled)
- * - 买家操作：创建订单、取消订单、确认收货、提交评价
- * - 卖家操作：处理订单（上传图片、添加留言）
- * 
- * 路由说明：
- * - /products/:id - 商品详情页
- * - /orders/:id - 订单处理页（可查看/处理订单）
- * - /profile?t=orders - 用户中心订单列表
- * - /profile?t=products - 用户中心商品管理
+ * 获取通知设置
+ * @returns {Promise<{product: boolean, order: boolean, social: boolean}>}
  */
-function getMockSystemMessages() {
-  const now = new Date();
-  return [
-    // 商品相关
-    {
-      id: 1,
-      type: SYSTEM_MESSAGE_TYPES.PRODUCT_PUBLISHED,
-      title: '商品发布成功',
-      content: '您的商品「iPhone 15 Pro Max 256G」已成功发布，快去看看吧！',
-      timestamp: new Date(now - 1000 * 60 * 30).toLocaleString(), // 30分钟前
-      isRead: false,
-      link: '/products/123',
-      linkText: '查看商品'
-    },
-    // 卖家收到新订单（链接到订单处理页）
-    {
-      id: 2,
-      type: SYSTEM_MESSAGE_TYPES.NEW_ORDER,
-      title: '收到新订单',
-      content: '用户「小明」购买了您的商品「MacBook Pro 14寸」，请尽快处理订单。',
-      timestamp: new Date(now - 1000 * 60 * 60 * 2).toLocaleString(), // 2小时前
-      isRead: false,
-      link: '/orders/456',
-      linkText: '处理订单'
-    },
-    // 买家订单创建成功（链接到订单处理页）
-    {
-      id: 3,
-      type: SYSTEM_MESSAGE_TYPES.ORDER_CREATED,
-      title: '订单创建成功',
-      content: '您已成功下单购买「AirPods Pro 2」，请等待卖家处理。',
-      timestamp: new Date(now - 1000 * 60 * 60 * 5).toLocaleString(), // 5小时前
-      isRead: false,
-      link: '/orders/457',
-      linkText: '查看订单'
-    },
-    // 买家收到卖家处理通知（链接到订单处理页确认收货）
-    {
-      id: 4,
-      type: SYSTEM_MESSAGE_TYPES.ORDER_PROCESSED,
-      title: '卖家已处理订单',
-      content: '卖家已处理您购买的「iPad Air 5」订单，请查看详情并确认收货。',
-      timestamp: new Date(now - 1000 * 60 * 60 * 24).toLocaleString(), // 1天前
-      isRead: true,
-      link: '/orders/458',
-      linkText: '确认收货'
-    },
-    // 卖家收到买家确认通知（链接到用户中心订单列表）
-    {
-      id: 5,
-      type: SYSTEM_MESSAGE_TYPES.BUYER_CONFIRMED,
-      title: '买家已确认收货',
-      content: '买家「小红」已确认收到您的商品「Switch游戏机」，交易完成！',
-      timestamp: new Date(now - 1000 * 60 * 60 * 24 * 2).toLocaleString(), // 2天前
-      isRead: true,
-      link: '/profile?t=orders',
-      linkText: '查看详情'
-    },
-    // 订单完成（链接到订单处理页可评价）
-    {
-      id: 6,
-      type: SYSTEM_MESSAGE_TYPES.ORDER_COMPLETED,
-      title: '订单已完成',
-      content: '您购买的「机械键盘」订单已完成，感谢您的购买！欢迎对商品进行评价。',
-      timestamp: new Date(now - 1000 * 60 * 60 * 24 * 3).toLocaleString(), // 3天前
-      isRead: true,
-      link: '/orders/460',
-      linkText: '去评价'
-    },
-    // 订单取消（链接到用户中心订单列表）
-    {
-      id: 7,
-      type: SYSTEM_MESSAGE_TYPES.ORDER_CANCELLED,
-      title: '订单已取消',
-      content: '您购买的「显示器」订单已取消，商品已恢复上架。',
-      timestamp: new Date(now - 1000 * 60 * 60 * 24 * 4).toLocaleString(), // 4天前
-      isRead: true,
-      link: '/profile?t=orders',
-      linkText: '查看详情'
-    },
-    // 商品被收藏
-    {
-      id: 8,
-      type: SYSTEM_MESSAGE_TYPES.PRODUCT_FAVORITED,
-      title: '商品被收藏',
-      content: '您的商品「二手自行车」被用户收藏了，继续加油！',
-      timestamp: new Date(now - 1000 * 60 * 60 * 24 * 5).toLocaleString(), // 5天前
-      isRead: true,
-      link: '/products/789',
-      linkText: '查看商品'
-    }
-  ];
+export async function getNotificationSettings() {
+  try {
+    const response = await client.get('/system-messages/settings');
+    const result = extractData(response);
+    return {
+      product: result?.product !== false,
+      order: result?.order !== false,
+      social: result?.social !== false
+    };
+  } catch (error) {
+    console.error('获取通知设置失败:', error);
+    return { product: true, order: true, social: true };
+  }
+}
+
+/**
+ * 更新通知设置
+ * @param {Object} settings - 通知设置
+ * @param {boolean} settings.product - 商品通知
+ * @param {boolean} settings.order - 订单通知
+ * @param {boolean} settings.social - 社交通知
+ * @returns {Promise<{success: boolean}>}
+ */
+export async function updateNotificationSettings(settings) {
+  try {
+    const response = await client.put('/system-messages/settings', settings);
+    return extractData(response);
+  } catch (error) {
+    console.error('更新通知设置失败:', error);
+    return { success: false };
+  }
 }

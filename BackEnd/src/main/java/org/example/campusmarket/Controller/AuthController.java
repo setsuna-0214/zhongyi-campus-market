@@ -8,6 +8,8 @@ import org.example.campusmarket.entity.Result;
 import org.springframework.web.bind.annotation.*;
 import org.example.campusmarket.util.VerificationCodeService;
 
+import java.util.Map;
+
 //登录功能
 @RestController
 @RequestMapping("/auth")
@@ -22,13 +24,13 @@ public class AuthController {
     }
 
     @PostMapping("/send-code")
-    public Result SendRegisterCode(@RequestBody java.util.Map<String,String> body){
+    public Result SendCode(@RequestBody Map<String,String> body){
         String email = body == null ? null : body.get("email");
         if(email == null || email.isBlank()){
             return new Result(400,"邮箱不能为空",null);
         }
         try {
-            return authService.SendRegisterCode(email);
+            return authService.SendCode(email);
         }catch (IllegalStateException e){
             return new Result(429,"发送过于频繁，请稍后再试",null);
         }
@@ -37,8 +39,6 @@ public class AuthController {
     //注册功能
     @PostMapping("/register")
     public Result register(@Valid @RequestBody AuthDto.RegisterRequest request){
-        //@Valid注解对传递进来的参数进行校验。
-
         //两次密码一致性校验
         if(!request.getPassword().equals(request.getConfirmPassword())){
             return new Result(400,"两次密码不一致",null);
@@ -48,7 +48,7 @@ public class AuthController {
         if(!ok){
             return new Result(400,"验证码错误或已过期",null);
         }
-        //进行用户的注册
+        //进行用户的注册（内部会校验邮箱和用户名是否已存在）
         Result result = authService.register(request.getUsername(), request.getEmail(), request.getPassword());
 
         // 只有注册成功时清理验证码，避免重复使用
@@ -72,6 +72,22 @@ public class AuthController {
         }
     }
 
+    //忘记密码
+    @PostMapping("/forgot-password")
+    public Result forgot_password(@Valid @RequestBody AuthDto.ForgotPasswordRequest request){
+        //密码一致性校验
+        if(!request.getNewPassword().equals(request.getConfirmPassword())){
+            return new Result(400,"两次密码不一致",null);
+        }
+        //验证码正确性与有效性校验
+        boolean ok = codeService.verifyCode(request.getEmail(), request.getVerificationCode());
+        if(!ok){
+            return new Result(400,"验证码错误或已过期",null);
+        }
+        //重置密码（内部会校验邮箱是否存在）
+        return authService.reset_password(request.getEmail(),request.getNewPassword());
+    }
+
     // 检查用户名是否已存在
     @GetMapping("/check-username")
     public Result checkUsername(@RequestParam String username) {
@@ -79,7 +95,7 @@ public class AuthController {
             return new Result(400, "用户名不能为空", null);
         }
         boolean exists = authService.checkUsernameExists(username);
-        return new Result(200, "查询成功", java.util.Map.of("exists", exists));
+        return new Result(200, "查询成功", Map.of("exists", exists));
     }
 
     // 检查邮箱是否已存在
@@ -89,21 +105,6 @@ public class AuthController {
             return new Result(400, "邮箱不能为空", null);
         }
         boolean exists = authService.checkEmailExists(email);
-        return new Result(200, "查询成功", java.util.Map.of("exists", exists));
-    }
-
-    //忘记密码
-    @PostMapping("/forgot-password")
-    public Result forgot_password(@Valid @RequestBody AuthDto.ForgotPasswordRequest request){
-        //密码一致性校验
-        if(!request.getNewPassword().equals(request.getConfirmPassword())){
-            return new Result(400,"两次密码不一致",null);
-        }
-        //验证码正确性与有效性校验 关于验证码的部分，为了减少工作量，复用了注册时的验证码逻辑
-        boolean ok = codeService.verifyCode(request.getEmail(), request.getVerificationCode());
-        if(!ok){
-            return new Result(400,"验证码错误或已过期",null);
-        }
-        return authService.reset_password(request.getEmail(),request.getNewPassword());
+        return new Result(200, "查询成功", Map.of("exists", exists));
     }
 }

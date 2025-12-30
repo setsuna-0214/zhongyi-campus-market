@@ -29,7 +29,7 @@ import {
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import './index.css';
 import { listConversations, listMessages, sendMessage, createConversation, deleteConversation, uploadChatImage, markConversationAsRead, clearConversationsCache } from '../../api/chat';
-import { listSystemMessages, markSystemMessageAsRead, SYSTEM_MESSAGE_ICONS, clearSystemMessagesCache } from '../../api/systemMessage';
+import { listSystemMessages, markSystemMessageAsRead, SYSTEM_MESSAGE_ICONS, clearSystemMessagesCache, getNotificationSettings, updateNotificationSettings } from '../../api/systemMessage';
 import { getProduct } from '../../api/products';
 import { resolveImageSrc, resolveAvatar } from '../../utils/images';
 import { getCurrentUser } from '../../utils/auth';
@@ -170,6 +170,7 @@ const Chat = () => {
     order: true,        // 订单相关通知
     social: true,       // 社交相关通知
   });
+  const [settingsLoading, setSettingsLoading] = useState(false);
   
   // 获取当前用户信息
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
@@ -915,7 +916,16 @@ const Chat = () => {
                   <Button 
                     type="text" 
                     icon={<SettingOutlined />} 
-                    onClick={() => setNotificationSettingsOpen(true)}
+                    onClick={async () => {
+                      setNotificationSettingsOpen(true);
+                      // 加载当前通知设置
+                      try {
+                        const settings = await getNotificationSettings();
+                        setNotificationSettings(settings);
+                      } catch (err) {
+                        console.error('加载通知设置失败:', err);
+                      }
+                    }}
                     className="notification-settings-btn"
                   >
                     通知设置
@@ -1106,9 +1116,18 @@ const Chat = () => {
             <Button 
               type="primary" 
               block 
-              onClick={() => {
-                setNotificationSettingsOpen(false);
-                message.success('通知设置已保存');
+              loading={settingsLoading}
+              onClick={async () => {
+                setSettingsLoading(true);
+                try {
+                  await updateNotificationSettings(notificationSettings);
+                  message.success('通知设置已保存');
+                  setNotificationSettingsOpen(false);
+                } catch (err) {
+                  message.error('保存失败，请重试');
+                } finally {
+                  setSettingsLoading(false);
+                }
               }}
               className="save-settings-btn"
             >

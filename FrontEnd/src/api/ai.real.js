@@ -5,6 +5,20 @@
 import client from './client';
 
 /**
+ * 将 Blob URL 转换为 Base64
+ */
+const blobUrlToBase64 = async (blobUrl) => {
+  const response = await fetch(blobUrl);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+};
+
+/**
  * AI 生成商品描述
  * @param {Object} params - 请求数据
  * @param {string} params.title - 商品标题
@@ -24,16 +38,23 @@ export const generateProductDescription = async (params) => {
   
   // 处理图片数据
   if (images && images.length > 0) {
-    requestBody.images = images.map(img => {
+    const imagePromises = images.map(async (img) => {
       if (img.isExisting && img.url) {
-        // 已有图片，发送 URL
+        // 已有图片（OSS URL），直接发送
         return { type: 'url', data: img.url };
       } else if (img.preview) {
-        // 新上传的图片，发送 base64
+        // 新上传的图片，preview 是 blob URL，需要转换为 base64
+        if (img.preview.startsWith('blob:')) {
+          const base64 = await blobUrlToBase64(img.preview);
+          return { type: 'base64', data: base64 };
+        }
+        // 如果已经是 base64 或其他格式
         return { type: 'base64', data: img.preview };
       }
       return null;
-    }).filter(Boolean);
+    });
+    
+    requestBody.images = (await Promise.all(imagePromises)).filter(Boolean);
   }
   
   // 调用后端 API
