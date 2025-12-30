@@ -6,12 +6,12 @@ import org.example.campusmarket.entity.User;
 
 @Mapper
 public interface AuthMapper {
-    // 通过用户名查询用户（判断是否已存在）
-    @Select("SELECT * FROM users WHERE username = #{username}")
+    // 通过用户名查询用户（判断是否已存在，排除已注销用户）
+    @Select("SELECT * FROM users WHERE username = #{username} AND (is_deleted IS NULL OR is_deleted = 0)")
     User findByUsername(@Param("username") String username);
 
-    // 通过邮箱查询用户
-    @Select("SELECT * FROM users WHERE email = #{email}")
+    // 通过邮箱查询用户（排除已注销用户）
+    @Select("SELECT * FROM users WHERE email = #{email} AND (is_deleted IS NULL OR is_deleted = 0)")
     User findByEmail(@Param("email") String email);
     
 
@@ -28,4 +28,8 @@ public interface AuthMapper {
     @Update("UPDATE users SET email = #{newEmail} WHERE email = #{oldEmail}")
     int updateEmailByEmail(@Param("oldEmail") String oldEmail,
                            @Param("newEmail") String newEmail);
+
+    // 软删除用户（标记为已注销）
+    @Update("UPDATE users SET is_deleted = 1, deleted_at = NOW() WHERE user_id = #{userId}")
+    int softDeleteUser(@Param("userId") Integer userId);
 }

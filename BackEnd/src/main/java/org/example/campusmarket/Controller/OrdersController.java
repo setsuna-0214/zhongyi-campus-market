@@ -138,4 +138,18 @@ public class OrdersController {
             return new Result(400, "上传失败: " + e.getMessage(), null);
         }
     }
+
+    /**
+     * 删除订单（仅允许删除已取消的订单）
+     * DELETE /orders/{id}
+     */
+    @DeleteMapping("/{id}")
+    public Result deleteOrder(@PathVariable("id") Integer id, Authentication authentication) {
+        Integer userId = (Integer) authentication.getPrincipal();
+        boolean ok = ordersService.deleteOrder(userId, id);
+        if (ok) {
+            return new Result(200, "删除成功", null);
+        }
+        return new Result(400, "删除失败，订单不存在或状态不允许删除", null);
+    }
 }

@@ -212,5 +212,35 @@ public class UserService {
         return exists > 0;
     }
 
+    //获取粉丝列表
+    public List<UserDto.FollowItem> getFollowerList(Integer userId) {
+        List<UserDto.FollowItem> followerList = userMapper.findFollowerList(userId);
+        return followerList != null ? followerList : Collections.emptyList();
+    }
+
+    //账号注销（软删除）
+    public boolean deleteAccount(Integer userId, String verificationCode) {
+        // 获取用户信息
+        UserInfo userInfo = userMapper.findUserinfoById(userId);
+        if (userInfo == null) {
+            return false;
+        }
+
+        // 验证验证码
+        boolean codeValid = codeService.verifyCode(userInfo.getEmail(), verificationCode);
+        if (!codeValid) {
+            return false;
+        }
+
+        // 软删除 users 表和 userinfo 表
+        int a = authMapper.softDeleteUser(userId);
+        int b = userMapper.softDeleteUserInfo(userId);
+
+        // 清除验证码
+        codeService.clearCode(userInfo.getEmail());
+
+        return a == 1 && b == 1;
+    }
+
 }
 

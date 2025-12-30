@@ -36,12 +36,8 @@ public class AuthService {
         this.codeService = codeService;
     }
 
-    //验证码发送服务（发送前检查邮箱是否已被注册）
-    public Result SendRegisterCode(String email){
-        // 检查邮箱是否已被注册
-        if (authMapper.findByEmail(email) != null) {
-            return new Result(400, "该邮箱已被注册", null);
-        }
+    //验证码发送服务（纯粹发送验证码，不做业务校验）
+    public Result SendCode(String email){
         codeService.sendCode(email);
         return new Result(200, "验证码发送成功", null);
     }

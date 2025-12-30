@@ -2,7 +2,10 @@ package org.example.campusmarket.Service;
 
 import org.example.campusmarket.DTO.FavoriteDto;
 import org.example.campusmarket.Mapper.FavoriteMapper;
+import org.example.campusmarket.Mapper.ProductMapper;
+import org.example.campusmarket.Mapper.UserInfoMapper;
 import org.example.campusmarket.entity.Product;
+import org.example.campusmarket.entity.UserInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,12 @@ import java.util.Map;
 public class FavoriteService {
     @Autowired
     private FavoriteMapper favoriteMapper;
+    @Autowired
+    private ProductMapper productMapper;
+    @Autowired
+    private UserInfoMapper userInfoMapper;
+    @Autowired
+    private SystemMessageService systemMessageService;
 
     //查找收藏商品（原始格式）
     public List<Product> GetFavoritesByUserId(Integer userId) {
@@ -128,6 +137,23 @@ public class FavoriteService {
         int rows = favoriteMapper.insertFavorite(userId, productId, now);
         if (rows == 1) {
             Integer newId = favoriteMapper.getFavoriteId(userId, productId);
+            
+            // 发送商品被收藏通知给卖家
+            Product product = productMapper.findProductBasicById(productId);
+            if (product != null && product.getSaler_id() != null && !product.getSaler_id().equals(userId)) {
+                UserInfo userInfo = userInfoMapper.findByUserId(userId);
+                String userName = userInfo != null ? (userInfo.getNickname() != null ? userInfo.getNickname() : userInfo.getUsername()) : "用户";
+                
+                systemMessageService.createMessage(
+                    product.getSaler_id(),
+                    "product_favorited",
+                    "商品被收藏",
+                    "您的商品「" + product.getPro_name() + "」被用户「" + userName + "」收藏了，继续加油！",
+                    "/products/" + productId,
+                    "查看商品"
+                );
+            }
+            
             return new FavoriteDto.AddResponse(newId, productId, now);
         }
         return null;

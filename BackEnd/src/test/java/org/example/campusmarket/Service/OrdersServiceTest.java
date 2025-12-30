@@ -164,12 +164,17 @@ class OrdersServiceTest {
      */
     @Test
     void testCancelOrder_Success() {
+        // mock getOrderList 返回包含目标订单的列表
+        when(ordersMapper.getOrderList(eq(1), isNull(), isNull(), isNull(), isNull()))
+                .thenReturn(Arrays.asList(testOrder));
         when(ordersMapper.updateStatus(1, 1, "cancelled")).thenReturn(1);
+        when(productMapper.updateProductSealStatus(1, false)).thenReturn(1);
 
         boolean result = ordersService.cancelOrder(1, 1);
 
         assertTrue(result);
         verify(ordersMapper, times(1)).updateStatus(1, 1, "cancelled");
+        verify(productMapper, times(1)).updateProductSealStatus(1, false);
     }
 
     // ==================== 订单评价测试 ====================

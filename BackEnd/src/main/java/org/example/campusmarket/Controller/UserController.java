@@ -214,6 +214,18 @@ public class UserController {
         }
     }
 
+    //获取粉丝列表
+    @GetMapping("/followers")
+    public Result GetFollowerList(Authentication authentication) {
+        Integer userId = (Integer) authentication.getPrincipal();
+        try {
+            List<UserDto.FollowItem> followerList = userService.getFollowerList(userId);
+            return new Result(200, "成功", followerList);
+        } catch (Exception e) {
+            return new Result(500, "查询失败", Collections.emptyList());
+        }
+    }
+
     //检查关注状态
     @GetMapping("/follows/{id}/check")
     public UserDto.FollowCheckResponse CheckFollowStatus(@PathVariable("id") Integer followeeId, Authentication authentication) {
@@ -262,6 +274,23 @@ public class UserController {
             return new Result(200, "成功", items == null ? Collections.emptyList() : items);
         } catch (Exception e) {
             return new Result(500, "查询失败: " + e.getMessage(), null);
+        }
+    }
+
+    // 账号注销
+    @PostMapping("/me/delete")
+    public UserDto.DeleteAccountResponse DeleteAccount(
+            @Valid @RequestBody UserDto.DeleteAccountRequest body,
+            Authentication authentication) {
+        Integer userId = (Integer) authentication.getPrincipal();
+        try {
+            boolean success = userService.deleteAccount(userId, body.getVerificationCode());
+            if (success) {
+                return new UserDto.DeleteAccountResponse(true, "账号已注销");
+            }
+            return new UserDto.DeleteAccountResponse(false, "验证码错误或注销失败");
+        } catch (Exception e) {
+            return new UserDto.DeleteAccountResponse(false, "注销失败: " + e.getMessage());
         }
     }
 

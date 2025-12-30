@@ -130,4 +130,22 @@ public class UserDto {
         private boolean success;
         private String message;
     }
+
+    // 账号注销请求
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DeleteAccountRequest {
+        @NotBlank
+        private String verificationCode;
+    }
+
+    // 账号注销响应
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DeleteAccountResponse {
+        private boolean success;
+        private String message;
+    }
 }

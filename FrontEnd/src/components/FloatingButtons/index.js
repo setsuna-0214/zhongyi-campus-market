@@ -7,8 +7,9 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { listConversations } from '../../api/chat';
-import { listSystemMessages } from '../../api/systemMessage';
+import { listSystemMessages, clearSystemMessagesCache } from '../../api/systemMessage';
 import { isLoggedIn as checkIsLoggedIn } from '../../utils/auth';
+import * as websocket from '../../api/websocket';
 import './index.css';
 
 const FloatingButtons = () => {
@@ -61,9 +62,21 @@ const FloatingButtons = () => {
     };
     window.addEventListener('unreadCountChanged', handleUnreadCountChanged);
 
+    // 监听 WebSocket 系统通知
+    const handleWebSocketMessage = (data) => {
+      if (data.type === 'system_notification') {
+        // 收到新系统通知，清除缓存并刷新未读数
+        clearSystemMessagesCache();
+        fetchUnreadCount();
+      }
+    };
+    websocket.connect();
+    websocket.addListener('floating-buttons', handleWebSocketMessage);
+
     return () => {
       clearInterval(interval);
       window.removeEventListener('unreadCountChanged', handleUnreadCountChanged);
+      websocket.removeListener('floating-buttons');
     };
   }, [loggedIn, fetchUnreadCount]);
 

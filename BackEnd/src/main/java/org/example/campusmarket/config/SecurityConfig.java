@@ -80,6 +80,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/user/{id}/published").permitAll()
                 .requestMatchers(HttpMethod.POST, "/user/me/avatar").authenticated()
                 .requestMatchers("/user/**", "/favorites/**", "/orders/**", "/cart/**").authenticated()
+                // AI接口需要认证
+                .requestMatchers("/ai/**").authenticated()
+                // 系统消息接口需要认证
+                .requestMatchers("/system-messages/**").authenticated()
                 .anyRequest().permitAll()
         );
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -138,4 +138,19 @@ public interface UserMapper {
     @Select("SELECT COUNT(*) FROM user_follows WHERE follower_id = #{followerId} AND followee_id = #{followeeId}")
     int checkFollowExists(@Param("followerId") Integer followerId,
                           @Param("followeeId") Integer followeeId);
+
+    //查询粉丝列表（关注当前用户的人）
+    @Select("""
+        SELECT ui.user_id as id, u.username, ui.nickname, ui.avatar
+        FROM user_follows uf
+        JOIN users u ON uf.follower_id = u.user_id
+        LEFT JOIN userinfo ui ON u.user_id = ui.user_id
+        WHERE uf.followee_id = #{userId}
+        ORDER BY uf.id DESC
+        """)
+    List<UserDto.FollowItem> findFollowerList(@Param("userId") Integer userId);
+
+    // 软删除用户信息（标记为已注销）
+    @Update("UPDATE userinfo SET is_deleted = 1, deleted_at = NOW() WHERE user_id = #{userId}")
+    int softDeleteUserInfo(@Param("userId") Integer userId);
 }

@@ -138,4 +138,8 @@ public interface OrdersMapper {
     // 更新订单状态（包含卖家留言和图片）
     @Update("UPDATE orders SET status = #{status}, seller_message = #{sellerMessage}, seller_images = #{sellerImages} WHERE id = #{orderId}")
     int updateOrderStatusWithMessage(@Param("orderId") Integer orderId, @Param("status") String status, @Param("sellerMessage") String sellerMessage, @Param("sellerImages") String sellerImages);
+
+    // 删除订单（仅允许删除已取消的订单，且用户必须是买家或卖家）
+    @Delete("DELETE FROM orders WHERE id = #{orderId} AND (user_id = #{userId} OR seller_id = #{userId}) AND status = 'cancelled'")
+    int deleteOrder(@Param("orderId") Integer orderId, @Param("userId") Integer userId);
 }

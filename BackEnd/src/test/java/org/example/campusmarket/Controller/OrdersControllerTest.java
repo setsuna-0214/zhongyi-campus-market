@@ -36,6 +36,9 @@ class OrdersControllerTest {
     @MockBean
     private OrdersService ordersService;
 
+    @MockBean
+    private org.example.campusmarket.Service.ImageService imageService;
+
     // ==================== 查询订单列表测试 ====================
 
     @Test

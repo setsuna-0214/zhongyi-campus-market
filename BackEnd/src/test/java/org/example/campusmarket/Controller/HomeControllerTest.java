@@ -39,7 +39,7 @@ class HomeControllerTest {
     @WithMockUser
     void testGetHot_DefaultLimit() throws Exception {
         HomeDto.HomeProduct product = new HomeDto.HomeProduct(
-                1, "热门商品", "http://img.jpg", 99,
+                1, "热门商品", "http://img.jpg", null, 99,
                 "", null, 1, "卖家", "北京", null, "在售", 100
         );
         List<HomeDto.HomeProduct> products = Arrays.asList(product);
@@ -94,7 +94,7 @@ class HomeControllerTest {
     @WithMockUser
     void testGetLatest_DefaultLimit() throws Exception {
         HomeDto.HomeProduct product = new HomeDto.HomeProduct(
-                100, "最新商品", "http://img.jpg", 199,
+                100, "最新商品", "http://img.jpg", null, 199,
                 null, "", 2, "卖家B", "上海", null, "在售", 10
         );
         List<HomeDto.HomeProduct> products = Arrays.asList(product);
@@ -132,11 +132,11 @@ class HomeControllerTest {
     @WithMockUser
     void testGetLatest_MultipleProducts() throws Exception {
         HomeDto.HomeProduct product1 = new HomeDto.HomeProduct(
-                100, "商品1", "http://img1.jpg", 99,
+                100, "商品1", "http://img1.jpg", null, 99,
                 null, "", 1, "卖家A", "北京", null, "在售", 5
         );
         HomeDto.HomeProduct product2 = new HomeDto.HomeProduct(
-                99, "商品2", "http://img2.jpg", 199,
+                99, "商品2", "http://img2.jpg", null, 199,
                 null, "", 2, "卖家B", "上海", null, "已售", 3
         );
         List<HomeDto.HomeProduct> products = Arrays.asList(product1, product2);

@@ -3,12 +3,7 @@
  * 用于商品描述自动生成等 AI 功能
  */
 
-import { isMockEnabled } from './mockData';
-import * as mockApi from './ai.mock';
 import * as realApi from './ai.real';
-
-const useMock = isMockEnabled();
-const impl = useMock ? mockApi : realApi;
 
 /**
  * AI 生成商品描述
@@ -18,4 +13,4 @@ const impl = useMock ? mockApi : realApi;
  * @param {Array} data.images - 图片数组，包含 url/preview/isExisting
  * @returns {Promise<{description: string}>} - 生成的描述
  */
-export const generateProductDescription = impl.generateProductDescription;
+export const generateProductDescription = realApi.generateProductDescription;
