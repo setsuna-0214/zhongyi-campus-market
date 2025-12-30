@@ -59,3 +59,8 @@ pids/
 *.pid.lock
 *.seed
 *.tgz
+
+
+# Docker
+docker-compose.override.yml
+*.tar

@@ -1,0 +1,251 @@
+-- 校园二手交易平台数据库初始化脚本
+-- 创建数据库（如果不存在）
+CREATE DATABASE IF NOT EXISTS campus_market DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE campus_market;
+
+-- ============================================
+-- 1. 用户认证表（基础表，无依赖）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `users` (
+    `user_id` int NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+    `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户名（登录用）',
+    `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '邮箱（登录用）',
+    `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '密码（BCrypt加密）',
+    `role` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'user' COMMENT '角色：admin-管理员, user-普通用户',
+    `status` tinyint(1) DEFAULT '1' COMMENT '账号状态：0-禁用, 1-正常',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
+    `last_login_at` timestamp NULL DEFAULT NULL COMMENT '最后登录时间',
+    `is_deleted` tinyint(1) DEFAULT '0',
+    `deleted_at` datetime DEFAULT NULL,
+    PRIMARY KEY (`user_id`),
+    UNIQUE KEY `uk_username` (`username`),
+    UNIQUE KEY `uk_email` (`email`),
+    KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户认证表（敏感信息）';
+
+-- ============================================
+-- 2. 用户信息表（依赖 users）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `userinfo` (
+    `user_id` int NOT NULL COMMENT '用户ID（关联users表）',
+    `username` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户名',
+    `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户邮箱（冗余字段）',
+    `role` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'user' COMMENT '用户角色：user-普通用户，admin-管理员',
+    `nickname` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '昵称（展示用）',
+    `avatar` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '头像URL',
+    `phone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '手机号',
+    `address` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '地址/学校信息',
+    `bio` text COLLATE utf8mb4_unicode_ci COMMENT '个人简介',
+    `gender` tinyint(1) DEFAULT NULL COMMENT '性别：0-女, 1-男, NULL-未设置',
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `last_login_at` datetime DEFAULT NULL COMMENT '最后登录时间',
+    `is_deleted` tinyint(1) DEFAULT '0',
+    `deleted_at` datetime DEFAULT NULL,
+    PRIMARY KEY (`user_id`),
+    KEY `idx_nickname` (`nickname`),
+    KEY `idx_address` (`address`),
+    KEY `idx_email` (`email`),
+    CONSTRAINT `userinfo_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户信息表（公开资料）';
+
+-- ============================================
+-- 3. 商品表（依赖 users）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `products` (
+    `pro_id` int NOT NULL AUTO_INCREMENT COMMENT '商品ID',
+    `pro_name` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '商品名称',
+    `price` decimal(10,2) NOT NULL COMMENT '价格',
+    `is_seal` tinyint(1) DEFAULT '0' COMMENT '是否已售出：0-在售, 1-已售',
+    `discription` text COLLATE utf8mb4_unicode_ci COMMENT '商品描述',
+    `picture` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '商品图片URL',
+    `saler_id` int NOT NULL COMMENT '卖家用户ID',
+    `category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '商品类目',
+    `view_count` int DEFAULT '0' COMMENT '浏览次数',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`pro_id`),
+    KEY `idx_saler_id` (`saler_id`),
+    KEY `idx_is_seal` (`is_seal`),
+    KEY `idx_category` (`category`),
+    KEY `idx_created_at` (`created_at`),
+    KEY `idx_view_count` (`view_count`),
+    CONSTRAINT `products_ibfk_1` FOREIGN KEY (`saler_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='商品表';
+
+-- ============================================
+-- 4. 订单表（依赖 users, products）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `orders` (
+    `id` int NOT NULL AUTO_INCREMENT COMMENT '订单ID',
+    `user_id` int NOT NULL COMMENT '买家用户ID',
+    `product_id` int NOT NULL COMMENT '商品ID',
+    `quantity` int DEFAULT '1' COMMENT '购买数量',
+    `total_price` decimal(10,2) NOT NULL COMMENT '总价',
+    `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'pending' COMMENT '订单状态：pending-待处理, completed-已完成, cancelled-已取消',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `rating` int DEFAULT NULL COMMENT '评分（1-5星）',
+    `comment` text COLLATE utf8mb4_unicode_ci COMMENT '评价内容',
+    `seller_message` text COLLATE utf8mb4_unicode_ci COMMENT '卖家留言',
+    `seller_images` varchar(2000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '卖家上传的图片URL，逗号分隔',
+    `seller_id` int DEFAULT NULL COMMENT '卖家用户ID',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_product_id` (`product_id`),
+    KEY `idx_status` (`status`),
+    KEY `idx_created_at` (`created_at`),
+    CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `products` (`pro_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订单表';
+
+-- ============================================
+-- 5. 收藏表（依赖 users, products）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `fav_products` (
+    `id` int NOT NULL AUTO_INCREMENT COMMENT '收藏ID',
+    `user_id` int NOT NULL COMMENT '用户ID',
+    `pro_id` int NOT NULL COMMENT '商品ID',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '收藏时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_product` (`user_id`,`pro_id`) COMMENT '用户-商品唯一约束',
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_pro_id` (`pro_id`),
+    CONSTRAINT `fav_products_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `fav_products_ibfk_2` FOREIGN KEY (`pro_id`) REFERENCES `products` (`pro_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='收藏表';
+
+-- ============================================
+-- 6. 购物车表（依赖 users, products）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `cart_products` (
+    `id` int NOT NULL AUTO_INCREMENT COMMENT '购物车ID',
+    `user_id` int NOT NULL COMMENT '用户ID',
+    `pro_id` int NOT NULL COMMENT '商品ID',
+    `quantity` int DEFAULT '1' COMMENT '数量',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '添加时间',
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_product` (`user_id`,`pro_id`) COMMENT '用户-商品唯一约束',
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_pro_id` (`pro_id`),
+    CONSTRAINT `cart_products_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `cart_products_ibfk_2` FOREIGN KEY (`pro_id`) REFERENCES `products` (`pro_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='购物车表';
+
+-- ============================================
+-- 7. 已购买商品表（依赖 users, products）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `buy_products` (
+    `id` int NOT NULL AUTO_INCREMENT COMMENT '购买记录ID',
+    `user_id` int NOT NULL COMMENT '买家用户ID',
+    `pro_id` int NOT NULL COMMENT '商品ID',
+    `purchase_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '购买时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_pro_id` (`pro_id`),
+    KEY `idx_purchase_time` (`purchase_time`),
+    CONSTRAINT `buy_products_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `buy_products_ibfk_2` FOREIGN KEY (`pro_id`) REFERENCES `products` (`pro_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='已购买商品表';
+
+
+-- ============================================
+-- 8. 聊天会话表
+-- ============================================
+CREATE TABLE IF NOT EXISTS `chat_conversation` (
+    `id` int NOT NULL AUTO_INCREMENT COMMENT '会话ID',
+    `user_id` int NOT NULL COMMENT '当前用户ID（会话所属者）',
+    `partner_id` int NOT NULL COMMENT '对方用户ID',
+    `user_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '对方昵称（冗余字段，便于展示）',
+    `user_avatar` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '对方头像URL（冗余字段）',
+    `last_message` text COLLATE utf8mb4_unicode_ci COMMENT '最后一条消息内容',
+    `last_message_time` datetime DEFAULT NULL COMMENT '最后一条消息时间',
+    `unread_count` int DEFAULT '0' COMMENT '未读消息数',
+    `order_id` int DEFAULT NULL COMMENT '关联订单ID（可选）',
+    `product_id` int DEFAULT NULL COMMENT '关联商品ID（可选）',
+    `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '会话创建时间',
+    `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '会话更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_partner_order` (`user_id`,`partner_id`,`order_id`) COMMENT '同一用户与同一对方在同一订单下只能有一个会话',
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_partner_id` (`partner_id`),
+    KEY `idx_order_id` (`order_id`),
+    KEY `idx_updated_at` (`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='聊天会话表';
+
+-- ============================================
+-- 9. 聊天消息表（依赖 chat_conversation）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `chat_message` (
+    `id` int NOT NULL AUTO_INCREMENT COMMENT '消息ID',
+    `conversation_id` int NOT NULL COMMENT '所属会话ID',
+    `sender_id` int NOT NULL COMMENT '发送者用户ID',
+    `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '消息内容（文本或JSON格式）',
+    `type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'text' COMMENT '消息类型：text-文本, image-图片, product-商品卡片',
+    `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '消息创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_conversation_id` (`conversation_id`),
+    KEY `idx_sender_id` (`sender_id`),
+    KEY `idx_created_at` (`created_at`),
+    CONSTRAINT `fk_message_conversation` FOREIGN KEY (`conversation_id`) REFERENCES `chat_conversation` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='聊天消息表';
+
+-- ============================================
+-- 10. 商品评论表
+-- ============================================
+CREATE TABLE IF NOT EXISTS `comments` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `product_id` int NOT NULL,
+    `user_id` int NOT NULL,
+    `content` varchar(500) NOT NULL,
+    `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_product_id` (`product_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ============================================
+-- 11. 系统消息表
+-- ============================================
+CREATE TABLE IF NOT EXISTS `system_messages` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `user_id` int NOT NULL COMMENT '接收用户ID',
+    `type` varchar(50) NOT NULL COMMENT '消息类型',
+    `title` varchar(200) NOT NULL COMMENT '标题',
+    `content` text COMMENT '内容',
+    `link` varchar(500) DEFAULT NULL COMMENT '跳转链接',
+    `link_text` varchar(100) DEFAULT NULL COMMENT '链接文字',
+    `is_read` tinyint DEFAULT '0' COMMENT '是否已读: 0-未读, 1-已读',
+    `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_user_read` (`user_id`,`is_read`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统消息表';
+
+-- ============================================
+-- 12. 用户通知设置表
+-- ============================================
+CREATE TABLE IF NOT EXISTS `user_notification_settings` (
+    `user_id` int NOT NULL COMMENT '用户ID',
+    `notify_product` tinyint DEFAULT '1' COMMENT '商品通知: 0-关闭, 1-开启',
+    `notify_order` tinyint DEFAULT '1' COMMENT '订单通知: 0-关闭, 1-开启',
+    `notify_social` tinyint DEFAULT '1' COMMENT '社交通知: 0-关闭, 1-开启',
+    `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户通知设置表';
+
+-- ============================================
+-- 13. 用户关注表（依赖 userinfo）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `user_follows` (
+    `id` int NOT NULL AUTO_INCREMENT COMMENT '关注ID',
+    `follower_id` int NOT NULL COMMENT '关注者用户ID',
+    `followee_id` int NOT NULL COMMENT '被关注者用户ID',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '关注时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_follower_followee` (`follower_id`,`followee_id`) COMMENT '关注关系唯一约束',
+    KEY `idx_follower_id` (`follower_id`),
+    KEY `idx_followee_id` (`followee_id`),
+    CONSTRAINT `user_follows_ibfk_1` FOREIGN KEY (`follower_id`) REFERENCES `userinfo` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `user_follows_ibfk_2` FOREIGN KEY (`followee_id`) REFERENCES `userinfo` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `chk_no_self_follow` CHECK ((`follower_id` <> `followee_id`))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户关注表（不能关注自己）';
