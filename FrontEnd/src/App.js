@@ -1,11 +1,14 @@
+/**
+ * 应用根组件
+ * 定义全局布局和路由配置
+ */
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from 'antd';
 import 'moment/locale/zh-cn';
 
-// 导入组件
 import Header from './components/Layout/Header';
-// 页面组件
 import Home from './pages/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';

@@ -1,3 +1,8 @@
+/**
+ * 应用入口
+ * 初始化 React、路由、Ant Design 主题配置
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -8,9 +13,8 @@ import ScrollToTop from './components/ScrollToTop';
 import 'antd/dist/reset.css';
 import './index.css';
 import './utils/scrollbar.css';
-import './utils/form-validation.css';
+import './styles/form.css';
 
-// 配置 Ant Design 主题
 const theme = {
   token: {
     colorPrimary: '#4FACFE',

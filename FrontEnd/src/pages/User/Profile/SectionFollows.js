@@ -1,3 +1,8 @@
+/**
+ * 关注/粉丝列表组件
+ * 展示用户的关注对象和粉丝，并提供关注/取消关注的操作
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Card, List, Avatar, Empty, message } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
@@ -11,8 +16,8 @@ const followTabs = [
   { key: 'followers', label: '关注我的' },
 ];
 
-export default function SectionFollows({ 
-  follows, 
+export default function SectionFollows({
+  follows,
   onUnfollow,
   followSubTab = 'following',
   onSubTabChange
@@ -93,8 +98,8 @@ export default function SectionFollows({
           onChange={onSubTabChange}
         />
         <span className="follows-count">
-          {followSubTab === 'following' 
-            ? `${follows.length} 人` 
+          {followSubTab === 'following'
+            ? `${follows.length} 人`
             : `${followers.length} 人`
           }
         </span>
@@ -111,10 +116,10 @@ export default function SectionFollows({
               <List.Item className="follow-grid-item">
                 <div className="follow-card" onClick={() => navigate(`/users/${item.id}`)}>
                   <div className="follow-card-content">
-                    <Avatar 
-                      src={item.avatar} 
-                      icon={<UserOutlined />} 
-                      size={56} 
+                    <Avatar
+                      src={item.avatar}
+                      icon={<UserOutlined />}
+                      size={56}
                       className="follow-avatar"
                     />
                     <div className="follow-card-info">
@@ -163,9 +168,9 @@ export default function SectionFollows({
             )}
           />
         ) : (
-          <Empty 
-            description={followSubTab === 'following' ? '还没有关注任何人' : '还没有人关注你'} 
-            image={Empty.PRESENTED_IMAGE_SIMPLE} 
+          <Empty
+            description={followSubTab === 'following' ? '还没有关注任何人' : '还没有人关注你'}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
           />
         )}
       </div>

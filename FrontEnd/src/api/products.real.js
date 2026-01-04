@@ -1,19 +1,20 @@
+/**
+ * 商品 API - 真实后端实现
+ * 调用后端 REST API 处理商品操作
+ */
+
 import client from './client';
 
-/**
- * 从后端 Result 对象中提取数据
- * 后端返回格式: { code: 200, message: "success", data: ... }
- */
+// 从 Result 对象中提取数据
 function extractData(response) {
   const data = response;
-  // 如果是 Result 包装对象，提取 data 字段
   if (data && typeof data === 'object' && 'code' in data && 'data' in data) {
     return data.data;
   }
   return data;
 }
 
-// 标准化商品数据，确保字段一致
+// 标准化商品数据
 function normalizeProduct(item) {
   if (!item) return item;
   const coverImage = item.image || item.coverImage;
@@ -26,6 +27,7 @@ function normalizeProduct(item) {
   };
 }
 
+// 搜索商品
 export async function searchProducts({ keyword, category, priceRange, location, sortBy, status, page = 1, pageSize = 12 }) {
   const params = {
     keyword: keyword || undefined,
@@ -33,7 +35,6 @@ export async function searchProducts({ keyword, category, priceRange, location, 
     location: location || undefined,
     sort: sortBy || undefined,
     status: status || undefined,
-    // 默认排除已售出商品（除非明确搜索已售出）
     excludeSold: status !== '已售出' ? 'true' : undefined,
     page,
     pageSize,
@@ -50,12 +51,14 @@ export async function searchProducts({ keyword, category, priceRange, location, 
   return { items: (result?.items || []).map(normalizeProduct), total: result?.total || 0 };
 }
 
+// 获取商品详情
 export async function getProduct(id) {
   const { data } = await client.get(`/products/${id}`);
   const result = extractData(data);
   return normalizeProduct(result);
 }
 
+// 获取相关商品
 export async function getRelatedProducts(id) {
   const { data } = await client.get(`/products/${id}/related`);
   const result = extractData(data);
@@ -63,6 +66,7 @@ export async function getRelatedProducts(id) {
   return items.map(normalizeProduct);
 }
 
+// 发布商品
 export async function createProduct(formData) {
   const { data } = await client.post('/products', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
@@ -70,6 +74,7 @@ export async function createProduct(formData) {
   return data;
 }
 
+// 更新商品
 export async function updateProduct(id, formData) {
   const { data } = await client.put(`/products/${id}`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
@@ -77,6 +82,7 @@ export async function updateProduct(id, formData) {
   return data;
 }
 
+// 更新商品状态
 export async function updateProductStatus(id, status) {
   const { data } = await client.patch(`/products/${id}/status`, { status });
   return data;

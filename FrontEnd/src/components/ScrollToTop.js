@@ -1,3 +1,8 @@
+/**
+ * 滚动位置恢复组件
+ * 处理页面导航时的滚动位置：新页面回到顶部，后退/前进恢复原位置
+ */
+
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 
@@ -14,13 +19,13 @@ const ScrollToTop = () => {
       if (typeof window !== "undefined" && window.history && "scrollRestoration" in window.history) {
         window.history.scrollRestoration = "manual";
       }
-    } catch (e) {}
+    } catch (e) { }
     return () => {
       try {
         if (typeof window !== "undefined" && window.history && "scrollRestoration" in window.history) {
           window.history.scrollRestoration = "auto";
         }
-      } catch (e) {}
+      } catch (e) { }
     };
   }, []);
 

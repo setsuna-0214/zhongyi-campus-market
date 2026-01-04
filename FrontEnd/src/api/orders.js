@@ -1,3 +1,8 @@
+/**
+ * 订单 API 入口
+ * 根据环境自动切换 Mock/真实后端，导出订单相关的所有 API 方法
+ */
+
 import { isMockEnabled, ensureMockState } from './mockData';
 import * as mock from './orders.mock';
 import * as real from './orders.real';

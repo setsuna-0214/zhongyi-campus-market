@@ -1,4 +1,9 @@
-/* SliderMenu - 带滑块指示器的垂直菜单组件 */
+/**
+ * 滑块菜单样式
+ * 定义垂直滑块菜单的布局和动画效果
+ */
+
+/* ===================== 容器布局 ===================== */
 
 .slider-menu {
   position: relative;
@@ -14,7 +19,7 @@
   background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
   border-radius: 12px;
   z-index: 0;
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(79, 172, 254, 0.35),
     0 2px 8px rgba(0, 242, 254, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -96,16 +101,17 @@
 
 /* 减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
+
   .slider-indicator,
   .slider-indicator.animated {
     transition: none;
   }
-  
+
   .slider-menu-item,
   .slider-menu-icon {
     transition: none;
   }
-  
+
   .slider-menu-item:hover:not(.active) .slider-menu-icon,
   .slider-menu-item:active:not(.active) .slider-menu-icon {
     transform: none;

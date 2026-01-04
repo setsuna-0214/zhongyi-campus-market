@@ -8,30 +8,8 @@ import { Popconfirm } from 'antd';
 import { getCategoryLabel, getStatusLabel, getStatusColor, getStatusBgColor, getCategoryColor, getCategoryBgColor } from '../../utils/labels';
 
 /**
- * Unified ProductCard component
- * Props:
- * - imageSrc: string
- * - title: string
- * - price?: number
- * - category?: string
- * - status?: string
- * - location?: string
- * - sellerName?: string
- * - publishedAt?: string
- * - views?: number
- * - overlayType: 'views-left' | 'publish-right'
- * - dateFormat?: 'ymd' | 'auto'
- * - favoriteAt?: string
- * - publishedOverlayText?: string // 仅用于右上角“最近发布”浮层的相对时间
- * - onClick?: () => void
- * - showCheckbox?: boolean
- * - checkboxChecked?: boolean
- * - onCheckboxChange?: (e) => void
- * - checkboxStopPropagation?: boolean (default true)
- * - unavailable?: boolean
- * - unavailableText?: string
- * - imageAlt?: string
- * - imageHeight?: number | string
+ * 商品卡片组件
+ * 展示商品图片、标题、价格、卖家等信息，支持图片轮播、收藏、编辑等操作
  */
 const formatViews = (n) => {
   const num = Number(n || 0);
@@ -114,7 +92,7 @@ const ProductCard = ({
   const imageCount = imageList.length;
   const imageCountRef = useRef(imageCount);
   imageCountRef.current = imageCount;
-  
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [isFading, setIsFading] = useState(false);
@@ -198,8 +176,8 @@ const ProductCard = ({
       hoverable
       onClick={onClick}
       cover={
-        <div 
-          className="product-image-container" 
+        <div
+          className="product-image-container"
           style={imageHeight ? { height: typeof imageHeight === 'number' ? `${imageHeight}px` : imageHeight } : undefined}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
@@ -227,15 +205,15 @@ const ProductCard = ({
           />
           {/* 图片指示器 - 仅在有多张图片时显示 */}
           {imageList.length > 1 && (
-            <div 
+            <div
               className={`image-indicators ${imageList.length > 5 ? 'compact' : ''}`}
               onClick={(e) => e.stopPropagation()}
               onMouseEnter={pauseCarousel}
               onMouseLeave={resumeCarousel}
             >
               {imageList.map((_, index) => (
-                <span 
-                  key={index} 
+                <span
+                  key={index}
                   className={`image-indicator ${index === currentImageIndex ? 'active' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -398,9 +376,9 @@ const areEqual = (prevProps, nextProps) => {
   // 比较 images 数组
   const prevImages = prevProps.images || [];
   const nextImages = nextProps.images || [];
-  const imagesEqual = prevImages.length === nextImages.length && 
+  const imagesEqual = prevImages.length === nextImages.length &&
     prevImages.every((img, i) => img === nextImages[i]);
-  
+
   return (
     prevProps.imageSrc === nextProps.imageSrc &&
     imagesEqual &&

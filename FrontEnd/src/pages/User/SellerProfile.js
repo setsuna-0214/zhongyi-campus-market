@@ -1,3 +1,8 @@
+/**
+ * 卖家/用户详情页面
+ * 展示其他用户的公开信息、在售商品，提供关注和联系功能
+ */
+
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Layout, message, Form, Button, Empty } from 'antd';
@@ -26,7 +31,7 @@ const SellerProfile = () => {
   const [myProducts, setMyProducts] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [userNotFound, setUserNotFound] = useState(false);
-  
+
   // Banner related
   const [bannerKey, setBannerKey] = useState(DEFAULT_PROFILE_BANNER_KEY);
   const bannerPath = useMemo(() => PROFILE_BANNER_OPTIONS.find(opt => opt.key === bannerKey)?.path ?? null, [bannerKey]);
@@ -45,7 +50,7 @@ const SellerProfile = () => {
           getUserPublished(id),
           checkIsFollowing(id)
         ]);
-        
+
         // 检查用户是否存在或已注销
         if (!userData || userData.deleted || userData.status === 'deleted') {
           setUserNotFound(true);
@@ -53,7 +58,7 @@ const SellerProfile = () => {
           setMyProducts([]);
           return;
         }
-        
+
         // 规范化用户信息
         const normalizedUser = userData || {};
         // 将后端返回的数字性别转换为字符串
@@ -61,7 +66,7 @@ const SellerProfile = () => {
         setUserInfo(normalizedUser);
         setMyProducts(Array.isArray(userProducts) ? userProducts : []);
         setIsFollowing(following);
-        
+
         // Set banner if user has one
         if (userData?.profileBanner && PROFILE_BANNER_OPTIONS.some(o => o.key === userData.profileBanner)) {
           setBannerKey(userData.profileBanner);
@@ -79,7 +84,7 @@ const SellerProfile = () => {
         setLoading(false);
       }
     };
-    
+
     if (id) {
       fetchData();
     }
@@ -93,7 +98,7 @@ const SellerProfile = () => {
         delete merged.adress;
         delete merged.location;
         basicForm.setFieldsValue(merged);
-      } catch {}
+      } catch { }
     }
   }, [userInfo, basicForm]);
 
@@ -102,12 +107,12 @@ const SellerProfile = () => {
     { key: 'products', icon: <ShoppingOutlined />, label: 'TA的商品' },
   ];
 
-  const noOp = () => {};
+  const noOp = () => { };
 
   // 用户不存在或已注销时的显示
   const renderUserNotFound = () => (
     <div className="user-not-found-container">
-      <div 
+      <div
         className="avatar-banner user-not-found-banner"
         style={{ backgroundImage: `url(${PROFILE_BANNER_OPTIONS[0]?.path || '/images/banners/banner-1.jpg'})` }}
       >
@@ -198,16 +203,16 @@ const SellerProfile = () => {
                   />
 
                   <div className="read-only-overlay" />
-                  
+
                   <div style={{ marginTop: 16, textAlign: 'center', display: 'flex', justifyContent: 'center', gap: 16 }}>
-                    <FollowButton 
+                    <FollowButton
                       isFollowing={isFollowing}
                       size="large"
                       onClick={handleFollow}
                     />
-                    <Button 
-                      type="primary" 
-                      size="large" 
+                    <Button
+                      type="primary"
+                      size="large"
                       onClick={() => {
                         if (!getCurrentUserId()) {
                           showLoginPrompt({ message: '联系TA需要登录后才能进行' });
@@ -229,8 +234,8 @@ const SellerProfile = () => {
               )}
 
               {selectedKey === 'products' && (
-                <SectionProducts 
-                  myProducts={myProducts} 
+                <SectionProducts
+                  myProducts={myProducts}
                   purchaseHistory={[]}
                   onDeleteProduct={noOp}
                   onNavigate={navigate}

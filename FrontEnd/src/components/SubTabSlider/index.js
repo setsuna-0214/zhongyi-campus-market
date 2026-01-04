@@ -1,18 +1,14 @@
+/**
+ * 子标签滑块组件
+ * 带滑块指示器的水平标签切换
+ */
+
 import { useMemo, useState, useLayoutEffect } from 'react';
 import './index.css';
 
-/**
- * SubTabSlider - 带滑块指示器的水平标签切换组件
- * 
- * @param {Object} props
- * @param {Array} props.tabs - 标签项数组 [{ key, label, icon? }]
- * @param {string} props.activeKey - 当前选中的标签 key
- * @param {function} props.onChange - 选中标签时的回调函数
- * @param {string} props.className - 自定义类名，用于区分不同用途的标签组
- */
-const SubTabSlider = ({ 
-  tabs = [], 
-  activeKey, 
+const SubTabSlider = ({
+  tabs = [],
+  activeKey,
   onChange,
   className = ''
 }) => {
@@ -53,14 +49,14 @@ const SubTabSlider = ({
   return (
     <div className={`sub-tab-slider ${className}`.trim()}>
       {/* 滑块指示器 */}
-      <div 
+      <div
         className={`sub-tab-indicator ${isInitialized ? 'animated' : 'no-animation'}`}
-        style={{ 
+        style={{
           transform: `translateX(${sliderPosition})`,
           width: sliderWidth
         }}
       />
-      
+
       {/* 标签项列表 */}
       <div className="sub-tab-items">
         {tabs.map((tab) => (

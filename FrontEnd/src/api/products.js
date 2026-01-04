@@ -1,3 +1,8 @@
+/**
+ * 商品 API 入口
+ * 根据环境自动切换 Mock/真实后端，导出商品相关的所有 API 方法
+ */
+
 import { isMockEnabled, ensureMockState } from './mockData';
 import * as mock from './products.mock';
 import * as real from './products.real';
@@ -12,4 +17,3 @@ export const getRelatedProducts = impl.getRelatedProducts;
 export const createProduct = impl.createProduct;
 export const updateProduct = impl.updateProduct;
 export const updateProductStatus = impl.updateProductStatus;
-

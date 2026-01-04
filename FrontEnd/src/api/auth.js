@@ -1,3 +1,8 @@
+/**
+ * 认证 API 入口
+ * 根据环境自动切换 Mock/真实后端，导出登录、注册等认证相关的 API 方法
+ */
+
 import { isMockEnabled, ensureMockState } from './mockData';
 import * as mock from './auth.mock';
 import * as real from './auth.real';

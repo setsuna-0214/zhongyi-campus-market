@@ -1,39 +1,35 @@
+/**
+ * 收藏 API - 真实后端实现
+ * 调用后端 REST API 处理收藏操作
+ */
+
 import client from './client';
 
-/**
- * 从后端 Result 对象中提取数据
- * 后端返回格式: { code: 200, message: "success", data: ... }
- */
+// 从 Result 对象中提取数据
 function extractData(response) {
   const data = response;
-  // 如果是 Result 包装对象，提取 data 字段
   if (data && typeof data === 'object' && 'code' in data && 'data' in data) {
     return data.data;
   }
   return data;
 }
 
-// 标准化收藏数据，将后端返回的字段映射为前端组件期望的字段
+// 标准化收藏数据
 function normalizeFavoriteItem(item) {
   const product = item.product || {};
-  
-  // 处理卖家信息 - 支持多种后端返回格式
+
   let seller = product.seller || item.seller;
   if (!seller && (product.sellerId || item.sellerId)) {
     seller = { id: product.sellerId || item.sellerId };
   }
-  // 如果 seller 是字符串（卖家名称），转换为对象
   if (typeof seller === 'string') {
     seller = { nickname: seller };
   }
-  
-  // 提取卖家名称
+
   const sellerName = seller?.nickname || seller?.username || seller?.name || product.sellerName || item.sellerName || '';
-  
-  // 处理图片数组
   const coverImage = product.image || item.productImage || item.coverImage;
   const images = product.images || item.images || (coverImage ? [coverImage] : []);
-  
+
   return {
     id: item.id,
     productId: item.productId || product.id,
@@ -56,6 +52,7 @@ function normalizeFavoriteItem(item) {
   };
 }
 
+// 获取收藏列表
 export async function getFavorites() {
   const { data } = await client.get('/favorites');
   const result = extractData(data);
@@ -63,16 +60,19 @@ export async function getFavorites() {
   return items.map(normalizeFavoriteItem);
 }
 
+// 添加收藏
 export async function addToFavorites(productId) {
   const { data } = await client.post('/favorites', { productId });
   return data;
 }
 
+// 根据收藏 ID 移除
 export async function removeFromFavorites(itemId) {
   const { data } = await client.delete(`/favorites/${itemId}`);
   return data;
 }
 
+// 根据商品 ID 移除收藏
 export async function removeFavoriteByProductId(productId) {
   try {
     const { data } = await client.delete(`/favorites/by-product/${productId}`);

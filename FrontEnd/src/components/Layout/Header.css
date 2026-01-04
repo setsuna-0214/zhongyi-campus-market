@@ -1,3 +1,10 @@
+/**
+ * 顶部导航栏样式
+ * 定义 Header 布局、搜索框、用户菜单、透明模式
+ */
+
+/* ===================== 导航栏容器 ===================== */
+
 .app-header {
   background: #fafafa !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);

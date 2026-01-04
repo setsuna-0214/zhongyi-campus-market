@@ -1,4 +1,9 @@
-/* OrderTabRow - 订单处理页面的标签行组件 */
+/**
+ * 订单标签行样式
+ * 定义订单类型和状态标签的布局和响应式样式
+ */
+
+/* ===================== 标签行容器 ===================== */
 
 .order-tab-row {
   display: flex;
@@ -43,16 +48,16 @@
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .order-tab-group {
     justify-content: center;
   }
-  
+
   .order-type-group,
   .order-status-group {
     width: 100%;
   }
-  
+
   .order-type-group .sub-tab-slider,
   .order-status-group .sub-tab-slider {
     width: 100%;
@@ -65,7 +70,7 @@
   .order-tab-row {
     gap: 8px;
   }
-  
+
   .order-tab-group .sub-tab-item {
     padding: 0 12px;
     font-size: 12px;

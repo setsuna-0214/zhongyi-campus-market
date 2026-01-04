@@ -1,3 +1,8 @@
+/**
+ * 账户设置组件
+ * 提供修改密码、更换绑定邮箱和注销账号的功能
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, Space, Typography, Form, Input, Button, message, Modal, Alert } from 'antd';
 import { LockOutlined, MailOutlined, ExclamationCircleOutlined, WarningOutlined } from '@ant-design/icons';
@@ -184,36 +189,36 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
     <div className="account-panel">
       <Space direction="vertical" size={12} style={{ width: '100%' }}>
         <Text type="secondary">需验证邮箱：{userInfo.email || '未绑定邮箱'}</Text>
-        <Form form={pwdForm} layout="vertical">
-          <Form.Item 
-            name="currentPassword" 
-            label="当前密码" 
-            rules={[{ required: true, message: '请输入当前密码' }]} 
+        <Form form={pwdForm} layout="vertical" className="form-input-style" autoComplete="off">
+          <Form.Item
+            name="currentPassword"
+            label="当前密码"
+            rules={[{ required: true, message: '请输入当前密码' }]}
             style={{ marginBottom: 16 }}
           >
             <Input.Password placeholder="请输入当前密码" size="middle" />
           </Form.Item>
-          <Form.Item 
-            name="newPassword" 
-            label="新密码" 
-            rules={[{ required: true, message: '请输入新密码' }, { min: 6, message: '至少6位' }]} 
+          <Form.Item
+            name="newPassword"
+            label="新密码"
+            rules={[{ required: true, message: '请输入新密码' }, { min: 6, message: '至少6位' }]}
             style={{ marginBottom: 16 }}
           >
             <Input.Password placeholder="请输入新密码" size="middle" />
           </Form.Item>
-          <Form.Item 
-            name="confirmPassword" 
-            label="确认新密码" 
-            dependencies={["newPassword"]} 
+          <Form.Item
+            name="confirmPassword"
+            label="确认新密码"
+            dependencies={["newPassword"]}
             rules={[
               { required: true, message: '请确认新密码' },
-              ({ getFieldValue }) => ({ 
-                validator(_, value) { 
-                  if (!value || getFieldValue('newPassword') === value) return Promise.resolve(); 
-                  return Promise.reject(new Error('两次输入不一致')); 
-                } 
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('newPassword') === value) return Promise.resolve();
+                  return Promise.reject(new Error('两次输入不一致'));
+                }
               })
-            ]} 
+            ]}
             style={{ marginBottom: 16 }}
           >
             <Input.Password placeholder="请再次输入新密码" size="middle" />
@@ -239,11 +244,11 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
     <div className="account-panel">
       <Space direction="vertical" size={12} style={{ width: '100%' }}>
         <Text>当前邮箱：{userInfo.email || '未绑定邮箱'}</Text>
-        <Form form={emailForm} layout="vertical" initialValues={{ newEmail: '' }}>
-          <Form.Item 
-            name="newEmail" 
-            label="新邮箱" 
-            rules={[{ required: true, message: '请输入新邮箱' }, { type: 'email', message: '邮箱格式不正确' }]} 
+        <Form form={emailForm} layout="vertical" className="form-input-style" initialValues={{ newEmail: '' }} autoComplete="off">
+          <Form.Item
+            name="newEmail"
+            label="新邮箱"
+            rules={[{ required: true, message: '请输入新邮箱' }, { type: 'email', message: '邮箱格式不正确' }]}
             style={{ marginBottom: 16 }}
           >
             <Input placeholder="请输入新邮箱" allowClear size="middle" />
@@ -286,7 +291,7 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
           showIcon
           icon={<ExclamationCircleOutlined />}
         />
-        
+
         <div className="delete-verification">
           <Text strong>验证身份</Text>
           <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
@@ -316,7 +321,7 @@ export default function SectionAccount({ userInfo, setUserInfo }) {
           onChange={setActiveTab}
         />
       </div>
-      
+
       <div className="account-content">
         {activeTab === 'password' && renderPasswordPanel()}
         {activeTab === 'email' && renderEmailPanel()}

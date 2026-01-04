@@ -1,3 +1,8 @@
+/**
+ * 订单处理页面
+ * 展示订单详情、处理流程进度、买卖家操作（发货、确认收货、取消订单等）
+ */
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -26,6 +31,7 @@ import {
   CloseCircleOutlined
 } from '@ant-design/icons';
 import { getOrderDetail, updateOrderStatus, uploadOrderImages, cancelOrder } from '../../api/orders';
+import { updateProductStatus } from '../../api/products';
 import { canCancelOrder } from '../../utils/labels';
 import { resolveImageSrc, FALLBACK_IMAGE } from '../../utils/images';
 import './OrderProcess.css';
@@ -41,19 +47,19 @@ const OrderSteps = ({ currentStep, isCancelled, steps }) => {
         const isCompleted = currentStep > index;
         const isCurrent = currentStep === index;
         const isError = isCancelled && isCurrent;
-        
+
         let statusClass = 'wait';
         if (isError) statusClass = 'error';
         else if (isCompleted) statusClass = 'finish';
         else if (isCurrent) statusClass = 'process';
-        
+
         return (
           <div key={index} className={`custom-step ${statusClass}`}>
             <div className="custom-step-icon-wrapper">
               <div className="custom-step-icon">
-                {isError ? <CloseCircleOutlined /> : 
-                 isCompleted ? <CheckCircleOutlined /> : 
-                 step.icon}
+                {isError ? <CloseCircleOutlined /> :
+                  isCompleted ? <CheckCircleOutlined /> :
+                    step.icon}
               </div>
               {index < steps.length - 1 && (
                 <div className={`custom-step-line ${isCompleted ? 'completed' : ''}`} />
@@ -91,7 +97,7 @@ const OrderProcess = () => {
         const user = JSON.parse(raw);
         return user?.id;
       }
-    } catch {}
+    } catch { }
     return null;
   }, []);
 
@@ -228,6 +234,16 @@ const OrderProcess = () => {
     setSubmitting(true);
     try {
       await cancelOrder(orderId);
+      // 取消订单成功后，将商品状态恢复为"在售"
+      const productId = order?.product?.id || order?.productId;
+      if (productId) {
+        try {
+          await updateProductStatus(productId, '在售');
+        } catch {
+          // 商品状态恢复失败不影响取消订单流程
+          console.warn('商品状态恢复失败，可能需要手动处理');
+        }
+      }
       message.success('订单已取消');
       loadOrder();
     } catch (error) {
@@ -269,8 +285,8 @@ const OrderProcess = () => {
   return (
     <div className="order-process-page">
       <div className="container">
-        <Button 
-          icon={<ArrowLeftOutlined />} 
+        <Button
+          icon={<ArrowLeftOutlined />}
           onClick={() => {
             // 如果有历史记录则返回上一页，否则跳转到订单列表
             if (window.history.length > 1) {

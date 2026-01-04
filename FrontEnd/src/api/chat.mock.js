@@ -145,7 +145,7 @@ export async function createConversation({ userId, productId, orderId, partnerNa
   const image = resolveImageSrc({ product: prod });
   
   const userName = partnerName || prod?.seller?.nickname || prod?.seller?.username || '卖家';
-  const userAvatar = partnerAvatar || prod?.seller?.avatar || '/images/avatars/avatar-1.svg';
+  const userAvatar = partnerAvatar || prod?.seller?.avatar || '/images/avatars/default-avatar.svg';
   
   const newConv = {
     id: `c_${Date.now()}`,

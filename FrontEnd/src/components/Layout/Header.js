@@ -1,3 +1,8 @@
+/**
+ * 顶部导航栏组件
+ * 包含 Logo、搜索框、用户菜单，支持首页透明模式
+ */
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Layout, Avatar, Dropdown, Input, Button, Space } from 'antd';
 import {
@@ -26,15 +31,15 @@ const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [headerKeyword, setHeaderKeyword] = useState('');
-  
+
   // 首页展开状态跟踪
   const [homeExpanded, setHomeExpanded] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionDirectionRef = useRef(null);
-  
+
   // 判断是否在首页
   const isHomePage = location.pathname === '/';
-  
+
   // 计算是否应该显示透明模式
   const shouldBeTransparent = isHomePage && !homeExpanded && !isTransitioning;
 
@@ -73,7 +78,7 @@ const Header = () => {
   // 监听首页展开状态变化
   const handleHomeExpandChange = useCallback((event) => {
     const { isExpanded, isTransitioning: transitioning, transitionDirection } = event.detail;
-    
+
     if (isHomePage) {
       setHomeExpanded(isExpanded);
       setIsTransitioning(transitioning);
@@ -118,7 +123,7 @@ const Header = () => {
     // 获取当前搜索类型（如果在搜索页面）
     const currentParams = new URLSearchParams(location.search);
     const currentType = location.pathname === '/search' ? (currentParams.get('type') || 'products') : 'products';
-    
+
     // 构建简洁的URL参数
     const params = new URLSearchParams();
     if (currentType !== 'products') {
@@ -127,7 +132,7 @@ const Header = () => {
     if (keyword) {
       params.set('q', keyword);
     }
-    
+
     const queryString = params.toString();
     navigate(queryString ? `/search?${queryString}` : '/search');
   };
@@ -225,6 +230,7 @@ const Header = () => {
               value={headerKeyword}
               onChange={(e) => setHeaderKeyword(e.target.value)}
               onPressEnter={() => handleSearch(headerKeyword)}
+              autoComplete="off"
             />
             <Button
               type="primary"

@@ -1,4 +1,7 @@
-/* ===================== 商品详情页 ===================== */
+/**
+ * 商品详情页样式
+ * 定义商品详情展示、图片轮播、规格参数、评论区等样式
+ */
 .product-detail-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
@@ -113,12 +116,10 @@
 
 .custom-carousel:hover .carousel-slide.active .ant-image-mask {
   opacity: 1;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.35) 0%,
-    rgba(0, 0, 0, 0.08) 35%,
-    transparent 100%
-  );
+  background: linear-gradient(to top,
+      rgba(0, 0, 0, 0.35) 0%,
+      rgba(0, 0, 0, 0.08) 35%,
+      transparent 100%);
 }
 
 .product-images-card .ant-image-mask-info {
@@ -608,12 +609,10 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.25),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.25),
+      transparent);
   transition: left 0.5s ease;
 }
 
@@ -781,6 +780,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -912,16 +912,16 @@
   .product-detail-page {
     padding: 16px 0 32px;
   }
-  
+
   .product-detail-page .container {
     padding: 0 16px;
   }
-  
+
   .breadcrumb {
     padding: 12px 16px;
     margin-bottom: 16px;
   }
-  
+
   .product-images-card,
   .product-description-card,
   .specifications-card,
@@ -931,49 +931,49 @@
     margin-bottom: 16px;
     border-radius: 12px;
   }
-  
+
   .carousel-track {
     height: 320px;
   }
-  
+
   .carousel-slide .ant-image,
   .carousel-slide .ant-image-img {
     height: 320px !important;
   }
-  
+
   .detail-title {
     font-size: 18px;
   }
-  
+
   .current-price {
     font-size: 26px;
   }
-  
+
   .price-section {
     padding: 12px;
   }
-  
+
   .product-actions {
     padding: 12px 16px;
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
   }
-  
+
   .product-actions .ant-space {
     width: 100%;
     justify-content: center;
   }
-  
+
   .location-time {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   .related-item {
     padding: 10px;
   }
-  
+
   .related-item img {
     width: 56px;
     height: 56px;
@@ -985,57 +985,57 @@
     padding: 10px 12px;
     font-size: 13px;
   }
-  
+
   .purchase-card .ant-card-body {
     padding: 16px;
   }
-  
+
   .carousel-track {
     height: 280px;
   }
-  
+
   .carousel-slide .ant-image,
   .carousel-slide .ant-image-img {
     height: 280px !important;
   }
-  
+
   .detail-title {
     font-size: 17px;
   }
-  
+
   .current-price {
     font-size: 24px;
   }
-  
+
   .spec-item {
     flex-direction: column;
     gap: 4px;
     padding: 10px 12px;
   }
-  
+
   .spec-label {
     min-width: auto;
     font-size: 12px;
   }
-  
+
   .spec-value {
     font-size: 13px;
   }
-  
+
   .purchase-buttons .ant-btn {
     height: 46px;
     font-size: 15px;
   }
-  
+
   .comment-input .ant-input-textarea textarea {
     min-height: 70px;
     padding: 12px 14px;
   }
-  
+
   .seller-simple-card {
     padding: 12px;
   }
-  
+
   .seller-nickname {
     font-size: 14px;
   }

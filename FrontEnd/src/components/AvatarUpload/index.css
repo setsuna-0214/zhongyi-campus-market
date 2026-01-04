@@ -1,16 +1,18 @@
-/* ===================== Avatar Upload Modal ===================== */
-/* Modal 组件样式 - 使用 wrapClassName */
+/**
+ * 头像上传组件样式
+ * 定义头像上传弹窗、预览、裁剪区域的样式
+ */
+
+/* ===================== 弹窗容器 ===================== */
 .avatar-upload-modal-wrap .ant-modal-content {
   border-radius: 28px !important;
   overflow: hidden !important;
-  box-shadow: 
+  box-shadow:
     0 32px 100px rgba(0, 0, 0, 0.15),
     0 12px 40px rgba(79, 172, 254, 0.2) !important;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.99) 0%,
-    rgba(250, 252, 255, 0.98) 100%
-  ) !important;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.99) 0%,
+      rgba(250, 252, 255, 0.98) 100%) !important;
   border: none !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
@@ -141,14 +143,21 @@
   background-size: 200% 200%;
   animation: avatarGradientShift 3s ease infinite;
   border-radius: 50%;
-  box-shadow: 
+  box-shadow:
     0 12px 40px rgba(79, 172, 254, 0.4),
     0 4px 16px rgba(0, 242, 254, 0.2);
 }
 
 @keyframes avatarGradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 /* 头像外圈装饰 */
@@ -162,8 +171,13 @@
 }
 
 @keyframes avatarRingSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .avatar-upload-content .avatar-preview .ant-avatar {
@@ -181,7 +195,7 @@
   letter-spacing: 0.5px !important;
   background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important;
   border: none !important;
-  box-shadow: 
+  box-shadow:
     0 8px 28px rgba(79, 172, 254, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
   transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
@@ -197,12 +211,10 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
   transition: left 0.5s ease;
 }
 
@@ -212,7 +224,7 @@
 
 .avatar-upload-content .avatar-upload-btn.ant-btn:hover {
   transform: translateY(-3px) scale(1.02) !important;
-  box-shadow: 
+  box-shadow:
     0 14px 40px rgba(79, 172, 254, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
 }
@@ -228,11 +240,9 @@
   color: #8c8c8c;
   text-align: center;
   padding: 12px 20px;
-  background: linear-gradient(
-    135deg,
-    rgba(79, 172, 254, 0.06) 0%,
-    rgba(0, 242, 254, 0.03) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(79, 172, 254, 0.06) 0%,
+      rgba(0, 242, 254, 0.03) 100%);
   border-radius: 12px;
   border: 1px solid rgba(79, 172, 254, 0.12);
   display: flex;
@@ -243,11 +253,9 @@
 }
 
 .avatar-upload-content .avatar-upload-tip:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(79, 172, 254, 0.1) 0%,
-    rgba(0, 242, 254, 0.05) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(79, 172, 254, 0.1) 0%,
+      rgba(0, 242, 254, 0.05) 100%);
   border-color: rgba(79, 172, 254, 0.2);
 }
 
@@ -347,7 +355,7 @@
 }
 
 /* 裁剪遮罩 - 移除黑色半透明遮罩显示，但保留裁剪功能 */
-.avatar-upload-modal-wrap.crop-mode .crop-area .ReactCrop__crop-mask > rect {
+.avatar-upload-modal-wrap.crop-mode .crop-area .ReactCrop__crop-mask>rect {
   fill-opacity: 0 !important;
 }
 
@@ -355,7 +363,7 @@
 .avatar-upload-modal-wrap.crop-mode .crop-area .ReactCrop__crop-selection {
   border: 3px solid rgba(79, 172, 254, 0.9) !important;
   box-shadow:
-    0 0 0 9999px rgba(0,0,0,0.5),
+    0 0 0 9999px rgba(0, 0, 0, 0.5),
     0 0 0 2px rgba(255, 255, 255, 0.8) !important;
   cursor: move;
   background: transparent !important;
@@ -411,7 +419,7 @@
   letter-spacing: 0.5px;
   background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important;
   border: none !important;
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(79, 172, 254, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
   transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -427,12 +435,10 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.25),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.25),
+      transparent);
   transition: left 0.5s ease;
 }
 
@@ -442,7 +448,7 @@
 
 .crop-actions .confirm-btn:hover {
   transform: translateY(-3px) scale(1.02) !important;
-  box-shadow: 
+  box-shadow:
     0 12px 36px rgba(79, 172, 254, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
 }
@@ -456,31 +462,31 @@
   .avatar-upload-modal-wrap .ant-modal-body {
     padding: 24px 20px !important;
   }
-  
+
   .crop-area {
     padding: 16px;
     min-height: 280px;
     border-radius: 16px;
   }
-  
+
   .crop-area::before,
   .crop-area::after {
     width: 30px;
     height: 30px;
   }
-  
+
   .crop-actions {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .crop-actions .reset-btn,
   .crop-actions .confirm-btn {
     width: 100%;
     height: 46px;
     flex: none;
   }
-  
+
   .avatar-upload-content .avatar-upload-btn.ant-btn {
     height: 50px !important;
     padding: 0 32px !important;

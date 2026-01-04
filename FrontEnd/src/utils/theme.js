@@ -1,3 +1,9 @@
+/**
+ * 主题配置
+ * 定义分类的背景渐变和图标
+ */
+
+// 分类背景渐变
 export const CATEGORY_THEMES = {
   electronics: 'linear-gradient(135deg, #1e88e5, #42a5f5)',
   books: 'linear-gradient(135deg, #5c6bc0, #7986cb)',
@@ -5,12 +11,12 @@ export const CATEGORY_THEMES = {
   other: 'linear-gradient(135deg, #9fa8da, #7986cb)'
 };
 
+// 获取分类背景渐变
 export const getCategoryBackground = (code) => {
   return CATEGORY_THEMES[code] || 'linear-gradient(135deg, #1890ff, #1c7ed6)';
 };
 
-
-// 分类的图标数组
+// 获取分类图标数组
 export const getCategoryIcons = (code) => {
   const key = typeof code === 'string' ? code.toLowerCase() : 'other';
   switch (key) {

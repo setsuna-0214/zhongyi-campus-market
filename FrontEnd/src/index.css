@@ -1,39 +1,34 @@
-/* 全局样式重置 */
+/**
+ * 全局样式
+ * 定义 CSS 变量（主题色、阴影、圆角）、全局动画、工具类和覆盖 Ant Design 组件的全局样式
+ */
+
+/* ===================== 重置与变量 ===================== */
 @import './styles/page-layout.css';
 
 :root {
-  /* Campus Theme Colors */
   --campus-primary: #4FACFE;
-  /* Cyan Blue - Trust & Youth */
   --campus-primary-dark: #3a9fe8;
   --campus-accent: #FF8F5E;
-  /* Energetic Orange */
   --campus-secondary: #A0E7E5;
-  /* Mint Green - Freshness */
   --campus-yellow: #FBE7C6;
-  /* Warm Yellow */
   --campus-bg: #F4F7F6;
-  /* Light Greyish Cyan */
   --card-bg: #FFFFFF;
   --text-primary: #2C3E50;
   --text-secondary: #7F8C8D;
-
-  /* Shadows & Glassmorphism */
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
   --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(255, 255, 255, 0.5);
   --glass-blur: blur(12px);
-
-  /* Radius */
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-full: 9999px;
 }
 
-/* Global Animations */
+/* ===================== 全局动画 ===================== */
 @keyframes float {
 
   0%,
@@ -80,6 +75,7 @@
   }
 }
 
+/* ===================== 全局基础样式 ===================== */
 * {
   margin: 0;
   padding: 0;
@@ -110,7 +106,7 @@ code {
     monospace;
 }
 
-/* 链接样式 */
+/* ===================== 链接样式 ===================== */
 a {
   color: #4FACFE;
   text-decoration: none;
@@ -121,7 +117,7 @@ a:hover {
   color: #3a9fe8;
 }
 
-/* 容器样式 */
+/* ===================== 容器样式 ===================== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -133,7 +129,7 @@ a:hover {
   padding: 0 20px;
 }
 
-/* 布局工具类 */
+/* ===================== 布局工具类 ===================== */
 .flex {
   display: flex;
 }
@@ -167,7 +163,7 @@ a:hover {
   text-align: right;
 }
 
-/* 间距工具类 */
+/* ===================== 间距工具类 ===================== */
 .m-0 {
   margin: 0;
 }
@@ -321,7 +317,7 @@ a:hover {
   height: 100%;
 }
 
-/* 显示隐藏工具类 */
+/* ===================== 显示/隐藏工具类 ===================== */
 .d-none {
   display: none;
 }
@@ -338,7 +334,7 @@ a:hover {
   display: inline-block;
 }
 
-/* 响应式工具类 */
+/* ===================== 响应式工具类 ===================== */
 @media (max-width: 768px) {
   .d-md-none {
     display: none;
@@ -359,9 +355,8 @@ a:hover {
   }
 }
 
-/* 滚动条样式已移至 utils/scrollbar.css */
 
-/* 加载动画 */
+/* ===================== 加载动画 ===================== */
 .loading-spinner {
   display: inline-block;
   width: 20px;
@@ -382,7 +377,7 @@ a:hover {
   }
 }
 
-/* 渐变背景 */
+/* ===================== 渐变背景 ===================== */
 .gradient-bg {
   background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
 }
@@ -394,7 +389,7 @@ a:hover {
   background-clip: text;
 }
 
-/* 阴影效果 */
+/* ===================== 阴影与过渡 ===================== */
 .shadow-sm {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -443,7 +438,7 @@ a:hover {
   border-radius: 50%;
 }
 
-/* ========== Ant Design Message 全局样式优化 ========== */
+/* ===================== 全局消息提示样式 (覆盖 Ant Design) ===================== */
 
 /* 消息容器基础样式 */
 .ant-message {
@@ -475,6 +470,7 @@ a:hover {
     opacity: 0;
     transform: translateY(-30px) scale(0.9);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -491,25 +487,27 @@ a:hover {
   0% {
     transform: scale(0);
   }
+
   50% {
     transform: scale(1.3);
   }
+
   100% {
     transform: scale(1);
   }
 }
 
-/* ===== 错误消息样式 - 最醒目 ===== */
+/* ===================== 错误消息 ===================== */
 .ant-message-error .ant-message-notice-content {
   background: linear-gradient(135deg, #fff1f0 0%, #ffccc7 100%);
   border: 2px solid #ff4d4f;
   color: #cf1322;
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(255, 77, 79, 0.25),
     0 4px 12px rgba(255, 77, 79, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
   animation: messageSlideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-             errorShake 0.5s ease-in-out 0.3s;
+    errorShake 0.5s ease-in-out 0.3s;
 }
 
 .ant-message-error .ant-message-notice-content .anticon {
@@ -520,39 +518,50 @@ a:hover {
 
 /* 错误消息抖动动画 */
 @keyframes errorShake {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateX(0);
   }
-  20%, 60% {
+
+  20%,
+  60% {
     transform: translateX(-6px);
   }
-  40%, 80% {
+
+  40%,
+  80% {
     transform: translateX(6px);
   }
 }
 
 /* 错误图标弹跳动画 */
 @keyframes errorIconBounce {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   25% {
     transform: scale(1.2);
   }
+
   50% {
     transform: scale(0.95);
   }
+
   75% {
     transform: scale(1.1);
   }
 }
 
-/* ===== 成功消息样式 ===== */
+/* ===================== 成功消息 ===================== */
 .ant-message-success .ant-message-notice-content {
   background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
   border: 2px solid #52c41a;
   color: #389e0d;
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(82, 196, 26, 0.2),
     0 4px 12px rgba(82, 196, 26, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -563,17 +572,17 @@ a:hover {
   filter: drop-shadow(0 2px 4px rgba(82, 196, 26, 0.4));
 }
 
-/* ===== 警告消息样式 ===== */
+/* ===================== 警告消息 ===================== */
 .ant-message-warning .ant-message-notice-content {
   background: linear-gradient(135deg, #fffbe6 0%, #ffe58f 100%);
   border: 2px solid #faad14;
   color: #d48806;
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(250, 173, 20, 0.2),
     0 4px 12px rgba(250, 173, 20, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
   animation: messageSlideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-             warningPulse 1s ease-in-out 0.3s;
+    warningPulse 1s ease-in-out 0.3s;
 }
 
 .ant-message-warning .ant-message-notice-content .anticon {
@@ -583,26 +592,29 @@ a:hover {
 
 /* 警告消息脉冲动画 */
 @keyframes warningPulse {
-  0%, 100% {
-    box-shadow: 
+
+  0%,
+  100% {
+    box-shadow:
       0 8px 24px rgba(250, 173, 20, 0.2),
       0 4px 12px rgba(250, 173, 20, 0.1),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
+
   50% {
-    box-shadow: 
+    box-shadow:
       0 8px 32px rgba(250, 173, 20, 0.35),
       0 4px 16px rgba(250, 173, 20, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
 }
 
-/* ===== 信息消息样式 ===== */
+/* ===================== 信息消息 ===================== */
 .ant-message-info .ant-message-notice-content {
   background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
   border: 2px solid #1890ff;
   color: #096dd9;
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(24, 144, 255, 0.2),
     0 4px 12px rgba(24, 144, 255, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -613,12 +625,12 @@ a:hover {
   filter: drop-shadow(0 2px 4px rgba(24, 144, 255, 0.4));
 }
 
-/* ===== 加载消息样式 ===== */
+/* ===================== 加载消息 ===================== */
 .ant-message-loading .ant-message-notice-content {
   background: linear-gradient(135deg, #f0f5ff 0%, #d6e4ff 100%);
   border: 2px solid #597ef7;
   color: #2f54eb;
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(89, 126, 247, 0.2),
     0 4px 12px rgba(89, 126, 247, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
@@ -634,14 +646,14 @@ a:hover {
   transition: transform 0.2s ease;
 }
 
-/* 响应式适配 */
+/* ===================== 消息提示响应式 ===================== */
 @media (max-width: 576px) {
   .ant-message {
     top: 16px !important;
     left: 8px !important;
     right: 8px !important;
   }
-  
+
   .ant-message-notice-content {
     padding: 12px 16px;
     font-size: 14px;
@@ -649,7 +661,7 @@ a:hover {
     max-width: calc(100vw - 32px);
     word-break: break-word;
   }
-  
+
   .ant-message-notice-content .anticon {
     font-size: 18px;
   }

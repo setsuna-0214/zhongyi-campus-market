@@ -1,3 +1,10 @@
+/**
+ * 卖家/用户详情页样式
+ * 定义只读模式下的个人资料展示、未找到用户等特定样式（复用了 Profile.css 的大部分样式）
+ */
+
+/* ===================== 只读模式覆盖 ===================== */
+
 .read-only-profile {
   position: relative;
 }
@@ -31,11 +38,11 @@
   padding-left: 0;
 }
 
-.read-only-profile .ant-form-item-label > label {
+.read-only-profile .ant-form-item-label>label {
   color: #666;
 }
 
-/* ===================== 用户不存在/已注销样式 ===================== */
+/* ===================== 用户不存在/已注销 ===================== */
 .user-not-found-container {
   display: flex;
   flex-direction: column;

@@ -1,3 +1,8 @@
+/**
+ * 登录页面
+ * 提供用户名/邮箱登录功能，包含登录表单和跳转注册/找回密码入口
+ */
+
 import { useState } from 'react';
 import {
   Form,
@@ -14,6 +19,7 @@ import {
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import './Auth.css';
+import '../../styles/form.css';
 import { login } from '../../api/auth';
 import { setAuthUser } from '../../utils/auth';
 
@@ -46,7 +52,7 @@ const Login = () => {
 
       const { token, user } = res.data || {};
       setAuthUser(user, token);
-      message.success('登录成功！');
+      message.success('登录成功');
       window.location.href = '/';
     } catch (error) {
       message.error(error.message || '登录失败，请检查用户名和密码');
@@ -76,13 +82,13 @@ const Login = () => {
                 onFinish={onFinish}
                 layout="vertical"
                 size="large"
-                className="auth-form"
+                className="auth-form form-input-style"
               >
                 <Form.Item
                   name="username"
                   label="用户名/邮箱"
                   rules={[
-                    { required: true, message: '输入用户名或邮箱登录吧~' },
+                    { required: true, message: '请输入用户名或邮箱' },
                   ]}
                 >
                   <Input
@@ -96,7 +102,7 @@ const Login = () => {
                   name="password"
                   label="密码"
                   rules={[
-                    { required: true, message: '密码不能空着哦~' },
+                    { required: true, message: '请输入密码' },
                   ]}
                 >
                   <Input.Password

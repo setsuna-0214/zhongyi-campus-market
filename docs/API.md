@@ -160,7 +160,7 @@
           "seller": {
             "id": 1,
             "name": "张同学",
-            "avatar": "/images/avatars/avatar-1.svg",
+            "avatar": "/images/avatars/default-avatar.svg",
             "rating": 4.8
           },
           "views": 156,
@@ -191,7 +191,7 @@
       "seller": {
         "id": 1,
         "name": "张同学",
-        "avatar": "/images/avatars/avatar-1.svg",
+        "avatar": "/images/avatars/default-avatar.svg",
         "rating": 4.8
       },
       "views": 156,
@@ -577,7 +577,7 @@
       "username": "张同学",
       "nickname": "张同学",
       "email": "1234567@email.com",
-      "avatar": "/images/avatars/avatar-1.svg",
+      "avatar": "/images/avatars/default-avatar.svg",
       "phone": "13800138000",
       "address": "北京大学",
       "bio": "个人简介内容",
@@ -608,7 +608,7 @@
       "username": "张同学",
       "nickname": "张同学",
       "email": "1234567@email.com",
-      "avatar": "/images/avatars/avatar-1.svg",
+      "avatar": "/images/avatars/default-avatar.svg",
       "phone": "13800138000",
       "address": "北京大学",
       "bio": "个人简介内容",
@@ -624,7 +624,7 @@
   - Response:
     ```json
     {
-      "avatarUrl": "/images/avatars/avatar-1.svg"
+      "avatarUrl": "/images/avatars/default-avatar.svg"
     }
     ```
 
@@ -754,7 +754,7 @@
       "id": 1,
       "username": "zhang_student",
       "nickname": "张同学",
-      "avatar": "/images/avatars/avatar-1.svg",
+      "avatar": "/images/avatars/default-avatar.svg",
       "joinDate": "2024-01-01",
       "bio": "个人简介内容",
       "followersCount": 128,
@@ -795,7 +795,7 @@
           "id": 1,
           "username": "zhang_student",
           "nickname": "张同学",
-          "avatar": "/images/avatars/avatar-1.svg",
+          "avatar": "/images/avatars/default-avatar.svg",
           "school": "北京大学",
           "bio": "个人简介",
           "followersCount": 128,

@@ -1,8 +1,11 @@
+/**
+ * HTTP 客户端
+ * 基于 Axios 封装，处理认证、错误拦截、调试日志
+ */
+
 import axios from 'axios';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
-
-// 是否启用调试日志 (开发环境自动启用)
 const DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true';
 
 const client = axios.create({
@@ -10,8 +13,8 @@ const client = axios.create({
   timeout: 10000,
 });
 
+// 请求拦截：添加认证 Token
 client.interceptors.request.use((config) => {
-  // 调试日志：请求信息
   if (DEBUG) {
     console.log(
       `%c[API Request] ${config.method?.toUpperCase()} ${config.url}`,
@@ -19,6 +22,7 @@ client.interceptors.request.use((config) => {
       config.data || ''
     );
   }
+
   // 优先使用独立存储的 token，其次从 authUser 中取
   const token = localStorage.getItem('authToken');
   if (!token) {
@@ -30,16 +34,16 @@ client.interceptors.request.use((config) => {
           config.headers.Authorization = `Bearer ${authUser.token}`;
         }
       }
-    } catch {}
+    } catch { }
   } else {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
+// 响应拦截：处理错误和认证失败
 client.interceptors.response.use(
   (response) => {
-    // 调试日志：成功响应
     if (DEBUG) {
       console.log(
         `%c[API Response] ${response.status} ${response.config.url}`,
@@ -50,7 +54,6 @@ client.interceptors.response.use(
     return response;
   },
   (error) => {
-    // 调试日志：错误响应
     if (DEBUG) {
       const status = error.response?.status || 'Network Error';
       const url = error.config?.url || 'unknown';
@@ -61,31 +64,27 @@ client.interceptors.response.use(
           status: error.response?.status,
           data: error.response?.data,
           message: error.message,
-          // 错误定位提示
           hint: getErrorHint(error),
         }
       );
     }
-    
-    // 处理 401 认证失败：清除登录状态并跳转到登录页
+
+    // 处理 401 认证失败
     if (error.response?.status === 401) {
       localStorage.removeItem('authToken');
       localStorage.removeItem('authUser');
-      // 避免在登录页面重复跳转
       if (!window.location.pathname.includes('/login')) {
         alert('登录已过期，请重新登录');
         window.location.href = '/login';
       }
     }
-    
+
     const msg = error?.response?.data?.message || error.message || '网络错误';
     return Promise.reject(new Error(msg));
   }
 );
 
-/**
- * 根据错误类型返回调试提示
- */
+// 根据错误类型返回调试提示
 function getErrorHint(error) {
   if (!error.response) {
     if (error.message?.includes('Network Error')) {
