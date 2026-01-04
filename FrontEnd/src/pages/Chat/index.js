@@ -1,11 +1,16 @@
+/**
+ * 聊天页面
+ * 提供即时通讯功能，包括会话列表、消息收发、图片上传、商品卡片发送等
+ */
+
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { 
-  Input, 
-  Button, 
-  Avatar, 
-  Typography, 
-  Space, 
-  Badge, 
+import {
+  Input,
+  Button,
+  Avatar,
+  Typography,
+  Space,
+  Badge,
   Divider,
   Upload,
   Modal,
@@ -15,9 +20,9 @@ import {
   Popover,
   Switch
 } from 'antd';
-import { 
-  SendOutlined, 
-  PictureOutlined, 
+import {
+  SendOutlined,
+  PictureOutlined,
   SmileOutlined,
   MoreOutlined,
   ArrowLeftOutlined,
@@ -64,17 +69,17 @@ const parseTimestamp = (timestamp) => {
 const formatMessageTime = (timestamp) => {
   const date = parseTimestamp(timestamp);
   if (!date) return '';
-  
+
   const now = new Date();
   const isToday = date.toDateString() === now.toDateString();
   const isThisYear = date.getFullYear() === now.getFullYear();
-  
+
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const month = date.getMonth() + 1;
   const day = date.getDate();
   const year = date.getFullYear();
-  
+
   if (isToday) {
     return `${hours}:${minutes}`;
   } else if (isThisYear) {
@@ -96,12 +101,12 @@ const isEmojiOnly = (text) => {
 // 判断是否需要显示时间戳
 const shouldShowTimestamp = (currentMsg, prevMsg) => {
   if (!prevMsg) return true; // 第一条消息始终显示
-  
+
   const currentTime = parseTimestamp(currentMsg.timestamp);
   const prevTime = parseTimestamp(prevMsg.timestamp);
-  
+
   if (!currentTime || !prevTime) return true;
-  
+
   return currentTime.getTime() - prevTime.getTime() > TIME_GAP_THRESHOLD;
 };
 
@@ -143,16 +148,16 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const currentConversationRef = useRef(null);
   const navigate = useNavigate();
-  
+
   const [conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversationState] = useState(null);
-  
+
   // 包装函数：同时更新 state 和 ref
   const setCurrentConversation = useCallback((conv) => {
     currentConversationRef.current = conv;
     setCurrentConversationState(conv);
   }, []);
-  
+
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
@@ -171,10 +176,10 @@ const Chat = () => {
     social: true,       // 社交相关通知
   });
   const [settingsLoading, setSettingsLoading] = useState(false);
-  
+
   // 获取当前用户信息
   const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
-  
+
   // 监听用户信息更新事件
   useEffect(() => {
     const handleUserUpdated = (event) => {
@@ -187,7 +192,7 @@ const Chat = () => {
       window.removeEventListener('userUpdated', handleUserUpdated);
     };
   }, []);
-  
+
   // 判断当前是否为系统消息会话
   const isSystemConversation = currentConversation?.id === SYSTEM_CONVERSATION_ID;
 
@@ -317,19 +322,19 @@ const Chat = () => {
     if (data.type === 'new_message') {
       const newMsg = data.message;
       newMsg.isOwn = false;
-      
+
       // 使用 ref 检查是否正在查看该会话（避免闭包问题）
       const current = currentConversationRef.current;
-      const isViewingConversation = current && 
+      const isViewingConversation = current &&
         (current.id === data.conversationId || current.id === newMsg.conversationId);
-      
+
       if (isViewingConversation) {
         setMessages(prev => {
           if (prev.some(m => m.id === newMsg.id)) return prev;
           return [...prev, newMsg];
         });
       }
-      
+
       setConversations(prev => prev.map(conv => {
         if (conv.id === data.conversationId || conv.partnerId === String(newMsg.senderId)) {
           return {
@@ -355,20 +360,20 @@ const Chat = () => {
   // 初始化数据 - 只在组件挂载或关键参数变化时执行
   const initializedRef = useRef(false);
   const lastParamsRef = useRef('');
-  
+
   useEffect(() => {
     // 计算关键参数的签名（不包括 c 参数，因为 c 只是用于恢复选择）
     const sellerId = searchParams.get('sid') || searchParams.get('sellerId');
     const productId = searchParams.get('pid') || searchParams.get('productId');
     const orderId = searchParams.get('oid') || searchParams.get('orderId');
     const paramsSignature = `${sellerId || ''}-${productId || ''}-${orderId || ''}`;
-    
+
     // 如果只是 c 参数变化（用户选择会话），不重新初始化
     if (initializedRef.current && paramsSignature === lastParamsRef.current) {
       return;
     }
     lastParamsRef.current = paramsSignature;
-    
+
     const initChat = async () => {
       setLoading(true);
       try {
@@ -377,7 +382,7 @@ const Chat = () => {
         const sellerAvatar = searchParams.get('savatar') || searchParams.get('sellerAvatar') || searchParams.get('partnerAvatar');
         // 恢复之前选中的会话
         const savedConversationId = searchParams.get('c');
-        
+
         // 构建并行加载任务
         const loadTasks = [
           // 加载系统消息（带缓存）
@@ -385,9 +390,9 @@ const Chat = () => {
           // 获取会话列表
           listConversations().catch(() => []),
           // 如果有 sellerId，同时创建/获取会话
-          sellerId ? createConversation({ 
-            userId: parseInt(sellerId, 10), 
-            productId: productId ? parseInt(productId, 10) : null, 
+          sellerId ? createConversation({
+            userId: parseInt(sellerId, 10),
+            productId: productId ? parseInt(productId, 10) : null,
             orderId: orderId ? parseInt(orderId, 10) : null,
             partnerName: sellerName || '卖家',
             partnerAvatar: sellerAvatar || ''
@@ -395,25 +400,25 @@ const Chat = () => {
           // 仅在需要时加载商品信息
           productId ? getProduct(productId).catch(() => null) : Promise.resolve(null)
         ];
-        
+
         // 并行执行所有加载任务
         const [systemResult, convListResult, createdConv, productResult] = await Promise.all(loadTasks);
-        
+
         // 设置商品信息
         if (productResult) {
           setSharedProduct(productResult);
         }
-        
+
         // 设置系统消息
         const sysMsgs = Array.isArray(systemResult) ? systemResult : [];
         setSystemMessages(sysMsgs);
         setSystemUnreadCount(sysMsgs.filter(m => !m.isRead).length);
-        
+
         // 处理会话列表
         const normalizedList = deduplicateConversations(convListResult);
-        
+
         let targetConversation = null;
-        
+
         // 如果创建/获取了会话
         if (createdConv && createdConv.id) {
           targetConversation = normalizeConversation(createdConv);
@@ -433,11 +438,11 @@ const Chat = () => {
             normalizedList.unshift(targetConversation);
           }
         }
-        
+
         // 确定要加载消息的会话
         let conversationToLoad = targetConversation;
         let isSystemConv = false;
-        
+
         if (!conversationToLoad && savedConversationId) {
           if (savedConversationId === 'system') {
             isSystemConv = true;
@@ -445,7 +450,7 @@ const Chat = () => {
             conversationToLoad = normalizedList.find(c => c.partnerId === savedConversationId);
           }
         }
-        
+
         // 如果没有指定会话，自动选中排序后的第一个会话
         if (!conversationToLoad && !isSystemConv && !sellerId) {
           // 构建系统消息会话对象用于排序比较
@@ -455,7 +460,7 @@ const Chat = () => {
             unreadCount: sysMsgs.filter(m => !m.isRead).length,
             lastMessageTime: sysMsgs[0]?.timestamp || ''
           };
-          
+
           // 合并并排序所有会话
           const allConversations = [systemConvForSort, ...normalizedList];
           const sortedConversations = allConversations.sort((a, b) => {
@@ -470,7 +475,7 @@ const Chat = () => {
             if (bTime) return 1;
             return 0;
           });
-          
+
           // 选中排序后的第一个会话
           const firstConv = sortedConversations[0];
           if (firstConv) {
@@ -481,16 +486,16 @@ const Chat = () => {
             }
           }
         }
-        
+
         // 开始加载消息（不等待完成）
         let messagesPromise = null;
         if (conversationToLoad) {
           messagesPromise = listMessages(conversationToLoad.id).catch(() => []);
         }
-        
+
         // 立即设置会话列表和当前会话，结束加载状态
         setConversations(normalizedList);
-        
+
         if (isSystemConv) {
           const systemConv = {
             id: SYSTEM_CONVERSATION_ID,
@@ -506,10 +511,10 @@ const Chat = () => {
         } else if (conversationToLoad) {
           setCurrentConversation(conversationToLoad);
         }
-        
+
         setLoading(false);
         initializedRef.current = true;
-        
+
         // 等待消息加载完成
         if (messagesPromise) {
           const msgs = await messagesPromise;
@@ -531,7 +536,7 @@ const Chat = () => {
   // 选择对话
   const handleSelectConversation = async (conversation) => {
     setCurrentConversation(conversation);
-    
+
     // 更新 URL 参数以保存当前选中的会话
     const newParams = new URLSearchParams();
     if (conversation.id === SYSTEM_CONVERSATION_ID) {
@@ -540,7 +545,7 @@ const Chat = () => {
       newParams.set('c', conversation.partnerId);
     }
     setSearchParams(newParams, { replace: true });
-    
+
     // 如果是系统消息会话
     if (conversation.id === SYSTEM_CONVERSATION_ID) {
       setMessages([]); // 系统消息不使用 messages 状态
@@ -552,10 +557,10 @@ const Chat = () => {
         // 清除缓存并通知悬浮按钮刷新
         clearSystemMessagesCache();
         window.dispatchEvent(new CustomEvent('unreadCountChanged'));
-      } catch {}
+      } catch { }
       return;
     }
-    
+
     try {
       const msgs = await listMessages(conversation.id);
       setMessages(Array.isArray(msgs) ? msgs : []);
@@ -564,17 +569,17 @@ const Chat = () => {
     }
     // 只有当会话有未读消息时才更新
     const hasUnread = (conversation.unreadCount || 0) > 0;
-    setConversations(prev => prev.map(conv => 
+    setConversations(prev => prev.map(conv =>
       conv.id === conversation.id ? { ...conv, unreadCount: 0 } : conv
     ));
-    try { 
+    try {
       await markConversationAsRead(conversation.id);
       // 清除缓存并通知悬浮按钮刷新
       if (hasUnread) {
         clearConversationsCache();
         window.dispatchEvent(new CustomEvent('unreadCountChanged'));
       }
-    } catch {}
+    } catch { }
   };
 
   // 选择系统消息会话
@@ -603,7 +608,7 @@ const Chat = () => {
     };
     setMessages(prev => [...prev, outgoing]);
     setNewMessage('');
-    setConversations(prev => prev.map(conv => 
+    setConversations(prev => prev.map(conv =>
       conv.id === currentConversation.id
         ? { ...conv, lastMessage: outgoing.content, lastMessageTime: outgoing.timestamp }
         : conv
@@ -637,7 +642,7 @@ const Chat = () => {
         ? { ...conv, lastMessage: `分享了商品卡片：${p.title || ''}`.trim(), lastMessageTime: msg.timestamp }
         : conv
     )));
-    try { await sendMessage(currentConversation.id, { type: 'product', content }); } catch {}
+    try { await sendMessage(currentConversation.id, { type: 'product', content }); } catch { }
   };
 
   const handleKeyPress = (e) => {
@@ -662,8 +667,8 @@ const Chat = () => {
     return false;
   };
 
-  const handleImagePreview = (src) => { 
-    setImagePreview(src); 
+  const handleImagePreview = (src) => {
+    setImagePreview(src);
     setImageZoom(1);
     setImageDrag({ isDragging: false, startX: 0, startY: 0, translateX: 0, translateY: 0 });
   };
@@ -743,10 +748,10 @@ const Chat = () => {
     const isOwn = msg.isOwn;
     const prevMsg = index > 0 ? allMessages[index - 1] : null;
     const showTimestamp = shouldShowTimestamp(msg, prevMsg);
-    
+
     // 判断是否需要显示头像（每条消息都显示头像）
     const showAvatar = true;
-    
+
     if (msg.type === 'product') {
       const item = msg.content || {};
       return (
@@ -792,11 +797,11 @@ const Chat = () => {
             ) : (
               <div className={`message-image-wrapper ${isOwn ? 'own' : 'other'} ${msg.uploading ? 'uploading' : ''}`}>
                 {msg.uploading ? (<div className="image-uploading-placeholder"><div className="upload-spinner"></div><Text type="secondary">发送中...</Text></div>) : (
-                  <img 
-                    src={msg.content} 
-                    alt="聊天图片" 
+                  <img
+                    src={msg.content}
+                    alt="聊天图片"
                     className="chat-image-thumbnail"
-                    onClick={() => handleImagePreview(msg.content)} 
+                    onClick={() => handleImagePreview(msg.content)}
                   />
                 )}
               </div>
@@ -810,332 +815,332 @@ const Chat = () => {
   return (
     <div className="chat-container">
       <div className="chat-container-inner">
-      <div className="conversation-list">
-        <div className="conversation-header">
-          <Title level={4}>消息通知</Title>
-          {loading && <div className="header-loading-spinner"></div>}
-        </div>
-        <div className="conversation-items">
-          {/* 会话列表 - 包含系统消息，按未读消息和时间统一排序 */}
-          {(() => {
-            // 构建系统消息会话对象
-            const systemConvItem = {
-              id: SYSTEM_CONVERSATION_ID,
-              isSystem: true,
-              unreadCount: systemUnreadCount,
-              lastMessageTime: systemMessages[0]?.timestamp || '',
-              userName: '系统消息',
-              lastMessage: systemMessages[0]?.title || '暂无系统消息'
-            };
-            
-            // 合并并排序所有会话
-            const allConversations = [systemConvItem, ...conversations];
-            
-            return allConversations.sort((a, b) => {
-              // 有未读消息的排在前面
-              const aUnread = (a.unreadCount || 0) > 0;
-              const bUnread = (b.unreadCount || 0) > 0;
-              if (aUnread && !bUnread) return -1;
-              if (!aUnread && bUnread) return 1;
-              // 同为有未读或无未读时，按最后消息时间排序（最新的在前）
-              const aTime = parseTimestamp(a.lastMessageTime);
-              const bTime = parseTimestamp(b.lastMessageTime);
-              if (aTime && bTime) return bTime.getTime() - aTime.getTime();
-              if (aTime) return -1;
-              if (bTime) return 1;
-              return 0;
-            }).map(conv => {
-              // 系统消息会话
-              if (conv.isSystem) {
-                return (
-                  <div 
-                    key={SYSTEM_CONVERSATION_ID}
-                    className={`conversation-item system-conversation ${currentConversation?.id === SYSTEM_CONVERSATION_ID ? 'active' : ''}`} 
-                    onClick={handleSelectSystemConversation}
-                  >
-                    <Badge count={systemUnreadCount} size="small">
-                      <div className="system-avatar">
-                        <NotificationOutlined />
+        <div className="conversation-list">
+          <div className="conversation-header">
+            <Title level={4}>消息通知</Title>
+            {loading && <div className="header-loading-spinner"></div>}
+          </div>
+          <div className="conversation-items">
+            {/* 会话列表 - 包含系统消息，按未读消息和时间统一排序 */}
+            {(() => {
+              // 构建系统消息会话对象
+              const systemConvItem = {
+                id: SYSTEM_CONVERSATION_ID,
+                isSystem: true,
+                unreadCount: systemUnreadCount,
+                lastMessageTime: systemMessages[0]?.timestamp || '',
+                userName: '系统消息',
+                lastMessage: systemMessages[0]?.title || '暂无系统消息'
+              };
+
+              // 合并并排序所有会话
+              const allConversations = [systemConvItem, ...conversations];
+
+              return allConversations.sort((a, b) => {
+                // 有未读消息的排在前面
+                const aUnread = (a.unreadCount || 0) > 0;
+                const bUnread = (b.unreadCount || 0) > 0;
+                if (aUnread && !bUnread) return -1;
+                if (!aUnread && bUnread) return 1;
+                // 同为有未读或无未读时，按最后消息时间排序（最新的在前）
+                const aTime = parseTimestamp(a.lastMessageTime);
+                const bTime = parseTimestamp(b.lastMessageTime);
+                if (aTime && bTime) return bTime.getTime() - aTime.getTime();
+                if (aTime) return -1;
+                if (bTime) return 1;
+                return 0;
+              }).map(conv => {
+                // 系统消息会话
+                if (conv.isSystem) {
+                  return (
+                    <div
+                      key={SYSTEM_CONVERSATION_ID}
+                      className={`conversation-item system-conversation ${currentConversation?.id === SYSTEM_CONVERSATION_ID ? 'active' : ''}`}
+                      onClick={handleSelectSystemConversation}
+                    >
+                      <Badge count={systemUnreadCount} size="small">
+                        <div className="system-avatar">
+                          <NotificationOutlined />
+                        </div>
+                      </Badge>
+                      <div className="conversation-info">
+                        <div className="conversation-top">
+                          <Text strong className="user-name system-name">系统消息</Text>
+                          <Text type="secondary" className="last-time">
+                            {systemMessages[0]?.timestamp ? formatMessageTime(systemMessages[0].timestamp).split(' ')[0] : ''}
+                          </Text>
+                        </div>
+                        <div className="conversation-bottom">
+                          <Text type="secondary" className="last-message" ellipsis>
+                            {systemMessages[0]?.title || '暂无系统消息'}
+                          </Text>
+                        </div>
                       </div>
-                    </Badge>
+                    </div>
+                  );
+                }
+
+                // 普通会话
+                return (
+                  <div key={conv.id} className={`conversation-item ${currentConversation?.id === conv.id ? 'active' : ''}`} onClick={() => handleSelectConversation(conv)}>
+                    <Badge count={conv.unreadCount} size="small"><Avatar src={resolveAvatar(conv.userAvatar)} size={48} /></Badge>
                     <div className="conversation-info">
                       <div className="conversation-top">
-                        <Text strong className="user-name system-name">系统消息</Text>
-                        <Text type="secondary" className="last-time">
-                          {systemMessages[0]?.timestamp ? formatMessageTime(systemMessages[0].timestamp).split(' ')[0] : ''}
-                        </Text>
+                        <Text strong className="user-name">{conv.userName}</Text>
+                        <Text type="secondary" className="last-time">{((conv.lastMessageTime || '').split(' ')[1]) || conv.lastMessageTime || ''}</Text>
                       </div>
                       <div className="conversation-bottom">
                         <Text type="secondary" className="last-message" ellipsis>
-                          {systemMessages[0]?.title || '暂无系统消息'}
+                          {(() => { const lm = conv.lastMessage; if (!lm) return ''; if (typeof lm === 'string') return lm; if (typeof lm === 'object') { if (lm.type === 'text' && lm.content) return String(lm.content); if (lm.type === 'image') return '[图片]'; if (lm.type === 'product') return `分享了商品卡片：${lm.title || ''}`.trim(); if (lm.title) return `分享了商品卡片：${lm.title}`; return '[新消息]'; } try { return String(lm); } catch { return '[新消息]'; } })()}
                         </Text>
                       </div>
                     </div>
                   </div>
                 );
-              }
-              
-              // 普通会话
-              return (
-                <div key={conv.id} className={`conversation-item ${currentConversation?.id === conv.id ? 'active' : ''}`} onClick={() => handleSelectConversation(conv)}>
-                  <Badge count={conv.unreadCount} size="small"><Avatar src={resolveAvatar(conv.userAvatar)} size={48} /></Badge>
-                  <div className="conversation-info">
-                    <div className="conversation-top">
-                      <Text strong className="user-name">{conv.userName}</Text>
-                      <Text type="secondary" className="last-time">{((conv.lastMessageTime || '').split(' ')[1]) || conv.lastMessageTime || ''}</Text>
-                    </div>
-                    <div className="conversation-bottom">
-                      <Text type="secondary" className="last-message" ellipsis>
-                        {(() => { const lm = conv.lastMessage; if (!lm) return ''; if (typeof lm === 'string') return lm; if (typeof lm === 'object') { if (lm.type === 'text' && lm.content) return String(lm.content); if (lm.type === 'image') return '[图片]'; if (lm.type === 'product') return `分享了商品卡片：${lm.title || ''}`.trim(); if (lm.title) return `分享了商品卡片：${lm.title}`; return '[新消息]'; } try { return String(lm); } catch { return '[新消息]'; } })()}
-                      </Text>
-                    </div>
-                  </div>
-                </div>
-              );
-            });
-          })()}
+              });
+            })()}
+          </div>
         </div>
-      </div>
 
-      <div className="chat-area">
-        {currentConversation ? (
-          <>
-            <div className="chat-header">
-              <div className="chat-user-info">
-                <Button type="text" icon={<ArrowLeftOutlined />} className="back-button" onClick={() => { setCurrentConversation(null); setSearchParams({}, { replace: true }); }} />
-                {isSystemConversation ? (
-                  <div className="system-avatar header-avatar"><NotificationOutlined /></div>
-                ) : (
-                  <Avatar src={resolveAvatar(currentConversation.userAvatar)} size={40} />
-                )}
-                <div className="user-details"><Text strong>{currentConversation.userName}</Text></div>
-              </div>
-              <Space>
-                {isSystemConversation ? (
-                  /* 系统消息 - 显示通知设置按钮 */
-                  <Button 
-                    type="text" 
-                    icon={<SettingOutlined />} 
-                    onClick={async () => {
-                      setNotificationSettingsOpen(true);
-                      // 加载当前通知设置
-                      try {
-                        const settings = await getNotificationSettings();
-                        setNotificationSettings(settings);
-                      } catch (err) {
-                        console.error('加载通知设置失败:', err);
-                      }
-                    }}
-                    className="notification-settings-btn"
-                  >
-                    通知设置
-                  </Button>
-                ) : (
-                  /* 普通聊天 - 显示删除按钮 */
-                  <Dropdown menu={{ items: [{ key: 'delete', label: '删除该聊天', danger: true }], onClick: async ({ key }) => { if (key === 'delete' && currentConversation) { Modal.confirm({ title: '确定删除该聊天？', content: '删除后将无法恢复聊天记录', icon: <DeleteOutlined style={{ color: '#ff4d4f' }} />, okText: '删除', okButtonProps: { danger: true }, cancelText: '取消', centered: true, className: 'delete-chat-confirm-modal', onOk: async () => { try { await deleteConversation(currentConversation.id); setConversations(prev => prev.filter(c => c.id !== currentConversation.id)); setMessages([]); setCurrentConversation(null); message.success('已删除该聊天'); } catch (err) { message.error(err?.message || '删除失败'); } } }); } } }}>
-                    <Button type="text" icon={<MoreOutlined />} />
-                  </Dropdown>
-                )}
-              </Space>
-            </div>
-            <Divider style={{ margin: 0 }} />
-            
-            {/* 系统消息展示区域 */}
-            {isSystemConversation ? (
-              <div className="system-messages-container">
-                {systemMessages.length > 0 ? (
-                  systemMessages.map(msg => renderSystemMessage(msg))
-                ) : (
-                  <Empty description="暂无系统消息" />
-                )}
-              </div>
-            ) : (
-              <>
-                <div className="messages-container">
-                  {messages.length > 0 ? messages.map((msg, index, arr) => renderMessage(msg, index, arr)) : <Empty description="开始聊天吧" />}
-                  <div ref={messagesEndRef} />
+        <div className="chat-area">
+          {currentConversation ? (
+            <>
+              <div className="chat-header">
+                <div className="chat-user-info">
+                  <Button type="text" icon={<ArrowLeftOutlined />} className="back-button" onClick={() => { setCurrentConversation(null); setSearchParams({}, { replace: true }); }} />
+                  {isSystemConversation ? (
+                    <div className="system-avatar header-avatar"><NotificationOutlined /></div>
+                  ) : (
+                    <Avatar src={resolveAvatar(currentConversation.userAvatar)} size={40} />
+                  )}
+                  <div className="user-details"><Text strong>{currentConversation.userName}</Text></div>
                 </div>
-                <div className="input-area">
-                  <div className="input-toolbar">
-                    <Space>
-                      <Upload beforeUpload={handleImageUpload} showUploadList={false} accept="image/*"><Button type="text" icon={<PictureOutlined />} /></Upload>
-                      <Popover
-                        content={
-                          <div className="emoji-picker-container">
-                            <div className="emoji-grid">
-                              {emojiCategories[emojiCategory].emojis.map((emoji, index) => (
-                                <span 
-                                  key={index} 
-                                  className="emoji-item" 
-                                  onClick={() => handleEmojiSelect(emoji)}
-                                >
-                                  {emoji}
-                                </span>
-                              ))}
-                            </div>
-                            <div className="emoji-category-tabs">
-                              {Object.entries(emojiCategories).map(([key, category]) => (
-                                <span
-                                  key={key}
-                                  className={`emoji-category-tab ${emojiCategory === key ? 'active' : ''}`}
-                                  onClick={() => setEmojiCategory(key)}
-                                  title={category.name}
-                                >
-                                  {category.icon}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
+                <Space>
+                  {isSystemConversation ? (
+                    /* 系统消息 - 显示通知设置按钮 */
+                    <Button
+                      type="text"
+                      icon={<SettingOutlined />}
+                      onClick={async () => {
+                        setNotificationSettingsOpen(true);
+                        // 加载当前通知设置
+                        try {
+                          const settings = await getNotificationSettings();
+                          setNotificationSettings(settings);
+                        } catch (err) {
+                          console.error('加载通知设置失败:', err);
                         }
-                        trigger="click"
-                        open={emojiPickerOpen}
-                        onOpenChange={setEmojiPickerOpen}
-                        placement="topLeft"
-                      >
-                        <Button type="text" icon={<SmileOutlined />} />
-                      </Popover>
-                      {currentConversation && sharedProduct && <Button type="default" onClick={handleSendProductCard}>发送商品卡片</Button>}
-                    </Space>
-                  </div>
-                  <div className="input-box">
-                    <TextArea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyPress={handleKeyPress} placeholder="输入消息..." autoSize={{ minRows: 1, maxRows: 4 }} bordered={false} />
-                    <Button type="primary" icon={<SendOutlined />} onClick={handleSendMessage} disabled={!newMessage.trim()} className="send-button">发送</Button>
-                  </div>
+                      }}
+                      className="notification-settings-btn"
+                    >
+                      通知设置
+                    </Button>
+                  ) : (
+                    /* 普通聊天 - 显示删除按钮 */
+                    <Dropdown menu={{ items: [{ key: 'delete', label: '删除该聊天', danger: true }], onClick: async ({ key }) => { if (key === 'delete' && currentConversation) { Modal.confirm({ title: '确定删除该聊天？', content: '删除后将无法恢复聊天记录', icon: <DeleteOutlined style={{ color: '#ff4d4f' }} />, okText: '删除', okButtonProps: { danger: true }, cancelText: '取消', centered: true, className: 'delete-chat-confirm-modal', onOk: async () => { try { await deleteConversation(currentConversation.id); setConversations(prev => prev.filter(c => c.id !== currentConversation.id)); setMessages([]); setCurrentConversation(null); message.success('已删除该聊天'); } catch (err) { message.error(err?.message || '删除失败'); } } }); } } }}>
+                      <Button type="text" icon={<MoreOutlined />} />
+                    </Dropdown>
+                  )}
+                </Space>
+              </div>
+              <Divider style={{ margin: 0 }} />
+
+              {/* 系统消息展示区域 */}
+              {isSystemConversation ? (
+                <div className="system-messages-container">
+                  {systemMessages.length > 0 ? (
+                    systemMessages.map(msg => renderSystemMessage(msg))
+                  ) : (
+                    <Empty description="暂无系统消息" />
+                  )}
                 </div>
-              </>
-            )}
-          </>
-        ) : <div className="no-conversation"><Empty description="选择一个对话开始聊天" image={Empty.PRESENTED_IMAGE_SIMPLE} /></div>}
-      </div>
+              ) : (
+                <>
+                  <div className="messages-container">
+                    {messages.length > 0 ? messages.map((msg, index, arr) => renderMessage(msg, index, arr)) : <Empty description="开始聊天吧" />}
+                    <div ref={messagesEndRef} />
+                  </div>
+                  <div className="input-area">
+                    <div className="input-toolbar">
+                      <Space>
+                        <Upload beforeUpload={handleImageUpload} showUploadList={false} accept="image/*"><Button type="text" icon={<PictureOutlined />} /></Upload>
+                        <Popover
+                          content={
+                            <div className="emoji-picker-container">
+                              <div className="emoji-grid">
+                                {emojiCategories[emojiCategory].emojis.map((emoji, index) => (
+                                  <span
+                                    key={index}
+                                    className="emoji-item"
+                                    onClick={() => handleEmojiSelect(emoji)}
+                                  >
+                                    {emoji}
+                                  </span>
+                                ))}
+                              </div>
+                              <div className="emoji-category-tabs">
+                                {Object.entries(emojiCategories).map(([key, category]) => (
+                                  <span
+                                    key={key}
+                                    className={`emoji-category-tab ${emojiCategory === key ? 'active' : ''}`}
+                                    onClick={() => setEmojiCategory(key)}
+                                    title={category.name}
+                                  >
+                                    {category.icon}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          }
+                          trigger="click"
+                          open={emojiPickerOpen}
+                          onOpenChange={setEmojiPickerOpen}
+                          placement="topLeft"
+                        >
+                          <Button type="text" icon={<SmileOutlined />} />
+                        </Popover>
+                        {currentConversation && sharedProduct && <Button type="default" onClick={handleSendProductCard}>发送商品卡片</Button>}
+                      </Space>
+                    </div>
+                    <div className="input-box">
+                      <TextArea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyPress={handleKeyPress} placeholder="输入消息..." autoSize={{ minRows: 1, maxRows: 4 }} bordered={false} />
+                      <Button type="primary" icon={<SendOutlined />} onClick={handleSendMessage} disabled={!newMessage.trim()} className="send-button">发送</Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </>
+          ) : <div className="no-conversation"><Empty description="选择一个对话开始聊天" image={Empty.PRESENTED_IMAGE_SIMPLE} /></div>}
+        </div>
 
-      <Modal 
-        open={!!imagePreview} 
-        footer={null} 
-        onCancel={closeImagePreview} 
-        centered 
-        width="100vw"
-        className="image-preview-modal"
-        closable={false}
-        maskClosable={true}
-      >
-        <div 
-          className="image-preview-overlay" 
-          onClick={closeImagePreview}
-          onMouseMove={handleImageDragMove}
-          onMouseUp={handleImageDragEnd}
-          onMouseLeave={handleImageDragEnd}
+        <Modal
+          open={!!imagePreview}
+          footer={null}
+          onCancel={closeImagePreview}
+          centered
+          width="100vw"
+          className="image-preview-modal"
+          closable={false}
+          maskClosable={true}
         >
-          <div 
-            className={`image-preview-container ${imageDrag.isDragging ? 'dragging' : ''}`}
-            onClick={(e) => e.stopPropagation()}
-            onWheel={handleImageZoom}
-            onMouseDown={handleImageDragStart}
+          <div
+            className="image-preview-overlay"
+            onClick={closeImagePreview}
+            onMouseMove={handleImageDragMove}
+            onMouseUp={handleImageDragEnd}
+            onMouseLeave={handleImageDragEnd}
           >
-            <img 
-              src={imagePreview} 
-              alt="预览" 
-              className={`preview-image ${imageZoom > 1 ? 'zoomable' : ''}`}
-              style={{ 
-                transform: `scale(${imageZoom}) translate(${imageDrag.translateX / imageZoom}px, ${imageDrag.translateY / imageZoom}px)`,
-                cursor: imageZoom > 1 ? (imageDrag.isDragging ? 'grabbing' : 'grab') : 'zoom-in'
-              }}
-              draggable={false}
-            />
-          </div>
-          {imageZoom !== 1 && (
-            <div className="zoom-indicator">
-              {Math.round(imageZoom * 100)}%
-            </div>
-          )}
-        </div>
-      </Modal>
-
-      {/* 通知设置弹窗 */}
-      <Modal
-        open={notificationSettingsOpen}
-        onCancel={() => setNotificationSettingsOpen(false)}
-        footer={null}
-        centered
-        className="notification-settings-modal"
-        title={
-          <div className="notification-settings-title">
-            <SettingOutlined />
-            <span>通知设置</span>
-          </div>
-        }
-        width={400}
-      >
-        <div className="notification-settings-content">
-          <div className="notification-settings-desc">
-            选择您希望接收的通知类型
-          </div>
-          
-          <div className="notification-setting-item">
-            <div className="setting-info">
-              <span className="setting-icon">📦</span>
-              <div className="setting-text">
-                <div className="setting-label">商品通知</div>
-                <div className="setting-hint">商品发布、售出、解锁等通知</div>
-              </div>
-            </div>
-            <Switch 
-              checked={notificationSettings.product}
-              onChange={(checked) => setNotificationSettings(prev => ({ ...prev, product: checked }))}
-            />
-          </div>
-          
-          <div className="notification-setting-item">
-            <div className="setting-info">
-              <span className="setting-icon">🛒</span>
-              <div className="setting-text">
-                <div className="setting-label">订单通知</div>
-                <div className="setting-hint">订单创建、处理、完成、取消等通知</div>
-              </div>
-            </div>
-            <Switch 
-              checked={notificationSettings.order}
-              onChange={(checked) => setNotificationSettings(prev => ({ ...prev, order: checked }))}
-            />
-          </div>
-          
-          <div className="notification-setting-item">
-            <div className="setting-info">
-              <span className="setting-icon">👤</span>
-              <div className="setting-text">
-                <div className="setting-label">社交通知</div>
-                <div className="setting-hint">新粉丝、商品被收藏等通知</div>
-              </div>
-            </div>
-            <Switch 
-              checked={notificationSettings.social}
-              onChange={(checked) => setNotificationSettings(prev => ({ ...prev, social: checked }))}
-            />
-          </div>
-          
-          <div className="notification-settings-footer">
-            <Button 
-              type="primary" 
-              block 
-              loading={settingsLoading}
-              onClick={async () => {
-                setSettingsLoading(true);
-                try {
-                  await updateNotificationSettings(notificationSettings);
-                  message.success('通知设置已保存');
-                  setNotificationSettingsOpen(false);
-                } catch (err) {
-                  message.error('保存失败，请重试');
-                } finally {
-                  setSettingsLoading(false);
-                }
-              }}
-              className="save-settings-btn"
+            <div
+              className={`image-preview-container ${imageDrag.isDragging ? 'dragging' : ''}`}
+              onClick={(e) => e.stopPropagation()}
+              onWheel={handleImageZoom}
+              onMouseDown={handleImageDragStart}
             >
-              保存设置
-            </Button>
+              <img
+                src={imagePreview}
+                alt="预览"
+                className={`preview-image ${imageZoom > 1 ? 'zoomable' : ''}`}
+                style={{
+                  transform: `scale(${imageZoom}) translate(${imageDrag.translateX / imageZoom}px, ${imageDrag.translateY / imageZoom}px)`,
+                  cursor: imageZoom > 1 ? (imageDrag.isDragging ? 'grabbing' : 'grab') : 'zoom-in'
+                }}
+                draggable={false}
+              />
+            </div>
+            {imageZoom !== 1 && (
+              <div className="zoom-indicator">
+                {Math.round(imageZoom * 100)}%
+              </div>
+            )}
           </div>
-        </div>
-      </Modal>
+        </Modal>
+
+        {/* 通知设置弹窗 */}
+        <Modal
+          open={notificationSettingsOpen}
+          onCancel={() => setNotificationSettingsOpen(false)}
+          footer={null}
+          centered
+          className="notification-settings-modal"
+          title={
+            <div className="notification-settings-title">
+              <SettingOutlined />
+              <span>通知设置</span>
+            </div>
+          }
+          width={400}
+        >
+          <div className="notification-settings-content">
+            <div className="notification-settings-desc">
+              选择您希望接收的通知类型
+            </div>
+
+            <div className="notification-setting-item">
+              <div className="setting-info">
+                <span className="setting-icon">📦</span>
+                <div className="setting-text">
+                  <div className="setting-label">商品通知</div>
+                  <div className="setting-hint">商品发布、售出、解锁等通知</div>
+                </div>
+              </div>
+              <Switch
+                checked={notificationSettings.product}
+                onChange={(checked) => setNotificationSettings(prev => ({ ...prev, product: checked }))}
+              />
+            </div>
+
+            <div className="notification-setting-item">
+              <div className="setting-info">
+                <span className="setting-icon">🛒</span>
+                <div className="setting-text">
+                  <div className="setting-label">订单通知</div>
+                  <div className="setting-hint">订单创建、处理、完成、取消等通知</div>
+                </div>
+              </div>
+              <Switch
+                checked={notificationSettings.order}
+                onChange={(checked) => setNotificationSettings(prev => ({ ...prev, order: checked }))}
+              />
+            </div>
+
+            <div className="notification-setting-item">
+              <div className="setting-info">
+                <span className="setting-icon">👤</span>
+                <div className="setting-text">
+                  <div className="setting-label">社交通知</div>
+                  <div className="setting-hint">新粉丝、商品被收藏等通知</div>
+                </div>
+              </div>
+              <Switch
+                checked={notificationSettings.social}
+                onChange={(checked) => setNotificationSettings(prev => ({ ...prev, social: checked }))}
+              />
+            </div>
+
+            <div className="notification-settings-footer">
+              <Button
+                type="primary"
+                block
+                loading={settingsLoading}
+                onClick={async () => {
+                  setSettingsLoading(true);
+                  try {
+                    await updateNotificationSettings(notificationSettings);
+                    message.success('通知设置已保存');
+                    setNotificationSettingsOpen(false);
+                  } catch (err) {
+                    message.error('保存失败，请重试');
+                  } finally {
+                    setSettingsLoading(false);
+                  }
+                }}
+                className="save-settings-btn"
+              >
+                保存设置
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );

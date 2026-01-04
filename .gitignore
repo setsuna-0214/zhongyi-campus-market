@@ -11,6 +11,7 @@ Desktop.ini
 *.iml
 .trae/documents
 .kiro
+.agent
 
 # Logs
 logs/
@@ -43,6 +44,16 @@ coverage/
 .parcel-cache/
 .eslintcache
 .vite/
+
+# Tooling
+eslint-report.html
+
+# Local history and temp files
+.history/
+*.swp
+*.swo
+*.bak
+*.tmp
 
 # TypeScript
 *.tsbuildinfo

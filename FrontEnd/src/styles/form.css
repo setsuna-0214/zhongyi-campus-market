@@ -1,0 +1,397 @@
+/**
+ * 统一表单样式
+ * 定义适用于个人中心、商品发布、帮助反馈、认证页面的通用表单样式
+ */
+
+:root {
+  --form-input-height: 42px;
+  --form-input-radius: 21px;
+  --form-input-bg: #f5f7fa;
+  --form-input-border: #e8e8e8;
+  --form-input-focus-border: #4FACFE;
+  --form-input-focus-shadow: rgba(79, 172, 254, 0.15);
+  --form-input-focus-shadow-strong: rgba(79, 172, 254, 0.2);
+  --form-input-placeholder: #bfbfbf;
+  --form-input-error-border: #ffa39e;
+  --form-input-error-bg: #fff8f7;
+  --form-input-error-color: #f56c6c;
+  --form-textarea-radius: 16px;
+  --form-textarea-min-height: 100px;
+}
+
+/* ===================== 布局稳定性 ===================== */
+
+.form-input-style .ant-form-item {
+  margin-bottom: 24px !important;
+}
+
+.form-input-style .ant-form-item-with-help {
+  margin-bottom: 24px !important;
+  transition: none !important;
+}
+
+.form-input-style .ant-form-item-margin-offset {
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+.form-input-style .ant-form-item-row {
+  row-gap: 2px !important;
+}
+
+.form-input-style .ant-form-item-control {
+  flex-shrink: 0 !important;
+}
+
+.form-input-style .ant-form-item-explain,
+.form-input-style .ant-form-item-explain-connected {
+  min-height: 22px !important;
+  overflow: hidden;
+  transition: none !important;
+  animation: none !important;
+}
+
+.form-input-style .ant-form-item-explain>div {
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.form-input-style .ant-form-item-explain>div:not(:first-child) {
+  display: none;
+}
+
+.form-input-style .ant-form-item-explain-error,
+.form-input-style .ant-form-item-explain-warning,
+.form-input-style [class*="ant-show-help"],
+.form-input-style .ant-motion-collapse,
+.form-input-style [class*="motion-collapse"] {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+.ant-form-item-required::before {
+  display: none !important;
+}
+
+/* ===================== 错误状态 ===================== */
+
+.form-input-style .ant-form-item-explain-error {
+  color: var(--form-input-error-color) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding-left: 4px;
+  line-height: 22px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.form-input-style .ant-form-item-has-error .ant-input-affix-wrapper,
+.form-input-style .ant-form-item-has-error .ant-input:not(.ant-input-affix-wrapper .ant-input),
+.form-input-style .ant-form-item-has-error .ant-input-textarea .ant-input,
+.form-input-style .ant-form-item-has-error .ant-input-number,
+.form-input-style .ant-form-item-has-error .ant-select .ant-select-selector {
+  border-color: var(--form-input-error-border) !important;
+  background-color: var(--form-input-error-bg) !important;
+}
+
+.form-input-style .ant-form-item-has-error .ant-input-affix-wrapper:hover,
+.form-input-style .ant-form-item-has-error .ant-input:not(.ant-input-affix-wrapper .ant-input):hover,
+.form-input-style .ant-form-item-has-error .ant-input-textarea .ant-input:hover,
+.form-input-style .ant-form-item-has-error .ant-input-number:hover,
+.form-input-style .ant-form-item-has-error .ant-select:hover .ant-select-selector {
+  border-color: #ff7875 !important;
+}
+
+.form-input-style .ant-form-item-has-error .ant-input-affix-wrapper-focused,
+.form-input-style .ant-form-item-has-error .ant-input:not(.ant-input-affix-wrapper .ant-input):focus,
+.form-input-style .ant-form-item-has-error .ant-input-textarea .ant-input:focus,
+.form-input-style .ant-form-item-has-error .ant-input-number-focused,
+.form-input-style .ant-form-item-has-error .ant-select-focused .ant-select-selector {
+  border-color: #ff7875 !important;
+  box-shadow: 0 0 0 3px rgba(255, 120, 117, 0.15) !important;
+}
+
+.form-input-style .ant-form-item-feedback-icon-error {
+  color: #ff7875 !important;
+}
+
+.form-input-style .ant-form-item-feedback-icon-warning {
+  color: #ffc069 !important;
+}
+
+.form-input-style .ant-form-item-feedback-icon-validating {
+  color: #69b1ff !important;
+}
+
+/* ===================== 输入框 ===================== */
+
+.form-input-style .ant-input:not(.ant-input-affix-wrapper .ant-input):not(textarea),
+.form-input-style .ant-input-affix-wrapper {
+  height: var(--form-input-height);
+  border-radius: var(--form-input-radius);
+  background: var(--form-input-bg);
+  border: 1.5px solid var(--form-input-border);
+  padding: 0 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.form-input-style .ant-input:not(.ant-input-affix-wrapper .ant-input):not(textarea):hover,
+.form-input-style .ant-input-affix-wrapper:hover {
+  background: #fff;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 2px 8px var(--form-input-focus-shadow);
+}
+
+.form-input-style .ant-input:not(.ant-input-affix-wrapper .ant-input):not(textarea):focus,
+.form-input-style .ant-input-affix-wrapper-focused {
+  background: #fff;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 2px 12px var(--form-input-focus-shadow-strong);
+}
+
+.form-input-style .ant-input::placeholder {
+  color: var(--form-input-placeholder);
+}
+
+.form-input-style .ant-input-affix-wrapper .ant-input {
+  height: auto;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+}
+
+.form-input-style .ant-input-affix-wrapper .ant-input:hover,
+.form-input-style .ant-input-affix-wrapper .ant-input:focus {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* ===================== 文本框 ===================== */
+
+.form-input-style .ant-input-textarea .ant-input {
+  height: auto !important;
+  min-height: var(--form-textarea-min-height);
+  max-height: 240px;
+  border-radius: var(--form-textarea-radius) !important;
+  padding: 12px 16px !important;
+  background: var(--form-input-bg);
+  border: 1.5px solid var(--form-input-border);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  transition: all 0.3s ease;
+  overflow-y: auto !important;
+}
+
+.form-input-style .ant-input-textarea .ant-input:hover {
+  background: #fff;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 2px 8px var(--form-input-focus-shadow);
+}
+
+.form-input-style .ant-input-textarea .ant-input:focus {
+  background: #fff;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 2px 12px var(--form-input-focus-shadow-strong);
+}
+
+.form-input-style .ant-input-textarea .ant-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.form-input-style .ant-input-textarea .ant-input::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+.form-input-style .ant-input-textarea .ant-input::-webkit-scrollbar-thumb:hover {
+  background: rgba(79, 172, 254, 0.5);
+}
+
+.form-input-style .ant-input-textarea-show-count::after {
+  color: #8c8c8c;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+/* ===================== 下拉选择框 ===================== */
+
+.form-input-style .ant-select .ant-select-selector {
+  height: var(--form-input-height) !important;
+  border-radius: var(--form-input-radius) !important;
+  background: var(--form-input-bg) !important;
+  border: 1.5px solid var(--form-input-border) !important;
+  padding: 0 14px !important;
+  transition: all 0.3s ease !important;
+}
+
+.form-input-style .ant-select .ant-select-selector:hover {
+  background: #fff !important;
+  border-color: var(--form-input-focus-border) !important;
+  box-shadow: 0 2px 8px var(--form-input-focus-shadow) !important;
+}
+
+.form-input-style .ant-select-focused .ant-select-selector {
+  background: #fff !important;
+  border-color: var(--form-input-focus-border) !important;
+  box-shadow: 0 2px 12px var(--form-input-focus-shadow-strong) !important;
+}
+
+.form-input-style .ant-select .ant-select-selection-search-input {
+  height: 38px !important;
+}
+
+.form-input-style .ant-select .ant-select-selection-placeholder,
+.form-input-style .ant-select .ant-select-selection-item {
+  line-height: 38px !important;
+}
+
+.form-input-style .ant-select .ant-select-selection-placeholder {
+  color: var(--form-input-placeholder);
+}
+
+.form-input-style .ant-select .ant-select-selection-item {
+  font-weight: 500;
+  color: #262626;
+}
+
+.form-input-style .ant-select .ant-select-arrow {
+  color: #8c8c8c;
+  transition: transform 0.3s ease, color 0.3s ease !important;
+}
+
+.form-input-style .ant-select-open .ant-select-arrow {
+  transform: rotate(180deg) !important;
+  color: var(--form-input-focus-border);
+}
+
+/* ===================== 数字输入框 ===================== */
+
+.form-input-style .ant-input-number {
+  height: var(--form-input-height);
+  border-radius: var(--form-input-radius);
+  background: var(--form-input-bg);
+  border: 1.5px solid var(--form-input-border);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.form-input-style .ant-input-number:hover {
+  background: #fff;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 2px 8px var(--form-input-focus-shadow);
+}
+
+.form-input-style .ant-input-number-focused {
+  background: #fff;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 2px 12px var(--form-input-focus-shadow-strong);
+}
+
+.form-input-style .ant-input-number .ant-input-number-input {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+/* ===================== 认证页面 ===================== */
+
+.auth-form.form-input-style .ant-input-affix-wrapper,
+.auth-form.form-input-style .ant-input:not(.ant-input-affix-wrapper .ant-input),
+.auth-form.form-input-style .ant-select-selector {
+  border-radius: 12px;
+  border: 2px solid transparent;
+  background-color: #F0F2F5;
+  padding: 8px 11px;
+}
+
+.auth-form.form-input-style .ant-input-affix-wrapper:hover,
+.auth-form.form-input-style .ant-input:not(.ant-input-affix-wrapper .ant-input):hover,
+.auth-form.form-input-style .ant-select-selector:hover {
+  background-color: #E6E8EB;
+  border-color: transparent;
+}
+
+.auth-form.form-input-style .ant-input-affix-wrapper-focused,
+.auth-form.form-input-style .ant-input:not(.ant-input-affix-wrapper .ant-input):focus,
+.auth-form.form-input-style .ant-select-focused .ant-select-selector {
+  background-color: #fff;
+  border-color: var(--form-input-focus-border);
+  box-shadow: 0 0 0 3px var(--form-input-focus-shadow);
+}
+
+.auth-form.form-input-style .ant-input-affix-wrapper .ant-input {
+  height: auto;
+  border: none;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none;
+  padding: 0;
+}
+
+.auth-form.form-input-style .ant-input-affix-wrapper .ant-input:hover,
+.auth-form.form-input-style .ant-input-affix-wrapper .ant-input:focus {
+  background: transparent !important;
+  border: none;
+  box-shadow: none;
+}
+
+/* ===================== 商品发布页面 ===================== */
+
+.publish-form.form-input-style .ant-input-affix-wrapper,
+.publish-form.form-input-style .ant-input:not(.ant-input-affix-wrapper .ant-input):not(textarea) {
+  height: 40px;
+  border-radius: 20px;
+}
+
+.publish-form.form-input-style .ant-input-affix-wrapper .ant-input {
+  height: auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.publish-form.form-input-style .ant-input-affix-wrapper .ant-input-suffix {
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.publish-form.form-input-style .ant-input-textarea .ant-input {
+  min-height: 100px;
+  border-radius: 10px !important;
+  padding: 10px 12px !important;
+}
+
+.publish-form.form-input-style .ant-select .ant-select-selector {
+  height: 40px !important;
+  border-radius: 20px !important;
+}
+
+.publish-form.form-input-style .ant-input-number {
+  height: 40px;
+  border-radius: 20px;
+}
+
+/* ===================== 响应式 ===================== */
+
+@media (max-width: 576px) {
+
+  .form-input-style .ant-input:not(.ant-input-affix-wrapper .ant-input):not(textarea),
+  .form-input-style .ant-input-affix-wrapper,
+  .form-input-style .ant-select .ant-select-selector,
+  .form-input-style .ant-input-number,
+  .publish-form.form-input-style .ant-input-affix-wrapper,
+  .publish-form.form-input-style .ant-input:not(.ant-input-affix-wrapper .ant-input):not(textarea),
+  .publish-form.form-input-style .ant-select .ant-select-selector,
+  .publish-form.form-input-style .ant-input-number {
+    height: 38px !important;
+  }
+}

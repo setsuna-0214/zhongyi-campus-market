@@ -1,4 +1,9 @@
-/* ==================== 关注按钮基础样式 ==================== */
+/**
+ * 关注按钮样式
+ * 定义按钮状态、背景层、图标动画、过渡效果
+ */
+
+/* ===================== 基础样式 ===================== */
 
 .follow-btn {
   position: relative;
@@ -175,8 +180,15 @@
   height: 16px;
 }
 
-.follow-btn-sm .btn-icon { width: 14px; height: 14px; }
-.follow-btn-lg .btn-icon { width: 18px; height: 18px; }
+.follow-btn-sm .btn-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.follow-btn-lg .btn-icon {
+  width: 18px;
+  height: 18px;
+}
 
 .icon-container {
   display: flex;
@@ -191,8 +203,13 @@
   font-size: 16px;
 }
 
-.follow-btn-sm .icon-container .anticon { font-size: 14px; }
-.follow-btn-lg .icon-container .anticon { font-size: 18px; }
+.follow-btn-sm .icon-container .anticon {
+  font-size: 14px;
+}
+
+.follow-btn-lg .icon-container .anticon {
+  font-size: 18px;
+}
 
 /* 图标颜色 */
 .follow-btn[data-state="idle-follow"] .icon-container,
@@ -245,9 +262,21 @@
 }
 
 @keyframes heartBeat {
-  0%, 100% { transform: scale(1); }
-  14%, 42% { transform: scale(1.3); }
-  28%, 70% { transform: scale(1); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  14%,
+  42% {
+    transform: scale(1.3);
+  }
+
+  28%,
+  70% {
+    transform: scale(1);
+  }
 }
 
 /* ==================== 心碎动画（取关悬停） ==================== */
@@ -281,13 +310,25 @@
 }
 
 @keyframes breakLeft {
-  0% { transform: translateX(0) rotate(0); }
-  100% { transform: translateX(-5px) rotate(-15deg) translateY(3px); opacity: 0.7; }
+  0% {
+    transform: translateX(0) rotate(0);
+  }
+
+  100% {
+    transform: translateX(-5px) rotate(-15deg) translateY(3px);
+    opacity: 0.7;
+  }
 }
 
 @keyframes breakRight {
-  0% { transform: translateX(0) rotate(0); }
-  100% { transform: translateX(5px) rotate(15deg) translateY(3px); opacity: 0.7; }
+  0% {
+    transform: translateX(0) rotate(0);
+  }
+
+  100% {
+    transform: translateX(5px) rotate(15deg) translateY(3px);
+    opacity: 0.7;
+  }
 }
 
 /* ==================== 关注成功动画 ==================== */
@@ -297,10 +338,23 @@
 }
 
 @keyframes successPop {
-  0% { transform: scale(0.3); opacity: 0; }
-  50% { transform: scale(1.3); }
-  75% { transform: scale(0.9); }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.3);
+  }
+
+  75% {
+    transform: scale(0.9);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .follow-btn[data-state="success"] {
@@ -308,10 +362,21 @@
 }
 
 @keyframes btnPop {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.06); }
-  70% { transform: scale(0.97); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.06);
+  }
+
+  70% {
+    transform: scale(0.97);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ==================== 取关动画 ==================== */
@@ -321,11 +386,25 @@
 }
 
 @keyframes removedShake {
-  0% { transform: scale(1); }
-  25% { transform: scale(1.1) rotate(-10deg); }
-  50% { transform: scale(0.9) rotate(10deg); }
-  75% { transform: scale(1.05) rotate(-5deg); }
-  100% { transform: scale(1) rotate(0); }
+  0% {
+    transform: scale(1);
+  }
+
+  25% {
+    transform: scale(1.1) rotate(-10deg);
+  }
+
+  50% {
+    transform: scale(0.9) rotate(10deg);
+  }
+
+  75% {
+    transform: scale(1.05) rotate(-5deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+  }
 }
 
 .follow-btn[data-state="removed"] {
@@ -333,9 +412,17 @@
 }
 
 @keyframes btnShrink {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.95); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0.95);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ==================== 过渡动画 ==================== */
@@ -345,10 +432,24 @@
 }
 
 @keyframes morphOut {
-  0% { transform: scale(1); color: #fff; }
-  30% { transform: scale(0.6) rotate(-15deg); }
-  60% { transform: scale(1.1) rotate(10deg); color: #a6a6a6; }
-  100% { transform: scale(1) rotate(0); color: #8c8c8c; }
+  0% {
+    transform: scale(1);
+    color: #fff;
+  }
+
+  30% {
+    transform: scale(0.6) rotate(-15deg);
+  }
+
+  60% {
+    transform: scale(1.1) rotate(10deg);
+    color: #a6a6a6;
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+    color: #8c8c8c;
+  }
 }
 
 .icon-morph-in .anticon {
@@ -356,10 +457,24 @@
 }
 
 @keyframes morphIn {
-  0% { transform: scale(1); color: #8c8c8c; }
-  30% { transform: scale(1.2) rotate(15deg); color: #ff8e8e; }
-  60% { transform: scale(0.8) rotate(-10deg); }
-  100% { transform: scale(1) rotate(0); color: #fff; }
+  0% {
+    transform: scale(1);
+    color: #8c8c8c;
+  }
+
+  30% {
+    transform: scale(1.2) rotate(15deg);
+    color: #ff8e8e;
+  }
+
+  60% {
+    transform: scale(0.8) rotate(-10deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0);
+    color: #fff;
+  }
 }
 
 /* 过渡状态的文字淡入 */
@@ -369,8 +484,15 @@
 }
 
 @keyframes textFade {
-  0% { opacity: 0.5; transform: translateY(4px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0.5;
+    transform: translateY(4px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ==================== 波纹效果 ==================== */

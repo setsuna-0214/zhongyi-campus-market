@@ -1,3 +1,8 @@
+/**
+ * 商品发布/编辑页面
+ * 提供商品信息的填写、图片上传（支持拖拽）、AI 辅助生成描述等功能
+ */
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -26,7 +31,7 @@ import {
   CloseOutlined
 } from '@ant-design/icons';
 import './Publish.css';
-import '../../utils/form-validation.css';
+import '../../styles/form.css';
 import { CATEGORY_CODE_TO_LABEL, TRADE_METHOD_OPTIONS } from '../../utils/labels';
 import { createProduct, getProduct, updateProduct, updateProductStatus } from '../../api/products';
 import { generateProductDescription } from '../../api/ai';
@@ -35,8 +40,19 @@ const { TextArea } = Input;
 const { Option } = Select;
 const { Title, Text } = Typography;
 
-// 支持的图片格式
-const ACCEPTED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/bmp', 'image/heic', 'image/heif'];
+// 支持的图片格式 - 覆盖主流图片格式
+const ACCEPTED_FORMATS = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'image/bmp',
+  'image/heic',
+  'image/heif',
+  'image/avif',
+  'image/tiff',
+];
 const MAX_IMAGES = 9;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -45,16 +61,18 @@ const FILE_SIGNATURES = {
   'image/jpeg': [[0xFF, 0xD8, 0xFF]],
   'image/png': [[0x89, 0x50, 0x4E, 0x47]],
   'image/webp': [[0x52, 0x49, 0x46, 0x46]], // RIFF header
+  'image/gif': [[0x47, 0x49, 0x46, 0x38]], // GIF8
   'image/bmp': [[0x42, 0x4D]],
+  'image/tiff': [[0x49, 0x49, 0x2A, 0x00], [0x4D, 0x4D, 0x00, 0x2A]], // Little/Big endian
 };
 
 // 四芒星 SVG 图标组件
 const SparkleIcon = ({ className }) => (
-  <svg 
+  <svg
     className={className}
-    viewBox="0 0 24 24" 
+    viewBox="0 0 24 24"
     fill="currentColor"
-    width="16" 
+    width="16"
     height="16"
   >
     <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
@@ -93,7 +111,7 @@ const PublishProduct = () => {
         description: product.description,
         price: product.price,
         negotiable: product.negotiable,
-        tradeMethod: product.tradeMethod 
+        tradeMethod: product.tradeMethod
           ? (Array.isArray(product.tradeMethod) ? product.tradeMethod : product.tradeMethod.split(',').map(s => s.trim()))
           : [],
         location: product.location,
@@ -175,14 +193,14 @@ const PublishProduct = () => {
   const handleFileSelect = useCallback((files) => {
     const fileArray = Array.from(files);
     const remainingSlots = MAX_IMAGES - imageList.length;
-    
+
     if (fileArray.length > remainingSlots) {
       message.warning(`最多还能上传 ${remainingSlots} 张图片`);
     }
-    
+
     const filesToAdd = fileArray.slice(0, remainingSlots);
     const validFiles = filesToAdd.filter(validateFile);
-    
+
     // 使用 URL.createObjectURL 同步创建预览，避免阻塞
     const newImages = validFiles.map((file, index) => ({
       uid: `upload-${Date.now()}-${index}`,
@@ -192,7 +210,7 @@ const PublishProduct = () => {
       preview: URL.createObjectURL(file),
       isExisting: false,
     }));
-    
+
     const updatedList = [...imageList, ...newImages];
     setImageList(updatedList);
     form.setFieldsValue({ images: updatedList.length > 0 ? updatedList : undefined });
@@ -235,7 +253,7 @@ const PublishProduct = () => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    
+
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
       handleFileSelect(files);
@@ -260,7 +278,7 @@ const PublishProduct = () => {
   // 键盘导航
   useEffect(() => {
     if (!previewVisible) return;
-    
+
     const handleKeyDown = (e) => {
       if (e.key === 'ArrowLeft') {
         setPreviewIndex((prev) => (prev > 0 ? prev - 1 : imageList.length - 1));
@@ -270,7 +288,7 @@ const PublishProduct = () => {
         setPreviewVisible(false);
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [previewVisible, imageList.length]);
@@ -304,15 +322,15 @@ const PublishProduct = () => {
   const handleAiGenerate = async () => {
     const title = form.getFieldValue('title');
     const category = form.getFieldValue('category');
-    
+
     // 检查是否有标题或图片
     if (!title && imageList.length === 0) {
       message.warning('请先填写商品标题或上传商品图片');
       return;
     }
-    
+
     setAiGenerating(true);
-    
+
     try {
       // 准备要发送给后端的数据
       const requestData = {
@@ -324,10 +342,10 @@ const PublishProduct = () => {
           isExisting: img.isExisting || false,
         })),
       };
-      
+
       // 调用 AI 接口生成描述
       const result = await generateProductDescription(requestData);
-      
+
       form.setFieldsValue({ description: result.description });
       message.success('描述生成成功，请根据实际情况修改完善');
     } catch (error) {
@@ -354,7 +372,7 @@ const PublishProduct = () => {
       }
       // 是否支持议价
       formData.append('negotiable', values.negotiable ? 'true' : 'false');
-      
+
       // 添加图片文件
       if (imageList && imageList.length > 0) {
         // 已有图片的URL列表
@@ -426,9 +444,10 @@ const PublishProduct = () => {
             const firstError = errorInfo.errorFields?.[0]?.errors?.[0];
             message.error(firstError || '请填写所有必填项并确保信息正确');
           }}
-          className="publish-form"
+          className="publish-form form-input-style"
           scrollToFirstError
           validateTrigger={['onChange', 'onBlur']}
+          autoComplete="off"
         >
           <Card title="商品信息" className="step-card">
             <Row gutter={24}>
@@ -484,7 +503,7 @@ const PublishProduct = () => {
                       onChange={handleInputChange}
                       style={{ display: 'none' }}
                     />
-                    
+
                     {/* 图片列表 */}
                     <div className="image-upload-list">
                       {imageList.map((image, index) => (
@@ -517,7 +536,7 @@ const PublishProduct = () => {
                           </div>
                         </div>
                       ))}
-                      
+
                       {/* 上传按钮 */}
                       {imageList.length < MAX_IMAGES && (
                         <div
@@ -536,7 +555,7 @@ const PublishProduct = () => {
                     </div>
                   </div>
                   <Text type="secondary">
-                    最多上传9张图片，支持 JPG、PNG、WebP、BMP、HEIC 格式，第一张将作为封面
+                    最多上传9张图片，支持 JPG、PNG、WebP、GIF、BMP、HEIC、AVIF、TIFF 格式（10MB 以内），第一张将作为封面
                   </Text>
                 </Form.Item>
               </Col>
@@ -663,10 +682,10 @@ const PublishProduct = () => {
               message="发布须知"
               description={
                 <div>
-                  <p>• 请确保商品信息真实有效，虚假信息将被删除</p>
-                  <p>• 禁止发布违法违规商品</p>
-                  <p>• 交易过程中请注意安全，建议当面交易</p>
-                  <p>• 发布后可在个人中心管理商品信息</p>
+                  <p> 请确保商品信息真实有效，虚假信息将被删除</p>
+                  <p> 禁止发布违法违规商品</p>
+                  <p> 交易过程中请注意安全，建议当面交易</p>
+                  <p> 发布后可在个人中心管理商品信息</p>
                 </div>
               }
               type="info"
@@ -719,9 +738,9 @@ const PublishProduct = () => {
         width="auto"
         closable={false}
       >
-        <button 
-          type="button" 
-          className="preview-close-btn" 
+        <button
+          type="button"
+          className="preview-close-btn"
           onClick={() => setPreviewVisible(false)}
           aria-label="关闭预览"
         >
@@ -729,23 +748,23 @@ const PublishProduct = () => {
         </button>
         <div className="preview-content">
           {imageList.length > 1 && (
-            <button 
-              type="button" 
-              className="preview-nav-btn preview-prev" 
+            <button
+              type="button"
+              className="preview-nav-btn preview-prev"
               onClick={handlePreviewPrev}
             >
               <LeftOutlined />
             </button>
           )}
-          <img 
-            alt="preview" 
-            className="preview-image" 
-            src={imageList[previewIndex]?.url || imageList[previewIndex]?.preview} 
+          <img
+            alt="preview"
+            className="preview-image"
+            src={imageList[previewIndex]?.url || imageList[previewIndex]?.preview}
           />
           {imageList.length > 1 && (
-            <button 
-              type="button" 
-              className="preview-nav-btn preview-next" 
+            <button
+              type="button"
+              className="preview-nav-btn preview-next"
               onClick={handlePreviewNext}
             >
               <RightOutlined />

@@ -1,18 +1,23 @@
+/**
+ * 帮助中心页面
+ * 提供常见问题解答（FAQ）、意见反馈表单和联系方式
+ */
+
 import React, { useState } from 'react';
-import { 
-  Typography, 
-  Collapse, 
-  Card, 
-  Form, 
-  Input, 
-  Button, 
-  message, 
+import {
+  Typography,
+  Collapse,
+  Card,
+  Form,
+  Input,
+  Button,
+  message,
   Space,
   Divider,
   Row,
   Col
 } from 'antd';
-import { 
+import {
   QuestionCircleOutlined,
   ShoppingOutlined,
   SafetyOutlined,
@@ -23,6 +28,7 @@ import {
   PhoneOutlined
 } from '@ant-design/icons';
 import './index.css';
+import '../../styles/form.css';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -143,20 +149,20 @@ const Help = () => {
         <Col xs={24} lg={14}>
           <Card className="faq-card">
             <Title level={4}>常见问题</Title>
-            <Collapse 
-              accordion 
+            <Collapse
+              accordion
               bordered={false}
               className="faq-collapse"
               expandIconPosition="end"
             >
               {faqData.map((category, idx) => (
-                <Panel 
+                <Panel
                   header={
                     <Space>
                       {category.icon}
                       <Text strong>{category.category}</Text>
                     </Space>
-                  } 
+                  }
                   key={idx}
                   className="faq-category-panel"
                 >
@@ -180,11 +186,13 @@ const Help = () => {
             <Paragraph type="secondary">
               如果您有任何建议或遇到问题，欢迎告诉我们
             </Paragraph>
-            
+
             <Form
               form={form}
               layout="vertical"
               onFinish={handleSubmit}
+              className="form-input-style"
+              autoComplete="off"
             >
               <Form.Item
                 name="type"
@@ -199,8 +207,8 @@ const Help = () => {
                 label="反馈内容"
                 rules={[{ required: true, message: '请输入反馈内容' }]}
               >
-                <TextArea 
-                  rows={4} 
+                <TextArea
+                  rows={4}
                   placeholder="请详细描述您的问题或建议..."
                   maxLength={500}
                   showCount
@@ -215,9 +223,9 @@ const Help = () => {
               </Form.Item>
 
               <Form.Item>
-                <Button 
-                  type="primary" 
-                  htmlType="submit" 
+                <Button
+                  type="primary"
+                  htmlType="submit"
                   loading={submitting}
                   icon={<SendOutlined />}
                   block

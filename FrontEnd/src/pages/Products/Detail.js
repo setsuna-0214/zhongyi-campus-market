@@ -1,13 +1,18 @@
+/**
+ * 商品详情及购买页面
+ * 展示商品详细信息、图片轮播、卖家信息、评论区，并提供购买、收藏、联系卖家等功能
+ */
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { 
-  Row, 
-  Col, 
-  Card, 
-  Button, 
-  Tag, 
-  Avatar, 
-  Divider, 
-  Image, 
+import {
+  Row,
+  Col,
+  Card,
+  Button,
+  Tag,
+  Avatar,
+  Divider,
+  Image,
   Space,
   Modal,
   Input,
@@ -16,9 +21,9 @@ import {
   Breadcrumb,
   List
 } from 'antd';
-import { 
+import {
   UserOutlined,
-  HeartOutlined, 
+  HeartOutlined,
   HeartFilled,
   ShareAltOutlined,
   MessageOutlined,
@@ -59,11 +64,11 @@ const ImageCarousel = ({ images, title, fallback }) => {
   // 自动播放
   useEffect(() => {
     if (imageCount <= 1) return;
-    
+
     autoPlayRef.current = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % imageCount);
     }, 4000);
-    
+
     return () => clearInterval(autoPlayRef.current);
   }, [imageCount]);
 
@@ -85,7 +90,7 @@ const ImageCarousel = ({ images, title, fallback }) => {
   }
 
   return (
-    <div 
+    <div
       className="custom-carousel"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -98,8 +103,8 @@ const ImageCarousel = ({ images, title, fallback }) => {
       >
         <div className="carousel-track">
           {images.map((image, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`carousel-slide ${index === currentIndex ? 'active' : ''}`}
             >
               <Image
@@ -117,7 +122,7 @@ const ImageCarousel = ({ images, title, fallback }) => {
           ))}
         </div>
       </Image.PreviewGroup>
-      
+
       {/* 自定义指示点 */}
       {imageCount > 1 && (
         <div className="carousel-dots">
@@ -139,7 +144,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { showLoginPrompt } = useLoginPrompt();
-  
+
   // 状态管理
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState(null);
@@ -415,12 +420,12 @@ const ProductDetail = () => {
           {/* 左侧：商品图片和基本信息 */}
           <Col xs={24} lg={15}>
             <Card className="product-images-card">
-              <ImageCarousel 
-                images={product.images} 
-                title={product.title} 
+              <ImageCarousel
+                images={product.images}
+                title={product.title}
                 fallback={FALLBACK_IMAGE}
               />
-              
+
               <div className="product-actions">
                 <Space size="middle">
                   <Button
@@ -451,21 +456,21 @@ const ProductDetail = () => {
               </div>
             </Card>
 
-          {/* 商品规格 */}
-          {product.specifications && (
-            <Card title="商品规格" className="specifications-card">
-              <Row gutter={[16, 8]}>
-                {Object.entries(product.specifications).map(([key, value]) => (
-                  <Col xs={12} sm={8} key={key}>
-                    <div className="spec-item">
-                      <span className="spec-label">{key}：</span>
-                      <span className="spec-value">{value}</span>
-                    </div>
-                  </Col>
-                ))}
-              </Row>
-            </Card>
-          )}
+            {/* 商品规格 */}
+            {product.specifications && (
+              <Card title="商品规格" className="specifications-card">
+                <Row gutter={[16, 8]}>
+                  {Object.entries(product.specifications).map(([key, value]) => (
+                    <Col xs={12} sm={8} key={key}>
+                      <div className="spec-item">
+                        <span className="spec-label">{key}：</span>
+                        <span className="spec-value">{value}</span>
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+              </Card>
+            )}
 
             {/* 商品评论 */}
             <Card title={`商品评论 (${comments.length})`} className="comments-card">
@@ -492,7 +497,7 @@ const ProductDetail = () => {
                       avatar={<Avatar src={item.userAvatar} icon={<UserOutlined />} />}
                       title={
                         <span>
-                          {item.userNickname || '用户'} · 
+                          {item.userNickname || '用户'} ·
                           <span style={{ color: '#9ca3af', fontWeight: 400, marginLeft: 4, fontSize: 12 }}>
                             {item.createdAt ? new Date(item.createdAt).toLocaleString('zh-CN') : ''}
                           </span>
@@ -570,7 +575,7 @@ const ProductDetail = () => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <FollowButton 
+                  <FollowButton
                     isFollowing={isFollowing}
                     size="small"
                     onClick={handleFollow}
@@ -618,9 +623,9 @@ const ProductDetail = () => {
                       className="related-item"
                       onClick={() => navigate(`/products/${item.id}`)}
                     >
-                      <img 
-                        src={resolveImageSrc({ item, product: item })} 
-                        alt={item.title} 
+                      <img
+                        src={resolveImageSrc({ item, product: item })}
+                        alt={item.title}
                         onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }}
                       />
                       <div className="related-info">
@@ -672,8 +677,8 @@ const ProductDetail = () => {
           </div>
           <h3 className="purchase-confirm-title">确认购买此商品？</h3>
           <div className="purchase-confirm-product">
-            <img 
-              src={resolveImageSrc({ item: product, product })} 
+            <img
+              src={resolveImageSrc({ item: product, product })}
               alt={product?.title}
               onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; }}
             />
@@ -714,11 +719,11 @@ const ProductDetail = () => {
             >
               联系卖家
             </Button>
-            <Button 
+            <Button
               size="large"
               className="view-order-btn"
               icon={<EyeOutlined />}
-              onClick={() => { 
+              onClick={() => {
                 setPurchaseResultVisible(false);
                 if (createdOrderId) {
                   navigate(`/orders/${createdOrderId}`);
@@ -729,7 +734,7 @@ const ProductDetail = () => {
             >
               查看订单
             </Button>
-            <Button 
+            <Button
               size="large"
               onClick={() => setPurchaseResultVisible(false)}
             >

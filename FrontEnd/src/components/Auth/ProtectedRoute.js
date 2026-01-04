@@ -1,20 +1,13 @@
+/**
+ * 路由守卫组件
+ * 提供统一的登录验证和角色权限检查
+ */
+
 import { useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import { Navigate, useLocation } from 'react-router-dom';
 import { getCurrentUser, isLoggedIn as checkIsLoggedIn, hasRole as checkHasRole } from '../../utils/auth';
 
-/**
- * ProtectedRoute
- * - 仅在前端提供统一的路由守卫接口
- * - 支持本地会话校验与可选的后端校验钩子（serverCheck）
- * - 未来接入后端鉴权时，只需在使用处传入 serverCheck 即可
- *
- * Props:
- * - children: 受保护的子组件
- * - allowRoles?: string[] 指定允许访问的角色（例如 ['admin']）
- * - redirectTo?: string 未通过验证时重定向路径（默认 '/login'）
- * - serverCheck?: () => Promise<boolean> 可选后端校验函数，返回 true/false
- */
 export default function ProtectedRoute({ children, allowRoles, redirectTo = '/login', serverCheck }) {
   const location = useLocation();
   const [loading, setLoading] = useState(Boolean(serverCheck));

@@ -1,3 +1,8 @@
+/**
+ * 首页 API - Mock 实现
+ * 使用内存数据模拟热门商品和最新商品列表
+ */
+
 import { mockProducts } from './mockData';
 import { resolveImageSrc } from '../utils/images';
 import { getStatusLabel } from '../utils/labels';
@@ -10,6 +15,7 @@ const filterAvailableProducts = (products) => {
   });
 };
 
+// 获取热门商品
 export async function getHotProducts(page = 1, pageSize = 12) {
   const allProducts = filterAvailableProducts([...mockProducts])
     .sort((a, b) => (b.views || 0) - (a.views || 0))
@@ -28,10 +34,10 @@ export async function getHotProducts(page = 1, pageSize = 12) {
       category: p.category,
       status: p.status || '在售'
     }));
-  
+
   const start = (page - 1) * pageSize;
   const items = allProducts.slice(start, start + pageSize);
-  
+
   return {
     items,
     hasMore: start + pageSize < allProducts.length,
@@ -39,6 +45,7 @@ export async function getHotProducts(page = 1, pageSize = 12) {
   };
 }
 
+// 获取最新商品
 export async function getLatestProducts(page = 1, pageSize = 12) {
   const allProducts = filterAvailableProducts([...mockProducts])
     .sort((a, b) => new Date(b.publishTime) - new Date(a.publishTime))
@@ -57,14 +64,13 @@ export async function getLatestProducts(page = 1, pageSize = 12) {
       category: p.category,
       status: p.status || '在售'
     }));
-  
+
   const start = (page - 1) * pageSize;
   const items = allProducts.slice(start, start + pageSize);
-  
+
   return {
     items,
     hasMore: start + pageSize < allProducts.length,
     total: allProducts.length
   };
 }
-

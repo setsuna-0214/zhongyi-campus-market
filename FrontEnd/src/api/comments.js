@@ -1,3 +1,8 @@
+/**
+ * 评论 API
+ * 处理商品评论的获取、添加、删除
+ */
+
 import client from './client';
 
 // 获取商品评论列表

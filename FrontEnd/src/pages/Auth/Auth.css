@@ -1,4 +1,8 @@
-/* Campus Style Auth Theme */
+/**
+ * 认证页面样式
+ * 定义登录、注册、找回密码等页面的统一布局和主题样式
+ */
+
 :root {
   --campus-primary: #4FACFE;
   --campus-secondary: #00F2FE;
@@ -9,6 +13,8 @@
   --campus-bg-gradient: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
 }
 
+/* ===================== 认证容器 ===================== */
+
 .auth-container {
   position: relative;
   min-height: 100vh;
@@ -17,6 +23,8 @@
   justify-content: center;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
+
+/* ===================== 背景样式 ===================== */
 
 .auth-background {
   position: fixed;
@@ -28,7 +36,7 @@
   z-index: -2;
 }
 
-/* Background pattern - subtle grid and floating shapes for campus feel */
+/* 背景图案 - 微妙的网格和浮动形状 */
 .auth-background::before {
   content: '';
   position: absolute;
@@ -74,6 +82,8 @@
   z-index: 1;
 }
 
+/* ===================== 卡片样式 ===================== */
+
 .auth-card {
   border-radius: 24px !important;
   /* Softer, more modern corners */
@@ -93,6 +103,8 @@
   max-height: none;
   overflow: visible;
 }
+
+/* ===================== 头部与Logo ===================== */
 
 .auth-header {
   text-align: center;
@@ -116,6 +128,8 @@
   display: inline-block;
 }
 
+/* ===================== 表单区域 ===================== */
+
 .auth-form {
   padding: 0 20px;
 }
@@ -131,42 +145,8 @@
   font-size: 14px;
 }
 
-/* Custom Input Styling */
-.auth-form .ant-input-affix-wrapper,
-.auth-form .ant-input,
-.auth-form .ant-select-selector {
-  border-radius: 12px;
-  border: 2px solid transparent;
-  background-color: #F0F2F5;
-  transition: all 0.3s ease;
-  padding: 8px 11px;
-}
 
-.auth-form .ant-input-affix-wrapper:hover,
-.auth-form .ant-input:hover,
-.auth-form .ant-select-selector:hover {
-  background-color: #E6E8EB;
-  border-color: transparent;
-}
-
-.auth-form .ant-input-affix-wrapper:focus,
-.auth-form .ant-input-affix-wrapper-focused,
-.auth-form .ant-input:focus,
-.auth-form .ant-select-focused .ant-select-selector {
-  background-color: #FFFFFF;
-  border-color: var(--campus-primary);
-  box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.15);
-}
-
-.auth-form .ant-input {
-  background-color: transparent !important;
-  /* Input inside wrapper */
-}
-
-/* Spacing */
-.auth-form .ant-form-item {
-  margin-bottom: 6px;
-}
+/* ===================== 选项链接 ===================== */
 
 .auth-options {
   display: flex;
@@ -203,17 +183,18 @@
   width: 100%;
 }
 
-/* Auth Button Styling */
+/* ===================== 认证按钮 ===================== */
+
 .auth-form .ant-form-item:last-child {
   margin-top: 20px;
 }
 
 .auth-button {
-  height: 52px;
-  border-radius: 26px;
+  height: 52px !important;
+  border-radius: 10px !important;
   background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
   border: none;
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 600;
   box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
   letter-spacing: 0.5px;
@@ -242,13 +223,13 @@
 
 .auth-button:hover,
 .auth-button:focus {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 14px 28px rgba(79, 172, 254, 0.5);
+  transform: translateY(-3px) scale(1.0);
+  box-shadow: 0 14px 28px rgba(79, 172, 254, 0.4);
   background: linear-gradient(135deg, #5fb8ff 0%, #33f5ff 100%) !important;
 }
 
 .auth-button:active {
-  transform: translateY(-1px) scale(0.98);
+  transform: translateY(-1px) scale(1.0);
   box-shadow: 0 6px 16px rgba(79, 172, 254, 0.4);
   transition: all 0.1s ease;
 }
@@ -285,7 +266,8 @@
   }
 }
 
-/* Verify Code Button */
+/* ===================== 验证码按钮 ===================== */
+
 .verification-code-row {
   display: flex;
   align-items: center;
@@ -303,7 +285,7 @@
   min-width: 88px;
   padding: 0 16px !important;
   border-radius: 10px !important;
-  font-size: 14px !important;
+  font-size: 16px !important;
   font-weight: 600;
   border: none !important;
   background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important;
@@ -322,12 +304,10 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
   transition: left 0.5s ease;
 }
 
@@ -336,13 +316,13 @@
 }
 
 .verify-code-btn:hover:not(:disabled) {
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-2px) scale(1.0);
   box-shadow: 0 10px 24px rgba(79, 172, 254, 0.45) !important;
   background: linear-gradient(135deg, #5fb8ff 0%, #33f5ff 100%) !important;
 }
 
 .verify-code-btn:active:not(:disabled) {
-  transform: translateY(-1px) scale(0.98);
+  transform: translateY(-1px) scale(1.0);
   box-shadow: 0 4px 12px rgba(79, 172, 254, 0.35) !important;
   transition: all 0.1s ease;
 }
@@ -359,7 +339,8 @@
   display: none;
 }
 
-/* Footer */
+/* ===================== 底部页脚 ===================== */
+
 .auth-footer {
   text-align: center;
   padding: 12px;
@@ -396,17 +377,19 @@
   width: 100%;
 }
 
-/* Register Page Specifics */
+/* ===================== 注册页特有样式 ===================== */
+
 .register-card .auth-form {
   max-width: 440px;
 }
 
 .register-card .auth-form .ant-form-item-explain-error {
-  margin-top: 4px;
+  margin-top: 2px;
   font-size: 12px;
 }
 
-/* Responsive */
+/* ===================== 响应式调整 ===================== */
+
 @media (max-width: 768px) {
   .auth-card {
     border-radius: 20px;

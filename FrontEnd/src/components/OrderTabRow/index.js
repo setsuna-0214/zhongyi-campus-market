@@ -1,16 +1,11 @@
+/**
+ * 订单标签行组件
+ * 包含订单类型（购买/出售）和订单状态（待处理/已完成/已取消）两组标签
+ */
+
 import SubTabSlider from '../SubTabSlider';
 import './index.css';
 
-/**
- * OrderTabRow - 订单处理页面的标签行组件
- * 包含订单类型（购买订单/出售订单）和订单状态（待处理/已完成/已取消）两组标签
- * 
- * @param {Object} props
- * @param {string} props.orderType - 当前选中的订单类型 ('purchase' | 'sell')
- * @param {string} props.orderStatus - 当前选中的订单状态 ('pending' | 'completed' | 'cancelled')
- * @param {function} props.onTypeChange - 订单类型变化时的回调函数
- * @param {function} props.onStatusChange - 订单状态变化时的回调函数
- */
 const OrderTabRow = ({
   orderType = 'purchase',
   orderStatus = 'pending',

@@ -1,21 +1,15 @@
+/**
+ * 关注按钮组件
+ * 使用多层背景实现平滑过渡，支持关注/取关状态切换
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
 import { HeartOutlined, HeartFilled } from '@ant-design/icons';
 import './index.css';
 
-/**
- * 关注按钮组件 - 使用多层背景实现平滑过渡
- * 
- * 状态流转：
- * - idle-follow: 未关注，等待点击
- * - idle-unfollow: 已关注，等待点击取关
- * - success: 刚关注成功
- * - removed: 刚取关成功
- * - transition-to-unfollow: 从成功过渡到取关状态
- * - transition-to-follow: 从取关过渡到关注状态
- */
-const FollowButton = ({ 
-  isFollowing = false, 
-  onClick, 
+const FollowButton = ({
+  isFollowing = false,
+  onClick,
   size = 'default',
   disabled = false,
   className = ''
@@ -40,7 +34,7 @@ const FollowButton = ({
 
   const handleMouseLeave = () => {
     setIsHovered(false);
-    
+
     if (timerRef.current) clearTimeout(timerRef.current);
 
     // 从临时状态过渡到最终状态
@@ -60,12 +54,12 @@ const FollowButton = ({
   const handleClick = (e) => {
     e.stopPropagation();
     if (disabled) return;
-    
+
     if (timerRef.current) clearTimeout(timerRef.current);
 
     // 根据当前显示状态决定下一个状态
     const currentlyFollowing = state === 'idle-unfollow' || state === 'success' || state === 'transition-to-unfollow';
-    
+
     if (currentlyFollowing) {
       setState('removed');
     } else {
@@ -102,7 +96,7 @@ const FollowButton = ({
 
   const renderIcon = () => {
     const iconType = getIconType();
-    
+
     switch (iconType) {
       case 'success':
         return (
@@ -160,7 +154,7 @@ const FollowButton = ({
       <span className="bg-layer bg-unfollow" />
       <span className="bg-layer bg-success" />
       <span className="bg-layer bg-removed" />
-      
+
       {/* 内容层 */}
       <span className="btn-content">
         <span className="btn-icon">{renderIcon()}</span>

@@ -1,3 +1,8 @@
+/**
+ * 个人中心页面
+ * 包含基本信息、账户设置、商品管理、订单管理、收藏夹和关注列表等功能模块
+ */
+
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -16,6 +21,7 @@ import {
 import SliderMenu from '../../components/SliderMenu';
 import AvatarUpload from '../../components/AvatarUpload';
 import './Profile.css';
+import '../../styles/form.css';
 import { PROFILE_BANNER_OPTIONS, DEFAULT_PROFILE_BANNER_KEY } from '../../config/profile';
 import { getCurrentUser, updateCurrentUser, getMyPublished, getMyPurchases, getFollows, getFollowers, unfollowUser } from '../../api/user';
 import { getFavorites, removeFromFavorites } from '../../api/favorites';
@@ -93,7 +99,7 @@ const UserProfile = () => {
     const productSub = searchParams.get('sub');
     const orderSub = searchParams.get('type');
     const orderStat = searchParams.get('status');
-    
+
     // products tab
     if (productSub && ['published', 'purchases'].includes(productSub)) {
       setProductSubTab(productSub);
@@ -153,8 +159,8 @@ const UserProfile = () => {
     const values = basicForm.getFieldsValue();
     const payload = { ...values };
     // 删除不可编辑的字段
-    ['id', 'username', 'email', 'token', 'createdAt', 'lastLoginAt', 'joinDate'].forEach(k => { 
-      if (k in payload) delete payload[k]; 
+    ['id', 'username', 'email', 'token', 'createdAt', 'lastLoginAt', 'joinDate'].forEach(k => {
+      if (k in payload) delete payload[k];
     });
 
     // 验证手机号格式（如果填写了）
@@ -198,8 +204,8 @@ const UserProfile = () => {
   const handleAvatarSuccess = (newAvatar) => {
     setUserInfo({ ...userInfo, avatar: newAvatar });
     // 触发全局用户更新事件，通知 Header 等组件更新头像
-    window.dispatchEvent(new CustomEvent('userUpdated', { 
-      detail: { ...userInfo, avatar: newAvatar } 
+    window.dispatchEvent(new CustomEvent('userUpdated', {
+      detail: { ...userInfo, avatar: newAvatar }
     }));
   };
 
@@ -227,11 +233,11 @@ const UserProfile = () => {
   // 批量取消收藏
   const handleBatchRemoveFavorites = async (itemIds) => {
     if (!itemIds || itemIds.length === 0) return;
-    
+
     const results = await Promise.allSettled(
       itemIds.map(id => removeFromFavorites(id))
     );
-    
+
     const successIds = [];
     const failedCount = results.filter((r, i) => {
       if (r.status === 'fulfilled') {
@@ -240,12 +246,12 @@ const UserProfile = () => {
       }
       return true;
     }).length;
-    
+
     // 移除成功的项
     if (successIds.length > 0) {
       setFavorites(prev => prev.filter(item => !successIds.includes(item.id)));
     }
-    
+
     if (failedCount === 0) {
       message.success(`已取消 ${successIds.length} 个收藏`);
     } else if (successIds.length > 0) {
@@ -286,7 +292,7 @@ const UserProfile = () => {
     if (currentTab !== 'profile') {
       params.set('t', currentTab);
     }
-    
+
     // 根据当前 tab 只添加相关的子参数
     if (currentTab === 'products') {
       const productSub = updates.productSubTab ?? productSubTab;
@@ -308,7 +314,7 @@ const UserProfile = () => {
         params.set('sub', followSub);
       }
     }
-    
+
     const queryString = params.toString();
     navigate(queryString ? `/profile?${queryString}` : '/profile', { replace: true });
   };
@@ -341,7 +347,7 @@ const UserProfile = () => {
     if (userInfo && Object.keys(userInfo).length > 0) {
       try {
         basicForm.setFieldsValue(userInfo);
-      } catch {}
+      } catch { }
       setIsBasicDirty(false);
     }
   }, [userInfo, basicForm]);
@@ -374,7 +380,7 @@ const UserProfile = () => {
               isBasicDirty={isBasicDirty}
               onBasicDirtyChange={setIsBasicDirty}
               onSaveBasic={handleBasicSave}
-              onChangeBannerKey={async (key) => { try { setBannerKey(key); localStorage.setItem('profileBannerKey', key); await updateCurrentUser({ profileBanner: key }); } catch {} }}
+              onChangeBannerKey={async (key) => { try { setBannerKey(key); localStorage.setItem('profileBannerKey', key); await updateCurrentUser({ profileBanner: key }); } catch { } }}
               onOpenAvatarModal={() => setAvatarModalVisible(true)}
               loading={loading}
               followersCount={followers.length}
@@ -393,11 +399,11 @@ const UserProfile = () => {
           )}
 
           {selectedKey === 'products' && (
-            <SectionProducts 
-              myProducts={myProducts} 
-              purchaseHistory={purchaseHistory} 
-              onDeleteProduct={handleDeleteProduct} 
-              onNavigate={navigate} 
+            <SectionProducts
+              myProducts={myProducts}
+              purchaseHistory={purchaseHistory}
+              onDeleteProduct={handleDeleteProduct}
+              onNavigate={navigate}
               userInfo={userInfo}
               showType={productSubTab}
               onSubTabChange={handleProductSubTabChange}
@@ -405,9 +411,9 @@ const UserProfile = () => {
           )}
 
           {selectedKey === 'orders' && (
-            <SectionOrders 
-              userInfo={userInfo} 
-              onNavigate={navigate} 
+            <SectionOrders
+              userInfo={userInfo}
+              onNavigate={navigate}
               orderType={orderSubTab}
               orderStatus={orderStatus}
               onOrderTypeChange={handleOrderSubTabChange}
@@ -416,17 +422,17 @@ const UserProfile = () => {
           )}
 
           {selectedKey === 'favorites' && (
-            <SectionFavorites 
-              favorites={favorites} 
-              onRemoveFavorite={handleRemoveFavorite} 
+            <SectionFavorites
+              favorites={favorites}
+              onRemoveFavorite={handleRemoveFavorite}
               onBatchRemoveFavorites={handleBatchRemoveFavorites}
-              onNavigate={navigate} 
+              onNavigate={navigate}
             />
           )}
 
           {selectedKey === 'follows' && (
-            <SectionFollows 
-              follows={follows} 
+            <SectionFollows
+              follows={follows}
               onUnfollow={handleUnfollow}
               followSubTab={followSubTab}
               onSubTabChange={handleFollowSubTabChange}

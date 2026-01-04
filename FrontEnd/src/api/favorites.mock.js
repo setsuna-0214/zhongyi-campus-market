@@ -1,3 +1,8 @@
+/**
+ * 收藏 API - Mock 实现
+ * 使用 localStorage 模拟收藏数据的增删查
+ */
+
 import { ensureMockState } from './mockData';
 import {
   createMockFavorite,
@@ -10,6 +15,7 @@ import {
   writeMockList,
 } from './mockHelpers';
 
+// 获取收藏列表
 export async function getFavorites() {
   ensureMockState();
   ensureFavoritesInitialized();
@@ -17,6 +23,7 @@ export async function getFavorites() {
   return normalizeFavorites(items);
 }
 
+// 添加收藏
 export async function addToFavorites(productId) {
   ensureMockState();
   ensureFavoritesInitialized();
@@ -29,6 +36,7 @@ export async function addToFavorites(productId) {
   return next[0];
 }
 
+// 根据收藏 ID 移除
 export async function removeFromFavorites(itemId) {
   ensureMockState();
   ensureFavoritesInitialized();
@@ -37,6 +45,7 @@ export async function removeFromFavorites(itemId) {
   return { success: true };
 }
 
+// 根据商品 ID 移除收藏
 export async function removeFavoriteByProductId(productId) {
   ensureMockState();
   ensureFavoritesInitialized();
@@ -47,4 +56,3 @@ export async function removeFavoriteByProductId(productId) {
   writeMockList('mock_favorites', removeFavoriteByProduct(items, productId));
   return { success: true };
 }
-

@@ -1,3 +1,8 @@
+/**
+ * 首页组件
+ * 展示轮播图、商品分类、热门商品和最新发布商品
+ */
+
 import React, { useState, useEffect, useRef, startTransition, useMemo, useCallback } from 'react';
 import {
   Row,
@@ -94,32 +99,32 @@ const Home = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('hot');
   const loggedIn = checkIsLoggedIn();
-  
+
   // 热门商品状态
   const [hotProducts, setHotProducts] = useState([]);
   const [hotPage, setHotPage] = useState(1);
   const [hotHasMore, setHotHasMore] = useState(true);
   const [hotLoading, setHotLoading] = useState(false);
-  
+
   // 最新发布状态
   const [recentProducts, setRecentProducts] = useState([]);
   const [recentPage, setRecentPage] = useState(1);
   const [recentHasMore, setRecentHasMore] = useState(true);
   const [recentLoading, setRecentLoading] = useState(false);
-  
+
   const [initialLoading, setInitialLoading] = useState(true);
   const didFetchRef = useRef(false);
-  
+
   // 无限滚动观察器
   const loadMoreRef = useRef(null);
   const observerRef = useRef(null);
-  
+
   // 页面展开状态
   const [isExpanded, setIsExpanded] = useState(loggedIn);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionDirection, setTransitionDirection] = useState(null);
   const heroRef = useRef(null);
-  
+
   // 使用 ref 追踪加载状态和页码，避免闭包问题
   const hotLoadingRef = useRef(false);
   const recentLoadingRef = useRef(false);
@@ -176,10 +181,10 @@ const Home = () => {
   // 监听滚轮事件，实现一次下滑展开
   useEffect(() => {
     if (isExpanded) return;
-    
+
     const handleWheel = (e) => {
       if (isTransitioning) return;
-      
+
       // 向下滚动时展开
       if (e.deltaY > 0) {
         e.preventDefault();
@@ -188,18 +193,18 @@ const Home = () => {
         // 状态重置将由 onAnimationEnd 处理
       }
     };
-    
+
     // 监听触摸滑动（移动端）
     let touchStartY = 0;
     const handleTouchStart = (e) => {
       touchStartY = e.touches[0].clientY;
     };
-    
+
     const handleTouchMove = (e) => {
       if (isTransitioning || isExpanded) return;
       const touchEndY = e.touches[0].clientY;
       const deltaY = touchStartY - touchEndY;
-      
+
       // 向上滑动（手指向上）时展开
       if (deltaY > 50) {
         e.preventDefault();
@@ -208,11 +213,11 @@ const Home = () => {
         // 状态重置将由 onAnimationEnd 处理
       }
     };
-    
+
     window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
-    
+
     return () => {
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('touchstart', handleTouchStart);
@@ -223,19 +228,19 @@ const Home = () => {
   // 监听滚轮事件，支持向上滑动返回轮播图
   useEffect(() => {
     if (!isExpanded) return;
-    
+
     const handleWheelCollapse = (e) => {
       if (isTransitioning) return;
-      
+
       // 向上滚动（deltaY < 0）且页面在顶部时返回轮播图
       if (e.deltaY < 0 && window.scrollY === 0) {
         e.preventDefault();
         handleCollapseTransition();
       }
     };
-    
+
     window.addEventListener('wheel', handleWheelCollapse, { passive: false });
-    
+
     return () => {
       window.removeEventListener('wheel', handleWheelCollapse);
     };
@@ -244,29 +249,29 @@ const Home = () => {
   // 监听触摸事件，支持向下滑动返回轮播图（移动端）
   useEffect(() => {
     if (!isExpanded) return;
-    
+
     let touchStartY = 0;
-    
+
     const handleTouchStartCollapse = (e) => {
       touchStartY = e.touches[0].clientY;
     };
-    
+
     const handleTouchMoveCollapse = (e) => {
       if (isTransitioning) return;
-      
+
       const touchEndY = e.touches[0].clientY;
       const deltaY = touchEndY - touchStartY; // 正值表示手指向下移动
-      
+
       // 向下滑动（手指向下移动）超过阈值且页面在顶部时返回轮播图
       if (deltaY > 50 && window.scrollY === 0) {
         e.preventDefault();
         handleCollapseTransition();
       }
     };
-    
+
     window.addEventListener('touchstart', handleTouchStartCollapse, { passive: true });
     window.addEventListener('touchmove', handleTouchMoveCollapse, { passive: false });
-    
+
     return () => {
       window.removeEventListener('touchstart', handleTouchStartCollapse);
       window.removeEventListener('touchmove', handleTouchMoveCollapse);
@@ -285,12 +290,12 @@ const Home = () => {
   useEffect(() => {
     activeTabRef.current = activeTab;
   }, [activeTab]);
-  
+
   useEffect(() => {
     hotPageRef.current = hotPage;
     hotHasMoreRef.current = hotHasMore;
   }, [hotPage, hotHasMore]);
-  
+
   useEffect(() => {
     recentPageRef.current = recentPage;
     recentHasMoreRef.current = recentHasMore;
@@ -305,7 +310,7 @@ const Home = () => {
       const res = await getHotProducts(page, PAGE_SIZE);
       const items = res.items || res;
       const filtered = (Array.isArray(items) ? items : []).filter(p => getStatusLabel(p.status) === '在售');
-      
+
       startTransition(() => {
         if (append) {
           // 使用 id 去重，防止重复数据
@@ -337,7 +342,7 @@ const Home = () => {
       const res = await getLatestProducts(page, PAGE_SIZE);
       const items = res.items || res;
       const filtered = (Array.isArray(items) ? items : []).filter(p => getStatusLabel(p.status) === '在售');
-      
+
       startTransition(() => {
         if (append) {
           // 使用 id 去重，防止重复数据
@@ -377,7 +382,7 @@ const Home = () => {
   useEffect(() => {
     if (didFetchRef.current) return;
     didFetchRef.current = true;
-    
+
     (async () => {
       await Promise.all([
         loadHotProducts(1),
@@ -390,9 +395,9 @@ const Home = () => {
   // 无限滚动 - IntersectionObserver（使用稳定的 loadMore 引用）
   useEffect(() => {
     if (!isExpanded) return;
-    
+
     const currentLoadMoreRef = loadMoreRef.current;
-    
+
     // 只在 observer 不存在时创建
     if (!observerRef.current) {
       observerRef.current = new IntersectionObserver(
@@ -404,11 +409,11 @@ const Home = () => {
         { rootMargin: '200px' }
       );
     }
-    
+
     if (currentLoadMoreRef) {
       observerRef.current.observe(currentLoadMoreRef);
     }
-    
+
     return () => {
       if (currentLoadMoreRef && observerRef.current) {
         observerRef.current.unobserve(currentLoadMoreRef);
@@ -515,7 +520,7 @@ const Home = () => {
     <div className={`home-page ${!isExpanded ? 'hero-mode' : ''} ${isTransitioning ? 'transitioning' : ''} ${isExpanded ? 'expanded' : ''} ${transitionDirection === 'down' ? 'transition-down' : ''} ${transitionDirection === 'up' ? 'transition-up' : ''}`}>
 
       {/* 轮播图背景 */}
-      <section 
+      <section
         className={`auth-carousel-section ${isExpanded ? 'as-background' : ''} ${isTransitioning ? 'fading' : ''}`}
         ref={heroRef}
       >
@@ -535,11 +540,11 @@ const Home = () => {
           {bannerItems.map((item, index) => (
             <div key={index} className="auth-carousel-item">
               <div className="auth-carousel-background">
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
-                  loading="lazy" 
-                  decoding="async" 
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  loading="lazy"
+                  decoding="async"
                   fetchpriority="low"
                 />
                 <div className="auth-carousel-overlay"></div>
@@ -587,7 +592,7 @@ const Home = () => {
         )}
       </section>
 
-      <div 
+      <div
         className={`home-content ${!isExpanded && !isTransitioning ? 'hidden' : ''}`}
         onAnimationEnd={handleAnimationEnd}
       >
@@ -695,18 +700,18 @@ const Home = () => {
                   >
                     {recentCards}
                   </Row>
-                  
+
                   {/* 无限滚动触发器 */}
-                  <div 
-                    ref={loadMoreRef} 
+                  <div
+                    ref={loadMoreRef}
                     className="load-more-trigger"
-                    style={{ 
-                      height: 1, 
+                    style={{
+                      height: 1,
                       marginTop: 24,
                       display: hasMore ? 'block' : 'none'
-                    }} 
+                    }}
                   />
-                  
+
                   {/* 加载中提示 */}
                   {isLoadingMore && (
                     <div style={{ textAlign: 'center', padding: '24px 0' }}>
@@ -714,7 +719,7 @@ const Home = () => {
                       <div style={{ marginTop: 8, color: '#888', fontSize: 14 }}>加载中...</div>
                     </div>
                   )}
-                  
+
                   {/* 没有更多数据提示 */}
                   {!hasMore && !isLoadingMore && (
                     <div style={{ textAlign: 'center', padding: '24px 0', color: '#999', fontSize: 14 }}>

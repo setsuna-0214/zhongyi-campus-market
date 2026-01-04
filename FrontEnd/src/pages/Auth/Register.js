@@ -1,3 +1,8 @@
+/**
+ * 注册页面
+ * 提供新用户注册功能，包含用户名、邮箱验证和密码设置
+ */
+
 import React, { useEffect, useState } from 'react';
 import {
   Form,
@@ -15,6 +20,7 @@ import {
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
+import '../../styles/form.css';
 import { register, sendCode, checkUsernameExists, checkEmailExists } from '../../api/auth';
 import VerificationCodeInput from '../../components/VerificationCodeInput';
 
@@ -39,8 +45,8 @@ const Register = () => {
       setUsernameStatus({ validating: false, error: '' });
       return;
     }
-    // 验证格式：必须以字母开头，只能包含字母、数字、下划线和连字符
-    if (!/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(username)) {
+    // 验证格式：只能包含字母、数字、下划线
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
       setUsernameStatus({ validating: false, error: '' });
       return;
     }
@@ -158,7 +164,7 @@ const Register = () => {
       if (res?.code !== 200) {
         throw new Error(res?.message || '注册失败');
       }
-      message.success('注册成功！请登录您的账户');
+      message.success('注册成功，请登录您的账户');
       navigate('/login');
     } catch (error) {
       message.error(error.message || '注册失败，请重试');
@@ -177,15 +183,16 @@ const Register = () => {
           help={usernameStatus.error || undefined}
           hasFeedback={usernameStatus.validating || !!usernameStatus.error}
           rules={[
-            { required: true, message: '用户名不能空着哦~' },
-            { min: 3, max: 20, message: '用户名要3-20个字符才行呢' },
-            { pattern: /^[a-zA-Z][a-zA-Z0-9_-]*$/, message: '用户名要以字母开头，只可以用字母、数字、下划线哦' },
+            { required: true, message: '请输入用户名' },
+            { min: 3, max: 20, message: '用户名长度需为 3-20 个字符' },
+            { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名仅支持字母、数字和下划线' },
           ]}
         >
           <Input
             prefix={<UserOutlined />}
-            placeholder="给自己取个好记的名字吧"
+            placeholder="请输入用户名"
             onChange={handleUsernameChange}
+            autoComplete="username"
           />
         </Form.Item>
 
@@ -196,14 +203,15 @@ const Register = () => {
           help={emailStatus.error || undefined}
           hasFeedback={emailStatus.validating || !!emailStatus.error}
           rules={[
-            { required: true, message: '邮箱是必填的哦~' },
-            { type: 'email', message: '这个邮箱格式好像不太对' },
+            { required: true, message: '请输入邮箱地址' },
+            { type: 'email', message: '请输入有效的邮箱地址' },
           ]}
         >
           <Input
             prefix={<MailOutlined />}
-            placeholder="填写常用邮箱，用于接收验证码"
+            placeholder="请输入常用邮箱，用于接收验证码"
             onChange={handleEmailChange}
+            autoComplete="email"
           />
         </Form.Item>
 
@@ -211,15 +219,11 @@ const Register = () => {
           name="password"
           label="密码"
           rules={[
-            { required: true, message: '设置一个密码吧~' },
-            { min: 6, message: '密码太短啦，至少6位才安全' },
-            {
-              pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-              message: '密码要包含大小写字母和数字哦',
-            },
+            { required: true, message: '请输入密码' },
+            { min: 6, message: '密码长度至少为 6 位' },
           ]}
         >
-          <Input.Password prefix={<LockOutlined />} placeholder="设置登录密码" />
+          <Input.Password prefix={<LockOutlined />} placeholder="设置登录密码" autoComplete="new-password" />
         </Form.Item>
 
         <Form.Item
@@ -227,18 +231,18 @@ const Register = () => {
           label="确认密码"
           dependencies={["password"]}
           rules={[
-            { required: true, message: '再输入一次密码确认下~' },
+            { required: true, message: '请再次输入密码' },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 if (!value || getFieldValue('password') === value) {
                   return Promise.resolve();
                 }
-                return Promise.reject(new Error('两次密码不一样，再检查下？'));
+                return Promise.reject(new Error('两次输入的密码不一致'));
               },
             }),
           ]}
         >
-          <Input.Password prefix={<LockOutlined />} placeholder="再次输入密码" />
+          <Input.Password prefix={<LockOutlined />} placeholder="再次输入密码" autoComplete="new-password" />
         </Form.Item>
 
         <Form.Item label="邮箱验证码" style={{ marginBottom: 16 }}>
@@ -278,7 +282,7 @@ const Register = () => {
                 onFinish={onFinish}
                 layout="vertical"
                 size="large"
-                className="auth-form"
+                className="auth-form form-input-style"
               >
                 {renderFormContent()}
 

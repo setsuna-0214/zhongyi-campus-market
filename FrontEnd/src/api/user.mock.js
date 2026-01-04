@@ -13,7 +13,7 @@ export async function getFollows() {
     return seller || { 
       id, 
       nickname: '未知用户', 
-      avatar: '/images/avatars/avatar-1.svg' 
+      avatar: '/images/avatars/default-avatar.svg' 
     };
   });
   
@@ -120,7 +120,7 @@ export async function uploadAvatar(file) {
   const avatarUrl = await new Promise((resolve, reject) => {
     if (!file) {
       // 如果没有传入文件，返回默认头像
-      resolve('/images/avatars/avatar-1.svg');
+      resolve('/images/avatars/default-avatar.svg');
       return;
     }
     
@@ -186,7 +186,7 @@ export async function getUser(id) {
     id,
     username: '未知用户',
     nickname: '未知用户',
-    avatar: '/images/avatars/avatar-1.svg',
+    avatar: '/images/avatars/default-avatar.svg',
     joinDate: '2024-01-01',
     bio: '用户不存在或已注销'
   };

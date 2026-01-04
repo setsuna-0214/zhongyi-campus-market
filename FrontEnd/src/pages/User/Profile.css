@@ -1,5 +1,9 @@
-/* ===================== Profile Page Layout ===================== */
-/* 个人中心页面样式 - 与首页设计语言保持一致 */
+/**
+ * 个人中心页面样式
+ * 定义侧边栏、内容区域、头像卡片和功能区块的布局与样式
+ */
+
+/* ===================== 页面布局 ===================== */
 
 .user-page {
   width: 100%;
@@ -12,7 +16,7 @@
   padding: var(--page-padding-sm);
 }
 
-.user-page > .user-layout {
+.user-page>.user-layout {
   width: 100%;
   max-width: var(--content-max-width-md);
 }
@@ -21,14 +25,12 @@
   background: transparent;
 }
 
-/* ===================== Left Sidebar ===================== */
+/* ===================== 左侧边栏 ===================== */
 .user-sider {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(249, 252, 255, 0.92) 50%,
-    rgba(240, 248, 255, 0.9) 100%
-  ) !important;
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(249, 252, 255, 0.92) 50%,
+      rgba(240, 248, 255, 0.9) 100%) !important;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(79, 172, 254, 0.12);
@@ -40,7 +42,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
   /* 增强阴影效果 */
-  box-shadow: 
+  box-shadow:
     0 8px 32px -8px rgba(79, 172, 254, 0.15),
     0 4px 16px -4px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -58,12 +60,10 @@
   left: 0;
   right: 0;
   height: 200px;
-  background: linear-gradient(
-    180deg,
-    rgba(79, 172, 254, 0.06) 0%,
-    rgba(0, 242, 254, 0.03) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(79, 172, 254, 0.06) 0%,
+      rgba(0, 242, 254, 0.03) 50%,
+      transparent 100%);
   pointer-events: none;
   z-index: 0;
   border-radius: var(--radius-lg, 24px) var(--radius-lg, 24px) 0 0;
@@ -77,24 +77,22 @@
   left: 0;
   right: 0;
   height: 120px;
-  background: linear-gradient(
-    0deg,
-    rgba(79, 172, 254, 0.04) 0%,
-    transparent 100%
-  );
+  background: linear-gradient(0deg,
+      rgba(79, 172, 254, 0.04) 0%,
+      transparent 100%);
   pointer-events: none;
   z-index: 0;
   border-radius: 0 0 var(--radius-lg, 24px) var(--radius-lg, 24px);
 }
 
-/* ===================== Content Area ===================== */
+/* ===================== 内容区域 ===================== */
 .user-content {
   /* 顶部内边距与左侧菜单的顶部对齐 */
   padding: 0 28px 28px 28px;
   background: transparent;
 }
 
-/* ===================== Section Cards ===================== */
+/* ===================== 区块卡片 ===================== */
 .section-card {
   border-radius: var(--radius-lg, 24px);
   /* 与首页热门商品区域一致的玻璃态效果 */
@@ -110,7 +108,7 @@
   box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.12);
 }
 
-/* ===================== Avatar Section ===================== */
+/* ===================== 头像区域 ===================== */
 .avatar-section {
   text-align: center;
 }
@@ -119,10 +117,34 @@
   border: 4px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  /* 解决头像与圆框之间的锯齿问题 */
+  overflow: hidden;
+  /* GPU 加速，提升渲染质量 */
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* 强制使用抗锯齿渲染 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  /* 优化图片显示质量 */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* 头像内部图片样式 - 确保填充整个容器且无锯齿 */
+.user-avatar.ant-avatar>img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 图片抗锯齿 */
+  image-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .user-avatar:hover {
-  transform: scale(1.02);
+  transform: scale(1.02) translateZ(0);
+  -webkit-transform: scale(1.02) translateZ(0);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
 }
 
@@ -157,7 +179,7 @@
   pointer-events: none;
 }
 
-/* 关注数和粉丝数统计 - 右下角 */
+/* 关注数和粉丝数统计 - 右下角 - 云母效果 */
 .banner-stats {
   position: absolute;
   right: 16px;
@@ -165,12 +187,20 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  /* 云母效果 - 半透明毛玻璃 */
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.65) 0%,
+      rgba(255, 255, 255, 0.45) 50%,
+      rgba(240, 248, 255, 0.55) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 20px;
   padding: 8px 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  /* 微妙的边框增强层次感 */
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   z-index: 2;
 }
 
@@ -178,18 +208,19 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 12px;
+  padding: 4px 12px;
   cursor: pointer;
-  transition: all 0.25s ease;
-  border-radius: 8px;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border-radius: 10px;
+  position: relative;
 }
 
 .banner-stat-item:hover {
-  background: rgba(255, 107, 107, 0.1);
+  transform: translateY(-2px);
 }
 
-.banner-stat-item:hover .banner-stat-value {
-  color: #ff6b6b;
+.banner-stat-item:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .banner-stat-value {
@@ -197,7 +228,6 @@
   font-weight: 700;
   color: #262626;
   line-height: 1.2;
-  transition: color 0.25s ease;
 }
 
 .banner-stat-label {
@@ -224,6 +254,11 @@
   position: relative;
   width: 120px;
   height: 120px;
+  /* 圆形容器 - 用于定位按钮 */
+  border-radius: 50%;
+  /* GPU 加速 */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* 头像上传按钮 - 覆盖全局按钮样式 */
@@ -326,7 +361,7 @@
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* ===================== Product Items ===================== */
+/* ===================== 商品项目 ===================== */
 .product-item {
   display: flex;
   flex-direction: column;
@@ -351,7 +386,7 @@
   justify-content: flex-start;
 }
 
-/* ===================== Sidebar Header ===================== */
+/* ===================== 侧边栏头部 ===================== */
 .user-sider-header {
   padding: 24px 16px;
   font-weight: 800;
@@ -359,12 +394,10 @@
   color: var(--text-primary, #262626);
   border-bottom: 1px solid rgba(79, 172, 254, 0.12);
   margin-bottom: 8px;
-  background: linear-gradient(
-    180deg,
-    rgba(79, 172, 254, 0.08) 0%,
-    rgba(0, 242, 254, 0.04) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(79, 172, 254, 0.08) 0%,
+      rgba(0, 242, 254, 0.04) 50%,
+      transparent 100%);
   text-align: center;
   letter-spacing: 3px;
   position: relative;
@@ -403,7 +436,7 @@
   display: none;
 }
 
-/* ===================== Form Styles ===================== */
+/* ===================== 表单样式 ===================== */
 /* 性别切换按钮 - 参考页眉搜索按钮风格 */
 .gender-highlight-segmented.ant-segmented {
   background: #f5f7fa;
@@ -442,204 +475,7 @@
   margin-right: 12px;
 }
 
-/* ===================== Input Styles - 参考页眉搜索框 ===================== */
-/* 基本信息页面的输入框 - 圆角胶囊样式 */
-.user-content > .section-card > .ant-card-body > div > form .ant-input:not(.ant-space-compact .ant-input),
-.user-content > .section-card > .ant-card-body > div > form .ant-input-affix-wrapper:not(.ant-space-compact .ant-input-affix-wrapper) {
-  height: 42px;
-  border-radius: 21px;
-  background: #f5f7fa;
-  border: 1.5px solid #e8e8e8;
-  padding: 0 16px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.user-content > .section-card > .ant-card-body > div > form .ant-input:not(.ant-space-compact .ant-input):hover,
-.user-content > .section-card > .ant-card-body > div > form .ant-input-affix-wrapper:not(.ant-space-compact .ant-input-affix-wrapper):hover {
-  background: #ffffff;
-  border-color: #4FACFE;
-  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.15);
-}
-
-.user-content > .section-card > .ant-card-body > div > form .ant-input:not(.ant-space-compact .ant-input):focus,
-.user-content > .section-card > .ant-card-body > div > form .ant-input-affix-wrapper-focused:not(.ant-space-compact .ant-input-affix-wrapper) {
-  background: #ffffff;
-  border-color: #4FACFE;
-  box-shadow: 0 2px 12px rgba(79, 172, 254, 0.2);
-}
-
-/* 账户安全页面内部卡片的输入框 - 与基本信息页面一致的圆角胶囊样式 */
-.user-content .ant-card-type-inner .ant-input,
-.user-content .ant-card-type-inner .ant-input-affix-wrapper,
-.user-content .ant-card-type-inner .ant-input-password {
-  height: 42px;
-  border-radius: 21px;
-  background: #f5f7fa;
-  border: 1.5px solid #e8e8e8;
-  padding: 0 16px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.user-content .ant-card-type-inner .ant-input:hover,
-.user-content .ant-card-type-inner .ant-input-affix-wrapper:hover,
-.user-content .ant-card-type-inner .ant-input-password:hover {
-  background: #ffffff;
-  border-color: #4FACFE;
-  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.15);
-}
-
-.user-content .ant-card-type-inner .ant-input:focus,
-.user-content .ant-card-type-inner .ant-input-affix-wrapper-focused,
-.user-content .ant-card-type-inner .ant-input-password:focus-within {
-  background: #ffffff;
-  border-color: #4FACFE;
-  box-shadow: 0 2px 12px rgba(79, 172, 254, 0.2);
-}
-
-/* ant-input-affix-wrapper 内部的 input 重置样式（避免双重边框） */
-.user-content .ant-card-type-inner .ant-input-affix-wrapper .ant-input {
-  height: auto;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-  border-radius: 0;
-}
-
-.user-content .ant-card-type-inner .ant-input-affix-wrapper .ant-input:hover,
-.user-content .ant-card-type-inner .ant-input-affix-wrapper .ant-input:focus {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-/* 账户安全页面 Space.Compact 内的输入框 */
-.user-content .ant-card-type-inner .ant-space-compact .ant-input {
-  border-radius: 21px 0 0 21px;
-  height: 42px;
-  border-right: none;
-}
-
-/* 账户安全页面 Space.Compact 内的按钮 */
-.user-content .ant-card-type-inner .ant-space-compact .ant-btn {
-  border-radius: 0 21px 21px 0;
-  height: 42px;
-  padding: 0 20px;
-  font-weight: 600;
-  background: #f5f7fa !important;
-  border: 1.5px solid #e8e8e8 !important;
-  border-left: none !important;
-  color: #595959 !important;
-}
-
-.user-content .ant-card-type-inner .ant-space-compact .ant-btn:hover,
-.user-content .ant-card-type-inner .ant-space-compact .ant-btn:focus {
-  background: #ffffff !important;
-  border-color: #4FACFE !important;
-  color: #4FACFE !important;
-}
-
-/* Input.Password 内部输入框 - 重置样式 */
-.user-content .ant-card-type-inner .ant-input-password .ant-input {
-  height: auto;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-  border-radius: 0;
-}
-
-.user-content .ant-card-type-inner .ant-input-password .ant-input:hover,
-.user-content .ant-card-type-inner .ant-input-password .ant-input:focus {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-}
-
-.user-content .ant-input::placeholder {
-  color: #bfbfbf;
-}
-
-/* TextArea 样式 */
-.user-content .ant-input-textarea .ant-input,
-.user-content textarea.ant-input {
-  height: auto;
-  min-height: 100px;
-  border-radius: 16px;
-  padding: 12px 16px;
-}
-
-/* 个人简介输入框特殊样式 - 自动高度调整 */
-.user-content .ant-form-item textarea.ant-input {
-  resize: none !important; /* 禁止手动拖动调整大小 */
-  overflow-y: auto; /* 超出最大高度时显示滚动条 */
-  min-height: 100px; /* 最小高度 */
-  max-height: 240px; /* 最大高度约10行中文（每行约24px） */
-  line-height: 1.8; /* 优化行高，提升可读性 */
-  padding: 12px 16px; /* 内边距 */
-  vertical-align: top; /* 文字从顶部开始显示 */
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-/* 个人简介输入框滚动条样式 */
-.user-content .ant-form-item textarea.ant-input::-webkit-scrollbar {
-  width: 6px;
-}
-
-.user-content .ant-form-item textarea.ant-input::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 3px;
-}
-
-.user-content .ant-form-item textarea.ant-input::-webkit-scrollbar-thumb {
-  background: rgba(79, 172, 254, 0.3);
-  border-radius: 3px;
-  transition: background 0.3s ease;
-}
-
-.user-content .ant-form-item textarea.ant-input::-webkit-scrollbar-thumb:hover {
-  background: rgba(79, 172, 254, 0.5);
-}
-
-/* Space.Compact 组合输入框 - 基本信息页面 */
-.user-content > .section-card .ant-space-compact .ant-input,
-.user-content > .section-card .ant-space-compact .ant-input-affix-wrapper {
-  border-radius: 21px 0 0 21px;
-  height: 42px;
-  background: #f5f7fa;
-  border: 1.5px solid #e8e8e8;
-  border-right: none;
-  padding: 0 16px;
-  font-size: 14px;
-}
-
-.user-content > .section-card .ant-space-compact .ant-btn:not(.ant-btn-primary) {
-  border-radius: 0 21px 21px 0;
-  height: 42px;
-  padding: 0 20px;
-  font-weight: 600;
-  background: #f5f7fa !important;
-  border: 1.5px solid #e8e8e8 !important;
-  border-left: none !important;
-  color: #595959 !important;
-  transition: all 0.3s ease;
-}
-
-.user-content > .section-card .ant-space-compact .ant-btn:not(.ant-btn-primary):hover,
-.user-content > .section-card .ant-space-compact .ant-btn:not(.ant-btn-primary):focus {
-  background: #ffffff !important;
-  border-color: #4FACFE !important;
-  color: #4FACFE !important;
-}
-
-.user-content > .section-card .ant-space-compact .ant-btn:not(.ant-btn-primary):active {
-  background: #f0faff !important;
-  color: #3a9fe8 !important;
-}
-
-/* ===================== Section Products Header ===================== */
+/* ===================== 商品部分头部 ===================== */
 /* SubTabSlider 容器 - 与首页标签切换风格一致 */
 .section-products-header {
   margin-bottom: 24px;
@@ -647,21 +483,17 @@
   justify-content: flex-start;
 }
 
-.section-products-content {
-  /* 商品列表内容区域 */
-}
 
-/* ===================== Section Orders ===================== */
+
+/* ===================== 订单部分 ===================== */
 /* OrderTabRow 容器 */
 .section-orders-card .order-tab-row {
   margin-bottom: 24px;
 }
 
-.orders-content {
-  /* 订单列表内容区域 */
-}
 
-/* ===================== Buttons & Interactive Elements ===================== */
+
+/* ===================== 按钮与交互元素 ===================== */
 /* 主要按钮 - 参考页眉搜索按钮风格 */
 .user-content .ant-btn-primary {
   background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%) !important;
@@ -825,7 +657,7 @@
 }
 
 /* 账户安全页面表单标签 */
-.user-content .ant-card-type-inner .ant-form-item-label > label {
+.user-content .ant-card-type-inner .ant-form-item-label>label {
   font-weight: 500;
   color: #595959;
 }
@@ -1079,7 +911,7 @@
   background: linear-gradient(180deg, #ffffff 0%, #fafbfc 100%);
   border-radius: 16px;
   border: 1px solid #e8ecf0;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.04),
     0 4px 16px rgba(0, 0, 0, 0.02);
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1090,7 +922,7 @@
 
 .section-follows-card .follow-card:hover {
   border-color: rgba(255, 107, 107, 0.4);
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(255, 107, 107, 0.12),
     0 16px 48px rgba(255, 107, 107, 0.08),
     0 0 0 1px rgba(255, 107, 107, 0.1);
@@ -1129,7 +961,7 @@
 .section-follows-card .follow-avatar {
   flex-shrink: 0;
   border: 3px solid #f0f4f8;
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.08),
     0 0 0 1px rgba(255, 255, 255, 0.8) inset;
   transition: all 0.35s ease;
@@ -1137,7 +969,7 @@
 
 .section-follows-card .follow-card:hover .follow-avatar {
   border-color: rgba(255, 107, 107, 0.3);
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(255, 107, 107, 0.2),
     0 0 0 1px rgba(255, 255, 255, 0.8) inset;
 }
@@ -1191,6 +1023,7 @@
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 36px;
@@ -1455,6 +1288,7 @@
 /* ===================== Reduced Motion ===================== */
 /* 减少动画偏好 - 与设计文档一致 */
 @media (prefers-reduced-motion: reduce) {
+
   .user-avatar,
   .section-card,
   .card-actions .ant-btn,

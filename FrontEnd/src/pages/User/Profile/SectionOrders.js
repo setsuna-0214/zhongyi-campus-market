@@ -1,18 +1,23 @@
+/**
+ * 订单管理组件
+ * 展示用户的买入和卖出订单，支持按状态筛选和删除已取消订单
+ */
+
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Card, List, Empty, message } from 'antd';
 import ProductCard from '../../../components/ProductCard';
 import OrderTabRow from '../../../components/OrderTabRow';
 import { resolveImageSrc } from '../../../utils/images';
 import { listOrders, deleteOrder } from '../../../api/orders';
-import { 
-  ORDER_STATUS, 
-  normalizeOrderStatus, 
-  getOrderStatusText 
+import {
+  ORDER_STATUS,
+  normalizeOrderStatus,
+  getOrderStatusText
 } from '../../../utils/labels';
 
-export default function SectionOrders({ 
-  userInfo, 
-  onNavigate, 
+export default function SectionOrders({
+  userInfo,
+  onNavigate,
   orderType = 'purchase',
   orderStatus = 'pending',
   onOrderTypeChange,
@@ -49,7 +54,7 @@ export default function SectionOrders({
   // 去重函数：针对同一商品的多个订单，只保留时间最早的
   const deduplicateOrders = useCallback((orderList) => {
     const productMap = new Map();
-    
+
     // 按商品ID分组，保留时间最早的订单
     orderList.forEach(order => {
       const productId = order.product?.id || order.productId;
@@ -58,10 +63,10 @@ export default function SectionOrders({
         productMap.set(order.id, order);
         return;
       }
-      
+
       const key = String(productId);
       const existing = productMap.get(key);
-      
+
       if (!existing) {
         productMap.set(key, order);
       } else {
@@ -73,7 +78,7 @@ export default function SectionOrders({
         }
       }
     });
-    
+
     return Array.from(productMap.values());
   }, []);
 
@@ -147,13 +152,13 @@ export default function SectionOrders({
           if (!user) return defaultName;
           return user.nickname || user.username || defaultName;
         };
-        const counterpartName = role === 'purchase' 
-          ? getDisplayName(order.seller, '卖家') 
+        const counterpartName = role === 'purchase'
+          ? getDisplayName(order.seller, '卖家')
           : getDisplayName(order.buyer, '买家');
         const statusText = getOrderStatusText(order.status);
         const orderStatus = normalizeOrderStatus(order.status);
         const isCancelled = orderStatus === ORDER_STATUS.CANCELLED;
-        
+
         return (
           <List.Item key={order.id}>
             <div className="product-item">

@@ -1,9 +1,14 @@
+/**
+ * 搜索页面
+ * 提供商品和用户的搜索功能，支持多条件筛选（分类、价格、排序等）和分页展示
+ */
+
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  Row, 
-  Col, 
-  Select, 
-  Pagination, 
+import {
+  Row,
+  Col,
+  Select,
+  Pagination,
   Input,
   Space,
   Empty,
@@ -13,7 +18,7 @@ import {
   Avatar,
   Card
 } from 'antd';
-import { 
+import {
   UserOutlined,
   ShoppingOutlined,
   TeamOutlined,
@@ -35,7 +40,7 @@ const SearchPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showLoginPrompt } = useLoginPrompt();
-  
+
   // 搜索类型：products | users
   const searchType = searchParams.get('type') || 'products';
 
@@ -47,7 +52,7 @@ const SearchPage = () => {
   const [followingMap, setFollowingMap] = useState({}); // 存储用户的关注状态 { [userId]: boolean }
   const [currentPage, setCurrentPage] = useState(() => Math.max(1, parseInt(searchParams.get('p') || '1', 10) || 1));
   const [pageSize] = useState(12);
-  
+
   // 初始分类参数（支持中文或代码），统一转为代码
   const initialCategoryParam = searchParams.get('c') || searchParams.get('category') || '';
   const normalizedCategory = toCategoryCode(initialCategoryParam) || '';
@@ -65,7 +70,7 @@ const SearchPage = () => {
 
   useEffect(() => {
     const nextPage = Math.max(1, parseInt(searchParams.get('p') || '1', 10) || 1);
-    
+
     // 价格区间处理 - 支持新旧参数名
     const priceRangeParamUrl = searchParams.get('price') || searchParams.get('priceRange');
     const nextPriceRange = (() => {
@@ -138,11 +143,11 @@ const SearchPage = () => {
           // 筛选"已关注"：直接使用关注列表，按关键词过滤
           const follows = await getFollows();
           let filteredItems = follows;
-          
+
           // 按关键词过滤
           if (filters.keyword) {
             const kw = filters.keyword.toLowerCase();
-            filteredItems = follows.filter(u => 
+            filteredItems = follows.filter(u =>
               (u.nickname || '').toLowerCase().includes(kw) ||
               (u.username || '').toLowerCase().includes(kw)
             );
@@ -222,7 +227,7 @@ const SearchPage = () => {
   const updateSearchParams = (partial) => {
     const params = new URLSearchParams();
     const currentType = partial.type ?? searchType;
-    
+
     // 默认值定义
     const defaults = {
       type: 'products',
@@ -360,18 +365,18 @@ const SearchPage = () => {
             {/* 搜索类型切换 - 参考首页热门商品/最新发布的滑块效果 */}
             <div className="filter-group filter-group-type">
               <div className="search-type-switch">
-                <div 
-                  className="switch-slider" 
+                <div
+                  className="switch-slider"
                   style={{ transform: searchType === 'products' ? 'translateX(0)' : 'translateX(100%)' }}
                 />
-                <button 
+                <button
                   className={`switch-btn ${searchType === 'products' ? 'active' : ''}`}
                   onClick={() => handleTypeChange('products')}
                 >
                   <ShoppingOutlined className="switch-icon" />
                   搜商品
                 </button>
-                <button 
+                <button
                   className={`switch-btn ${searchType === 'users' ? 'active' : ''}`}
                   onClick={() => handleTypeChange('users')}
                 >
@@ -380,11 +385,11 @@ const SearchPage = () => {
                 </button>
               </div>
             </div>
-            
+
             {searchType === 'users' && (
               <>
                 <div className="filter-divider" />
-                
+
                 <div className="filter-group">
                   <span className="filter-label">关注</span>
                   <Select
@@ -405,7 +410,7 @@ const SearchPage = () => {
             {searchType === 'products' && (
               <>
                 <div className="filter-divider" />
-                
+
                 <div className="filter-group">
                   <span className="filter-label">分类</span>
                   <Select
@@ -422,7 +427,7 @@ const SearchPage = () => {
                     ))}
                   </Select>
                 </div>
-                
+
                 <div className="filter-group">
                   <span className="filter-label">状态</span>
                   <Select
@@ -473,6 +478,7 @@ const SearchPage = () => {
                       }}
                       placeholder="最低价"
                       className="price-input"
+                      autoComplete="off"
                     />
                     <span className="price-separator">—</span>
                     <Input
@@ -487,6 +493,7 @@ const SearchPage = () => {
                       }}
                       placeholder="最高价"
                       className="price-input"
+                      autoComplete="off"
                     />
                   </div>
                 </div>
@@ -501,7 +508,7 @@ const SearchPage = () => {
             <h2>{searchType === 'products' ? '商品列表' : '用户列表'}</h2>
             <span className="total-count">共 {total} 条结果</span>
           </div>
-          
+
           <Spin spinning={loading}>
             {searchType === 'products' ? (
               products.length > 0 ? (
@@ -509,7 +516,7 @@ const SearchPage = () => {
                   <Row gutter={[16, 16]}>
                     {productCards}
                   </Row>
-                  
+
                   <div className="pagination-container">
                     <Pagination
                       current={currentPage}
@@ -534,17 +541,17 @@ const SearchPage = () => {
                     className="user-list"
                     renderItem={user => (
                       <List.Item>
-                        <Card 
-                          hoverable 
-                          onClick={() => handleUserClick(user.id)} 
+                        <Card
+                          hoverable
+                          onClick={() => handleUserClick(user.id)}
                           className="user-card"
                           bodyStyle={{ padding: 0 }}
                         >
                           <div className="user-card-content">
-                            <Avatar 
-                              size={72} 
-                              src={user.avatar} 
-                              icon={<UserOutlined />} 
+                            <Avatar
+                              size={72}
+                              src={user.avatar}
+                              icon={<UserOutlined />}
                               className="user-card-avatar"
                             />
                             <div className="user-card-info">
@@ -571,7 +578,7 @@ const SearchPage = () => {
                                 <span className="stat-label">关注</span>
                               </span>
                             </div>
-                            <FollowButton 
+                            <FollowButton
                               isFollowing={followingMap[user.id]}
                               size="small"
                               onClick={(e) => handleFollow(e, user.id)}

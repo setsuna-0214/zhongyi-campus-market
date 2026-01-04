@@ -1,3 +1,8 @@
+/**
+ * 应用入口文件
+ * 设置 React 根节点、路由、Ant Design 主题配置（zh_CN）和全局上下文
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';

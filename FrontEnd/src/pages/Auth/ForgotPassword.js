@@ -1,3 +1,8 @@
+/**
+ * 找回密码页面
+ * 提供邮箱验证码验证和重置密码功能
+ */
+
 import React, { useEffect, useState } from 'react';
 import {
   Form,
@@ -11,6 +16,7 @@ import {
 import { UserOutlined, MailOutlined, LockOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
+import '../../styles/form.css';
 import { sendCode, forgotPassword } from '../../api/auth';
 import VerificationCodeInput from '../../components/VerificationCodeInput';
 
@@ -72,7 +78,7 @@ const ForgotPassword = () => {
       if (res?.code !== 200) {
         throw new Error(res?.message || '重置密码失败');
       }
-      message.success('密码重置成功！请使用新密码登录');
+      message.success('密码重置成功，请使用新密码登录');
       navigate('/login');
     } catch (error) {
       message.error(error?.message || '重置密码失败，请重试');
@@ -101,29 +107,29 @@ const ForgotPassword = () => {
                 onFinish={onFinish}
                 layout="vertical"
                 size="large"
-                className="auth-form"
+                className="auth-form form-input-style"
               >
                 <Form.Item
                   name="username"
                   label="用户名"
                   rules={[
-                    { required: true, message: '先告诉我你的用户名~' },
-                    { min: 3, max: 20, message: '用户名是3-20个字符哦' },
-                    { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名只能是字母、数字和下划线' },
+                    { required: true, message: '请输入用户名' },
+                    { min: 3, max: 20, message: '用户名长度需为 3-20 个字符' },
+                    { pattern: /^[a-zA-Z0-9_]+$/, message: '用户名仅支持字母、数字和下划线' },
                   ]}
                 >
-                  <Input prefix={<UserOutlined />} placeholder="输入你的用户名" />
+                  <Input prefix={<UserOutlined />} placeholder="请输入用户名" autoComplete="username" />
                 </Form.Item>
 
                 <Form.Item
                   name="email"
                   label="邮箱"
                   rules={[
-                    { required: true, message: '填写注册时用的邮箱~' },
-                    { type: 'email', message: '邮箱格式好像不太对' },
+                    { required: true, message: '请输入注册邮箱地址' },
+                    { type: 'email', message: '请输入有效的邮箱地址' },
                   ]}
                 >
-                  <Input prefix={<MailOutlined />} placeholder="注册时使用的邮箱" />
+                  <Input prefix={<MailOutlined />} placeholder="注册时使用的邮箱" autoComplete="email" />
                 </Form.Item>
 
                 <Form.Item label="邮箱验证码" style={{ marginBottom: 16 }}>
@@ -144,8 +150,8 @@ const ForgotPassword = () => {
                   name="newPassword"
                   label="新密码"
                   rules={[
-                    { required: true, message: '设置一个新密码吧~' },
-                    { min: 6, message: '密码太短啦，至少6位才安全' },
+                    { required: true, message: '请输入新密码' },
+                    { min: 6, message: '密码长度至少为 6 位' },
                   ]}
                 >
                   <Input.Password prefix={<LockOutlined />} placeholder="设置新密码" autoComplete="new-password" />
@@ -156,13 +162,13 @@ const ForgotPassword = () => {
                   label="确认密码"
                   dependencies={["newPassword"]}
                   rules={[
-                    { required: true, message: '再输入一次确认下~' },
+                    { required: true, message: '请再次输入新密码' },
                     ({ getFieldValue }) => ({
                       validator(_, value) {
                         if (!value || getFieldValue('newPassword') === value) {
                           return Promise.resolve();
                         }
-                        return Promise.reject(new Error('两次密码不一样，再检查下？'));
+                        return Promise.reject(new Error('两次输入的密码不一致'));
                       },
                     }),
                   ]}

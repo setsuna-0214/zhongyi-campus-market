@@ -1,6 +1,10 @@
-/* ===================== Section Account Styles ===================== */
+/**
+ * 账户设置面板样式
+ * 定义账户安全设置（密码、邮箱）和账号注销等功能的样式
+ */
 
-/* 标签切换头部 */
+/* ===================== 头部标签 ===================== */
+
 .section-account-card .account-tab-header {
   display: flex;
   justify-content: center;
@@ -9,38 +13,38 @@
   border-bottom: 1px solid rgba(79, 172, 254, 0.12);
 }
 
-/* 内容区域 */
+/* ===================== 内容区域 ===================== */
 .section-account-card .account-content {
   max-width: 500px;
   margin: 0 auto;
 }
 
-/* 面板样式 */
+/* ===================== 输入面板 ===================== */
 .section-account-card .account-panel {
   padding: 8px 0;
 }
 
-/* 验证码输入行 */
+/* ===================== 验证码输入 ===================== */
 .section-account-card .verification-code-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-/* 验证码输入组件容器 */
+
 .section-account-card .verification-code-row .verification-code-input {
   flex: 1;
   max-width: 280px;
 }
 
-/* 验证码输入框样式微调 */
+
 .section-account-card .verification-code-row .code-box {
   max-width: 38px;
   height: 42px;
   font-size: 18px;
 }
 
-/* 发送验证码按钮 */
+/* ===================== 操作按钮 ===================== */
 .section-account-card .send-code-btn.ant-btn {
   height: 42px;
   min-width: 110px;
@@ -110,7 +114,7 @@
   margin-top: 12px;
 }
 
-/* 注销按钮 */
+
 .section-account-card .delete-account-btn.ant-btn {
   height: 46px;
   border-radius: 23px;
@@ -169,27 +173,27 @@
   min-width: 140px;
 }
 
-/* 响应式调整 */
+/* ===================== 响应式调整 ===================== */
 @media (max-width: 576px) {
   .section-account-card .verification-code-row {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
-  
+
   .section-account-card .verification-code-row .verification-code-input {
     max-width: 100%;
   }
-  
+
   .section-account-card .send-code-btn.ant-btn {
     width: 100%;
   }
-  
+
   .section-account-card .verification-code-row .code-box {
     max-width: none;
     flex: 1;
   }
-  
+
   .section-account-card .account-content {
     max-width: 100%;
   }

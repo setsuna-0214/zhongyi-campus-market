@@ -1,6 +1,11 @@
+/**
+ * 悬浮按钮组件
+ * 提供发布商品、消息通知、帮助反馈等快捷入口
+ */
+
 import { useState, useEffect, useCallback } from 'react';
 import { Button, Badge, Tooltip } from 'antd';
-import { 
+import {
   PlusOutlined,
   CommentOutlined,
   BulbOutlined
@@ -30,15 +35,15 @@ const FloatingButtons = () => {
         listConversations(),
         listSystemMessages()
       ]);
-      
+
       // 普通会话未读数
       const chatUnread = (conversations || []).reduce((sum, conv) => {
         return sum + (conv.unreadCount || 0);
       }, 0);
-      
+
       // 系统消息未读数
       const systemUnread = (systemMessages || []).filter(m => !m.isRead).length;
-      
+
       setMessageCount(chatUnread + systemUnread);
     } catch (err) {
       // 获取失败时不更新，保持当前值
@@ -104,8 +109,8 @@ const FloatingButtons = () => {
       <div className="floating-buttons-container">
         {loggedIn && (
           <>
-            <Tooltip 
-              title="发布商品" 
+            <Tooltip
+              title="发布商品"
               placement="left"
               mouseEnterDelay={0.15}
               mouseLeaveDelay={0.1}
@@ -120,9 +125,9 @@ const FloatingButtons = () => {
                 className="floating-button publish-btn"
               />
             </Tooltip>
-            
-            <Tooltip 
-              title={`消息通知${messageCount > 0 ? `(${messageCount})` : ''}`} 
+
+            <Tooltip
+              title={`消息通知${messageCount > 0 ? `(${messageCount})` : ''}`}
               placement="left"
               mouseEnterDelay={0.15}
               mouseLeaveDelay={0.1}
@@ -140,9 +145,9 @@ const FloatingButtons = () => {
             </Tooltip>
           </>
         )}
-        
-        <Tooltip 
-          title="帮助与反馈" 
+
+        <Tooltip
+          title="帮助与反馈"
           placement="left"
           mouseEnterDelay={0.15}
           mouseLeaveDelay={0.1}

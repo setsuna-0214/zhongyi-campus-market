@@ -1,3 +1,8 @@
+/**
+ * 我的收藏组件
+ * 展示用户收藏的商品列表，支持搜索、筛选和批量取消收藏
+ */
+
 import { useMemo, useState } from 'react';
 import { Card, Row, Col, Button, Space, Select, Input, Checkbox, Empty, Pagination, Typography } from 'antd';
 import ProductCard from '../../../components/ProductCard';
@@ -99,12 +104,12 @@ export default function SectionFavorites({ favorites, onRemoveFavorite, onBatchR
         <div className="header-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', padding: '4px 0' }}>
           <Space size="middle" wrap>
             <Space.Compact style={{ width: 280 }}>
-              <Input placeholder="搜索收藏商品" allowClear value={filters.keyword} onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))} />
+              <Input placeholder="搜索收藏商品" allowClear value={filters.keyword} onChange={(e) => setFilters(prev => ({ ...prev, keyword: e.target.value }))} autoComplete="off" />
               <Button type="primary" onClick={() => setCurrentPage(1)}>搜索</Button>
             </Space.Compact>
             <Select placeholder="商品分类" allowClear style={{ width: 140 }} value={filters.category || undefined} onChange={(val) => { setFilters(prev => ({ ...prev, category: val || '' })); setCurrentPage(1); }} options={CATEGORY_OPTIONS.filter(opt => opt.value !== '')} />
-            <Select placeholder="加入时间" style={{ width: 140 }} value={filters.timeRange} onChange={(val) => { setFilters(prev => ({ ...prev, timeRange: val })); setCurrentPage(1); }} options={[{ label: '全部', value: 'all' },{ label: '最近7天', value: '7d' },{ label: '最近30天', value: '30d' }]} />
-            <Select placeholder="排序方式" style={{ width: 140 }} value={filters.sortBy} onChange={(val) => { setFilters(prev => ({ ...prev, sortBy: val })); setCurrentPage(1); }} options={[{ label: '添加时间', value: 'addTime' },{ label: '价格从低到高', value: 'price_asc' },{ label: '价格从高到低', value: 'price_desc' }]} />
+            <Select placeholder="加入时间" style={{ width: 140 }} value={filters.timeRange} onChange={(val) => { setFilters(prev => ({ ...prev, timeRange: val })); setCurrentPage(1); }} options={[{ label: '全部', value: 'all' }, { label: '最近7天', value: '7d' }, { label: '最近30天', value: '30d' }]} />
+            <Select placeholder="排序方式" style={{ width: 140 }} value={filters.sortBy} onChange={(val) => { setFilters(prev => ({ ...prev, sortBy: val })); setCurrentPage(1); }} options={[{ label: '添加时间', value: 'addTime' }, { label: '价格从低到高', value: 'price_asc' }, { label: '价格从高到低', value: 'price_desc' }]} />
           </Space>
           {filtered.length > 0 && (
             <div className="batch-actions-inline">

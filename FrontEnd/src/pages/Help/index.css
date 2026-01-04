@@ -1,3 +1,10 @@
+/**
+ * 帮助中心样式
+ * 定义帮助页面的布局、FAQ卡片、反馈表单等样式
+ */
+
+/* ===================== 页面布局 ===================== */
+
 .help-page {
   width: 100%;
   min-height: calc(100vh - 64px);
@@ -10,7 +17,7 @@
   background-attachment: fixed;
 }
 
-.help-page > * {
+.help-page>* {
   width: 100%;
   max-width: var(--content-max-width-md);
 }
@@ -24,7 +31,7 @@
   color: var(--campus-primary-dark);
 }
 
-/* FAQ 卡片 */
+/* ===================== FAQ 卡片 ===================== */
 .faq-card {
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -71,18 +78,18 @@
   line-height: 1.6;
 }
 
-/* 反馈卡片 */
+/* ===================== 反馈卡片 ===================== */
 .feedback-card {
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   margin-bottom: 16px;
 }
 
-.feedback-card .ant-form-item-label > label {
+.feedback-card .ant-form-item-label>label {
   font-weight: 500;
 }
 
-/* 联系卡片 */
+/* ===================== 联系卡片 ===================== */
 .contact-card {
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -110,13 +117,13 @@
   min-width: 0;
 }
 
-/* 底部 */
+/* ===================== 底部说明 ===================== */
 .help-footer {
   text-align: center;
   padding: 16px 0;
 }
 
-/* 响应式 */
+/* ===================== 响应式调整 ===================== */
 @media (max-width: 768px) {
   .help-page {
     padding: 16px;

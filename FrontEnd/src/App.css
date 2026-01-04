@@ -1,3 +1,10 @@
+/**
+ * 应用根组件样式
+ * 定义应用的整体布局结构和通用组件样式
+ */
+
+/* ===================== 应用布局 ===================== */
+
 .app-layout {
   min-height: 100vh;
   background-color: #f5f5f5;
@@ -10,7 +17,7 @@
   width: 100%;
 }
 
-/* 主要内容区域 */
+/* ===================== 主要内容区域 ===================== */
 .main-content {
   max-width: 1200px;
   margin: 0 auto;
@@ -19,7 +26,7 @@
   min-height: calc(100vh - 140px);
 }
 
-/* 统一容器样式 */
+/* ===================== 容器样式 ===================== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -36,7 +43,7 @@
   box-sizing: border-box;
 }
 
-/* 页面标题 */
+/* ===================== 标题样式 ===================== */
 .page-title {
   font-size: 24px;
   font-weight: 600;
@@ -46,7 +53,7 @@
   padding-bottom: 12px;
 }
 
-/* 卡片样式 */
+/* ===================== 卡片样式 ===================== */
 .custom-card {
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -58,7 +65,7 @@
   transition: box-shadow 0.3s ease;
 }
 
-/* 按钮样式 */
+/* ===================== 按钮样式 ===================== */
 .primary-button {
   background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
   border: none;
@@ -72,8 +79,9 @@
   color: white;
 }
 
-/* 响应式设计 */
+/* ===================== 响应式设计 ===================== */
 @media (max-width: 1200px) {
+
   .container,
   .page-container {
     max-width: 100%;
@@ -86,25 +94,26 @@
     padding: 16px;
     margin: 0;
   }
-  
+
   .container,
   .page-container {
     padding: 0 12px;
   }
-  
+
   .page-title {
     font-size: 20px;
   }
 }
 
 @media (max-width: 480px) {
+
   .container,
   .page-container {
     padding: 0 8px;
   }
 }
 
-/* 加载动画 */
+/* ===================== 加载与空状态 ===================== */
 .loading-container {
   display: flex;
   justify-content: center;
@@ -122,5 +131,3 @@
 .empty-state .ant-empty-image {
   margin-bottom: 16px;
 }
-
-/* 滚动条样式已移至 utils/scrollbar.css */

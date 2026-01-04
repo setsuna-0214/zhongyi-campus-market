@@ -29,7 +29,7 @@ const VerificationCodeInput = ({ value = '', onChange, disabled = false }) => {
   // 处理单个输入
   const handleInput = (index, e) => {
     const inputValue = e.target.value;
-    
+
     // 只允许数字
     if (inputValue && !/^\d$/.test(inputValue)) {
       return;
@@ -75,15 +75,15 @@ const VerificationCodeInput = ({ value = '', onChange, disabled = false }) => {
   const handlePaste = (e) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').trim();
-    
+
     // 提取数字
     const digits = pastedData.replace(/\D/g, '').slice(0, 6);
-    
+
     if (digits) {
       const newCodes = Array(6).fill('').map((_, i) => digits[i] || '');
       setCodes(newCodes);
       notifyChange(newCodes);
-      
+
       // 聚焦到最后一个有值的输入框的下一个，或最后一个
       const lastFilledIndex = Math.min(digits.length, 5);
       inputRefs.current[lastFilledIndex]?.focus();

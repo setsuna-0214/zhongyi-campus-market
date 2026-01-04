@@ -1,3 +1,8 @@
+/**
+ * 商品管理组件
+ * 展示用户发布的商品和购买记录，提供编辑、删除商品功能
+ */
+
 import { useMemo } from 'react';
 import { Card, List, Button, Empty } from 'antd';
 import { UploadOutlined, ShoppingCartOutlined } from '@ant-design/icons';
@@ -56,8 +61,8 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
                     status={item.status}
                     location={item.location}
                     sellerName={
-                      typeof item.seller === 'object' 
-                        ? (item.seller?.nickname || item.seller?.username || '卖家') 
+                      typeof item.seller === 'object'
+                        ? (item.seller?.nickname || item.seller?.username || '卖家')
                         : (item.seller || userInfo?.nickname || userInfo?.username || '我')
                     }
                     sellerId={typeof item.seller === 'object' ? item.seller?.id : (item.sellerId || userInfo?.id)}
@@ -128,7 +133,7 @@ export default function SectionProducts({ myProducts, purchaseHistory, onDeleteP
           />
         </div>
       )}
-      
+
       {/* 商品列表内容 */}
       <div className="section-products-content">
         {renderProductList()}

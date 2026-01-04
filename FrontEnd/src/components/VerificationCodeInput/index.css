@@ -1,3 +1,10 @@
+/**
+ * 验证码输入框样式
+ * 定义输入框布局、状态样式和响应式适配
+ */
+
+/* ===================== 容器布局 ===================== */
+
 .verification-code-input {
   display: flex;
   gap: 8px;
@@ -48,7 +55,7 @@
   .verification-code-input {
     gap: 6px;
   }
-  
+
   .verification-code-input .code-box {
     max-width: 36px;
     height: 40px;

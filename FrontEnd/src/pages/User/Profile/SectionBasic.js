@@ -1,3 +1,8 @@
+/**
+ * 基本信息设置组件
+ * 展示和编辑用户的头像、背景图、昵称、个人简介等基本资料
+ */
+
 import { useState, useEffect, useRef } from 'react';
 import { Card, Avatar, Button, Form, Input, Checkbox, Row, Col, Space, Typography, Segmented } from 'antd';
 import { UserOutlined, CameraOutlined, PictureOutlined } from '@ant-design/icons';
@@ -51,16 +56,16 @@ const formatToYMDHMS = (input) => {
   }
 };
 
-export default function SectionBasic({ 
-  userInfo, 
-  bannerKey, 
-  bannerBgUrl, 
-  basicForm, 
-  isBasicDirty, 
-  onBasicDirtyChange, 
-  onSaveBasic, 
-  onChangeBannerKey, 
-  onOpenAvatarModal, 
+export default function SectionBasic({
+  userInfo,
+  bannerKey,
+  bannerBgUrl,
+  basicForm,
+  isBasicDirty,
+  onBasicDirtyChange,
+  onSaveBasic,
+  onChangeBannerKey,
+  onOpenAvatarModal,
   loading,
   isReadOnly = false,
   followersCount = 0,
@@ -103,8 +108,8 @@ export default function SectionBasic({
 
   return (
     <Card className="section-card" loading={loading}>
-      <div 
-        className={`avatar-banner ${isFading ? 'banner-fading' : ''}`} 
+      <div
+        className={`avatar-banner ${isFading ? 'banner-fading' : ''}`}
         style={displayedBgUrl ? { backgroundImage: `url(${displayedBgUrl})` } : { backgroundImage: 'none', backgroundColor: '#fafafa' }}
       >
         <div className="avatar-wrapper">
@@ -118,11 +123,11 @@ export default function SectionBasic({
         {!isReadOnly && (
           <Button shape="circle" size="small" type="default" icon={<PictureOutlined />} aria-label="切换背景图" onClick={handleCycleBanner} className="banner-settings-icon" />
         )}
-        
+
         {/* 关注数和粉丝数统计 */}
         <div className="banner-stats">
-          <div 
-            className="banner-stat-item" 
+          <div
+            className="banner-stat-item"
             onClick={onFollowingClick}
             role="button"
             tabIndex={0}
@@ -131,8 +136,8 @@ export default function SectionBasic({
             <span className="banner-stat-label">关注</span>
           </div>
           <div className="banner-stat-divider" />
-          <div 
-            className="banner-stat-item" 
+          <div
+            className="banner-stat-item"
             onClick={onFollowersClick}
             role="button"
             tabIndex={0}
@@ -146,6 +151,7 @@ export default function SectionBasic({
         <Form
           form={basicForm}
           layout="inline"
+          className="form-input-style"
           onValuesChange={(_, values) => {
             try {
               onBasicDirtyChange(JSON.stringify(values) !== JSON.stringify(userInfo));
@@ -153,6 +159,7 @@ export default function SectionBasic({
               onBasicDirtyChange(true);
             }
           }}
+          autoComplete="off"
         >
           <Row gutter={[12, 12]}>
             {(() => {
@@ -194,7 +201,7 @@ export default function SectionBasic({
                           </div>
                         ) : (
                           <Form.Item name={key} style={{ marginTop: 8, marginBottom: 8 }}>
-                            <TextArea 
+                            <TextArea
                               autoSize={{ minRows: 4, maxRows: 10 }}
                               placeholder="请输入个人简介..."
                             />

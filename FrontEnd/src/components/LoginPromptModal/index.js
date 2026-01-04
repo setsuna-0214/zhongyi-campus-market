@@ -1,3 +1,8 @@
+/**
+ * 登录提示弹窗组件
+ * 提供需要登录时的统一提示，支持重定向回当前页面
+ */
+
 import { Modal } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
