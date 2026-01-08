@@ -4,6 +4,7 @@
  */
 
 import axios from 'axios';
+import { message } from 'antd';
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
 const DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true';
@@ -13,10 +14,12 @@ const client = axios.create({
   timeout: 10000,
 });
 
+let didNotifyAuthExpired = false;
+
 // 请求拦截：添加认证 Token
 client.interceptors.request.use((config) => {
   if (DEBUG) {
-    console.log(
+    console.warn(
       `%c[API Request] ${config.method?.toUpperCase()} ${config.url}`,
       'color: #2196F3; font-weight: bold;',
       config.data || ''
@@ -34,7 +37,9 @@ client.interceptors.request.use((config) => {
           config.headers.Authorization = `Bearer ${authUser.token}`;
         }
       }
-    } catch { }
+    } catch (e) {
+      if (DEBUG) console.warn('[API] authUser 解析失败，将忽略本次自动补 Token', e);
+    }
   } else {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -45,7 +50,7 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => {
     if (DEBUG) {
-      console.log(
+      console.warn(
         `%c[API Response] ${response.status} ${response.config.url}`,
         'color: #4CAF50; font-weight: bold;',
         response.data
@@ -57,7 +62,7 @@ client.interceptors.response.use(
     if (DEBUG) {
       const status = error.response?.status || 'Network Error';
       const url = error.config?.url || 'unknown';
-      console.log(
+      console.warn(
         `%c[API Error] ${status} ${url}`,
         'color: #F44336; font-weight: bold;',
         {
@@ -74,8 +79,25 @@ client.interceptors.response.use(
       localStorage.removeItem('authToken');
       localStorage.removeItem('authUser');
       if (!window.location.pathname.includes('/login')) {
-        alert('登录已过期，请重新登录');
-        window.location.href = '/login';
+        try {
+          const currentPath = window.location.pathname + window.location.search;
+          if (currentPath !== '/login' && currentPath !== '/register') {
+            sessionStorage.setItem('loginRedirect', currentPath);
+          }
+        } catch (e) {
+          if (DEBUG) console.warn('[API] loginRedirect 写入 sessionStorage 失败', e);
+        }
+
+        if (!didNotifyAuthExpired) {
+          didNotifyAuthExpired = true;
+          try {
+            message.warning('登录已过期，请重新登录');
+          } catch (e) {
+            if (DEBUG) console.warn('[API] antd message.warning 调用失败', e);
+          }
+        }
+
+        window.location.assign('/login');
       }
     }
 

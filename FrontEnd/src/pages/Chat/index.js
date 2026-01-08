@@ -35,9 +35,10 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import './index.css';
 import { listConversations, listMessages, sendMessage, createConversation, deleteConversation, uploadChatImage, markConversationAsRead, clearConversationsCache } from '../../api/chat';
 import { listSystemMessages, markSystemMessageAsRead, SYSTEM_MESSAGE_ICONS, clearSystemMessagesCache, getNotificationSettings, updateNotificationSettings } from '../../api/systemMessage';
+import { getCurrentUser as getProfileUser } from '../../api/user';
 import { getProduct } from '../../api/products';
-import { resolveImageSrc, resolveAvatar } from '../../utils/images';
-import { getCurrentUser } from '../../utils/auth';
+import { resolveImageSrc, resolveAvatar, sanitizeImageUrl } from '../../utils/images';
+import { getCurrentUser as getLocalUser, updateAuthUser } from '../../utils/auth';
 import ProductCard from '../../components/ProductCard';
 import * as websocket from '../../api/websocket';
 
@@ -49,6 +50,9 @@ const SYSTEM_CONVERSATION_ID = 'system';
 
 // 时间间隔阈值（5分钟）
 const TIME_GAP_THRESHOLD = 5 * 60 * 1000;
+
+// 用于判断“纯 emoji”消息的正则（预编译，避免每次渲染重复创建）
+const EMOJI_REGEX = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]|[\u{231A}-\u{231B}]|[\u{23E9}-\u{23F3}]|[\u{23F8}-\u{23FA}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]|[\u{2702}]|[\u{2705}]|[\u{2708}-\u{270D}]|[\u{270F}]|[\u{2712}]|[\u{2714}]|[\u{2716}]|[\u{271D}]|[\u{2721}]|[\u{2728}]|[\u{2733}-\u{2734}]|[\u{2744}]|[\u{2747}]|[\u{274C}]|[\u{274E}]|[\u{2753}-\u{2755}]|[\u{2757}]|[\u{2763}-\u{2764}]|[\u{2795}-\u{2797}]|[\u{27A1}]|[\u{27B0}]|[\u{27BF}]|[\u{2934}-\u{2935}]|[\u{2B05}-\u{2B07}]|[\u{2B1B}-\u{2B1C}]|[\u{2B50}]|[\u{2B55}]|[\u{3030}]|[\u{303D}]|[\u{3297}]|[\u{3299}]|[\u{FE0F}]|\s/gu;
 
 // 解析时间戳字符串为 Date 对象
 const parseTimestamp = (timestamp) => {
@@ -93,8 +97,7 @@ const formatMessageTime = (timestamp) => {
 const isEmojiOnly = (text) => {
   if (!text) return false;
   // 移除所有 emoji 后检查是否还有其他字符
-  const emojiRegex = /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA00}-\u{1FA6F}]|[\u{1FA70}-\u{1FAFF}]|[\u{231A}-\u{231B}]|[\u{23E9}-\u{23F3}]|[\u{23F8}-\u{23FA}]|[\u{25AA}-\u{25AB}]|[\u{25B6}]|[\u{25C0}]|[\u{25FB}-\u{25FE}]|[\u{2614}-\u{2615}]|[\u{2648}-\u{2653}]|[\u{267F}]|[\u{2693}]|[\u{26A1}]|[\u{26AA}-\u{26AB}]|[\u{26BD}-\u{26BE}]|[\u{26C4}-\u{26C5}]|[\u{26CE}]|[\u{26D4}]|[\u{26EA}]|[\u{26F2}-\u{26F3}]|[\u{26F5}]|[\u{26FA}]|[\u{26FD}]|[\u{2702}]|[\u{2705}]|[\u{2708}-\u{270D}]|[\u{270F}]|[\u{2712}]|[\u{2714}]|[\u{2716}]|[\u{271D}]|[\u{2721}]|[\u{2728}]|[\u{2733}-\u{2734}]|[\u{2744}]|[\u{2747}]|[\u{274C}]|[\u{274E}]|[\u{2753}-\u{2755}]|[\u{2757}]|[\u{2763}-\u{2764}]|[\u{2795}-\u{2797}]|[\u{27A1}]|[\u{27B0}]|[\u{27BF}]|[\u{2934}-\u{2935}]|[\u{2B05}-\u{2B07}]|[\u{2B1B}-\u{2B1C}]|[\u{2B50}]|[\u{2B55}]|[\u{3030}]|[\u{303D}]|[\u{3297}]|[\u{3299}]|[\u{FE0F}]|\s/gu;
-  const withoutEmoji = text.replace(emojiRegex, '');
+  const withoutEmoji = text.replace(EMOJI_REGEX, '');
   return withoutEmoji.trim().length === 0 && text.trim().length > 0;
 };
 
@@ -146,6 +149,9 @@ const deduplicateConversations = (conversations) => {
 const Chat = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const shouldAutoScrollRef = useRef(true);
+  const forceScrollRef = useRef(true);
   const currentConversationRef = useRef(null);
   const navigate = useNavigate();
 
@@ -178,7 +184,11 @@ const Chat = () => {
   const [settingsLoading, setSettingsLoading] = useState(false);
 
   // 获取当前用户信息
-  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const [currentUser, setCurrentUser] = useState(() => getLocalUser());
+  const currentUserId = currentUser?.id;
+  const currentUserAvatar = currentUser?.avatar;
+  const currentUserNickname = currentUser?.nickname;
+  const currentUserUsername = currentUser?.username;
 
   // 监听用户信息更新事件
   useEffect(() => {
@@ -193,124 +203,64 @@ const Chat = () => {
     };
   }, []);
 
+  // 补齐本地用户信息（头像/昵称等），避免仅登录态信息导致聊天头像一直为默认值
+  useEffect(() => {
+    if (!currentUserId) return;
+    if (currentUserAvatar && (currentUserNickname || currentUserUsername)) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const profile = await getProfileUser();
+        if (cancelled || !profile) return;
+        updateAuthUser(profile);
+      } catch {
+        // 忽略：用户信息加载失败不应阻塞聊天功能
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUserId, currentUserAvatar, currentUserNickname, currentUserUsername]);
+
   // 判断当前是否为系统消息会话
   const isSystemConversation = currentConversation?.id === SYSTEM_CONVERSATION_ID;
 
-  // emoji 分类数据
-  const emojiCategories = {
-    smileys: {
-      icon: '😀',
-      name: '表情',
-      emojis: [
-        '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂',
-        '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙',
-        '🥲', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭',
-        '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄',
-        '😬', '😮', '🤯', '😴', '🥱', '😷', '🤒', '🤕', '🤢',
-        '🤮', '🥵', '🥶', '🥴', '😵', '🤠', '🥳', '🥸', '😎',
-        '🤓', '🧐', '😕', '😟', '🙁', '😮', '😯', '😲', '😳',
-        '🥺', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱'
-      ]
-    },
-    gestures: {
-      icon: '👋',
-      name: '手势',
-      emojis: [
-        '👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️',
-        '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇',
-        '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌',
-        '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾',
-        '🦿', '🦵', '🦶', '👂', '🦻', '👃', '🧠', '🫀', '🫁',
-        '🦷', '🦴', '👀', '👁️', '👅', '👄', '💋', '🩸', '👶',
-        '👧', '🧒', '👦', '👩', '🧑', '👨', '👩‍🦱', '🧑‍🦱', '👨‍🦱',
-        '👩‍🦰', '🧑‍🦰', '👨‍🦰', '👱‍♀️', '👱', '👱‍♂️', '👩‍🦳', '🧑‍🦳', '👨‍🦳'
-      ]
-    },
-    animals: {
-      icon: '🐱',
-      name: '动物',
-      emojis: [
-        '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐻‍❄️',
-        '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉',
-        '🙊', '🐒', '🐔', '🐧', '🐦', '🐤', '🐣', '🐥', '🦆',
-        '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🪱',
-        '🐛', '🦋', '🐌', '🐞', '🐜', '🪰', '🪲', '🪳', '🦟',
-        '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙',
-        '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟', '🐬', '🐳',
-        '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧', '🐘'
-      ]
-    },
-    food: {
-      icon: '🍔',
-      name: '食物',
-      emojis: [
-        '🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓',
-        '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅',
-        '🍆', '🥑', '🥦', '🥬', '🥒', '🌶️', '🫑', '🌽', '🥕',
-        '🫒', '🧄', '🧅', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖',
-        '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🧇', '🥓', '🥩',
-        '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🫓', '🥪',
-        '🥙', '🧆', '🌮', '🌯', '🫔', '🥗', '🥘', '🫕', '🍝',
-        '🍜', '🍲', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙'
-      ]
-    },
-    activities: {
-      icon: '⚽',
-      name: '活动',
-      emojis: [
-        '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏',
-        '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🪃',
-        '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽',
-        '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '⛷️', '🏂', '🪂',
-        '🏋️', '🤼', '🤸', '⛹️', '🤺', '🤾', '🏌️', '🏇', '🧘',
-        '🏄', '🏊', '🤽', '🚣', '🧗', '🚵', '🚴', '🏆', '🥇',
-        '🥈', '🥉', '🏅', '🎖️', '🏵️', '🎗️', '🎫', '🎟️', '🎪',
-        '🎭', '🩰', '🎨', '🎬', '🎤', '🎧', '🎼', '🎹', '🥁'
-      ]
-    },
-    travel: {
-      icon: '🚗',
-      name: '旅行',
-      emojis: [
-        '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒',
-        '🚐', '🛻', '🚚', '🚛', '🚜', '🏍️', '🛵', '🚲', '🛴',
-        '🛹', '🛼', '🚁', '🛸', '✈️', '🛩️', '🛫', '🛬', '🪂',
-        '💺', '🚀', '🛰️', '🚢', '⛵', '🚤', '🛥️', '🛳️', '⛴️',
-        '🚂', '🚃', '🚄', '🚅', '🚆', '🚇', '🚈', '🚉', '🚊',
-        '🚝', '🚞', '🚋', '🚃', '🚎', '🚐', '🚑', '🚒', '🚓',
-        '🗼', '🗽', '🏰', '🏯', '🏟️', '🎡', '🎢', '🎠', '⛲',
-        '⛱️', '🏖️', '🏝️', '🏜️', '🌋', '⛰️', '🏔️', '🗻', '🏕️'
-      ]
-    },
-    symbols: {
-      icon: '❤️',
-      name: '符号',
-      emojis: [
-        '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎',
-        '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝',
-        '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎',
-        '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌',
-        '♍', '♎', '♏', '♐', '♑', '♒', '♓', '🆔', '⚛️',
-        '✨', '🎉', '🎊', '🔥', '💯', '⭐', '🌟', '💫', '🌈',
-        '☀️', '🌤️', '⛅', '🌥️', '☁️', '🌦️', '🌧️', '⛈️', '🌩️',
-        '❄️', '💨', '💧', '💦', '☔', '🌊', '🎄', '🎃', '🎁'
-      ]
-    },
-    objects: {
-      icon: '💡',
-      name: '物品',
-      emojis: [
-        '⌚', '📱', '📲', '💻', '⌨️', '🖥️', '🖨️', '🖱️', '🖲️',
-        '🕹️', '🗜️', '💽', '💾', '💿', '📀', '📼', '📷', '📸',
-        '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺',
-        '📻', '🎙️', '🎚️', '🎛️', '🧭', '⏱️', '⏲️', '⏰', '🕰️',
-        '⌛', '⏳', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🪔',
-        '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '🪙', '💰',
-        '💳', '💎', '⚖️', '🪜', '🧰', '🪛', '🔧', '🔨', '⚒️',
-        '🛠️', '⛏️', '🪚', '🔩', '⚙️', '🪤', '🧱', '⛓️', '🧲'
-      ]
-    }
+  const emojiCategoryMeta = {
+    smileys: { icon: '😀', name: '表情' },
+    gestures: { icon: '👋', name: '手势' },
+    animals: { icon: '🐱', name: '动物' },
+    food: { icon: '🍔', name: '食物' },
+    activities: { icon: '⚽', name: '活动' },
+    travel: { icon: '🚗', name: '旅行' },
+    symbols: { icon: '❤️', name: '符号' },
+    objects: { icon: '💡', name: '物品' },
   };
+
+  const [emojiCategories, setEmojiCategories] = useState(null);
+
+  // emoji 数据按需加载，避免影响聊天页首屏解析/包体
+  useEffect(() => {
+    if (!emojiPickerOpen || emojiCategories) return;
+
+    let cancelled = false;
+    import('./emojiCategories')
+      .then((mod) => {
+        if (!cancelled) {
+          setEmojiCategories(mod.default || null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          message.error('表情加载失败');
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [emojiPickerOpen, emojiCategories]);
 
   // 插入 emoji
   const handleEmojiSelect = (emoji) => {
@@ -528,13 +478,29 @@ const Chat = () => {
     initChat();
   }, [searchParams, setCurrentConversation]);
 
-  // 滚动到底部
+  // 消息列表滚动：仅当用户在底部附近/强制时自动滚动（避免阅读历史消息时被拉回底部）
+  const handleMessagesScroll = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    shouldAutoScrollRef.current = distanceToBottom < 120;
+  }, []);
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (!currentConversation || isSystemConversation) return;
+    if (!messagesEndRef.current) return;
+    if (!shouldAutoScrollRef.current && !forceScrollRef.current) return;
+
+    const behavior = forceScrollRef.current ? 'auto' : 'smooth';
+    forceScrollRef.current = false;
+    messagesEndRef.current.scrollIntoView({ behavior });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, currentConversation?.id, isSystemConversation]);
 
   // 选择对话
   const handleSelectConversation = async (conversation) => {
+    forceScrollRef.current = true;
+    shouldAutoScrollRef.current = true;
     setCurrentConversation(conversation);
 
     // 更新 URL 参数以保存当前选中的会话
@@ -548,7 +514,7 @@ const Chat = () => {
 
     // 如果是系统消息会话
     if (conversation.id === SYSTEM_CONVERSATION_ID) {
-      setMessages([]); // 系统消息不使用 messages 状态
+      // 系统消息不使用 messages 状态
       // 标记所有系统消息为已读
       try {
         await markSystemMessageAsRead('all');
@@ -557,7 +523,9 @@ const Chat = () => {
         // 清除缓存并通知悬浮按钮刷新
         clearSystemMessagesCache();
         window.dispatchEvent(new CustomEvent('unreadCountChanged'));
-      } catch { }
+      } catch (err) {
+        message.warning(err?.message || '标记系统消息已读失败');
+      }
       return;
     }
 
@@ -579,7 +547,9 @@ const Chat = () => {
         clearConversationsCache();
         window.dispatchEvent(new CustomEvent('unreadCountChanged'));
       }
-    } catch { }
+    } catch (err) {
+      message.warning(err?.message || '标记会话已读失败');
+    }
   };
 
   // 选择系统消息会话
@@ -597,6 +567,8 @@ const Chat = () => {
   // 发送消息
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !currentConversation) return;
+    forceScrollRef.current = true;
+    shouldAutoScrollRef.current = true;
     const outgoing = {
       id: Date.now(),
       senderId: 'current',
@@ -623,6 +595,8 @@ const Chat = () => {
   // 发送商品卡片
   const handleSendProductCard = async () => {
     if (!currentConversation || !sharedProduct) return;
+    forceScrollRef.current = true;
+    shouldAutoScrollRef.current = true;
     const p = sharedProduct;
     const content = {
       id: p.id, title: p.title, price: p.price, category: p.category,
@@ -642,16 +616,22 @@ const Chat = () => {
         ? { ...conv, lastMessage: `分享了商品卡片：${p.title || ''}`.trim(), lastMessageTime: msg.timestamp }
         : conv
     )));
-    try { await sendMessage(currentConversation.id, { type: 'product', content }); } catch { }
+    try {
+      await sendMessage(currentConversation.id, { type: 'product', content });
+    } catch (err) {
+      message.error(err?.message || '发送商品卡片失败');
+    }
   };
 
-  const handleKeyPress = (e) => {
+  const handleInputKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
   };
 
   // 上传图片
   const handleImageUpload = async (file) => {
     if (!currentConversation) { message.error('请先选择一个对话'); return false; }
+    forceScrollRef.current = true;
+    shouldAutoScrollRef.current = true;
     const tempId = Date.now();
     const tempMsg = { id: tempId, senderId: 'current', senderName: '我', content: '', type: 'image', timestamp: new Date().toLocaleString(), isOwn: true, uploading: true };
     setMessages(prev => [...prev, tempMsg]);
@@ -668,7 +648,12 @@ const Chat = () => {
   };
 
   const handleImagePreview = (src) => {
-    setImagePreview(src);
+    const safeSrc = sanitizeImageUrl(src);
+    if (!safeSrc) {
+      message.error('图片地址无效');
+      return;
+    }
+    setImagePreview(safeSrc);
     setImageZoom(1);
     setImageDrag({ isDragging: false, startX: 0, startY: 0, translateX: 0, translateY: 0 });
   };
@@ -797,12 +782,24 @@ const Chat = () => {
             ) : (
               <div className={`message-image-wrapper ${isOwn ? 'own' : 'other'} ${msg.uploading ? 'uploading' : ''}`}>
                 {msg.uploading ? (<div className="image-uploading-placeholder"><div className="upload-spinner"></div><Text type="secondary">发送中...</Text></div>) : (
-                  <img
-                    src={msg.content}
-                    alt="聊天图片"
-                    className="chat-image-thumbnail"
-                    onClick={() => handleImagePreview(msg.content)}
-                  />
+                  (() => {
+                    const safeSrc = sanitizeImageUrl(msg.content);
+                    if (!safeSrc) {
+                      return (
+                        <div className="image-uploading-placeholder">
+                          <Text type="secondary">图片不可用</Text>
+                        </div>
+                      );
+                    }
+                    return (
+                      <img
+                        src={safeSrc}
+                        alt="聊天图片"
+                        className="chat-image-thumbnail"
+                        onClick={() => handleImagePreview(safeSrc)}
+                      />
+                    );
+                  })()
                 )}
               </div>
             )}
@@ -956,7 +953,7 @@ const Chat = () => {
                 </div>
               ) : (
                 <>
-                  <div className="messages-container">
+                  <div className="messages-container" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
                     {messages.length > 0 ? messages.map((msg, index, arr) => renderMessage(msg, index, arr)) : <Empty description="开始聊天吧" />}
                     <div ref={messagesEndRef} />
                   </div>
@@ -968,18 +965,24 @@ const Chat = () => {
                           content={
                             <div className="emoji-picker-container">
                               <div className="emoji-grid">
-                                {emojiCategories[emojiCategory].emojis.map((emoji, index) => (
-                                  <span
-                                    key={index}
-                                    className="emoji-item"
-                                    onClick={() => handleEmojiSelect(emoji)}
-                                  >
-                                    {emoji}
-                                  </span>
-                                ))}
+                                {emojiCategories ? (
+                                  (emojiCategories[emojiCategory]?.emojis || []).map((emoji, index) => (
+                                    <span
+                                      key={index}
+                                      className="emoji-item"
+                                      onClick={() => handleEmojiSelect(emoji)}
+                                    >
+                                      {emoji}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <div style={{ padding: 8 }}>
+                                    <Text type="secondary">加载中...</Text>
+                                  </div>
+                                )}
                               </div>
                               <div className="emoji-category-tabs">
-                                {Object.entries(emojiCategories).map(([key, category]) => (
+                                {Object.entries(emojiCategoryMeta).map(([key, category]) => (
                                   <span
                                     key={key}
                                     className={`emoji-category-tab ${emojiCategory === key ? 'active' : ''}`}
@@ -1003,7 +1006,7 @@ const Chat = () => {
                       </Space>
                     </div>
                     <div className="input-box">
-                      <TextArea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyPress={handleKeyPress} placeholder="输入消息..." autoSize={{ minRows: 1, maxRows: 4 }} bordered={false} />
+                      <TextArea value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={handleInputKeyDown} placeholder="输入消息..." autoSize={{ minRows: 1, maxRows: 4 }} bordered={false} />
                       <Button type="primary" icon={<SendOutlined />} onClick={handleSendMessage} disabled={!newMessage.trim()} className="send-button">发送</Button>
                     </div>
                   </div>
@@ -1128,7 +1131,7 @@ const Chat = () => {
                     await updateNotificationSettings(notificationSettings);
                     message.success('通知设置已保存');
                     setNotificationSettingsOpen(false);
-                  } catch (err) {
+                  } catch {
                     message.error('保存失败，请重试');
                   } finally {
                     setSettingsLoading(false);

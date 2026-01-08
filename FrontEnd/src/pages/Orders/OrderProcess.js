@@ -3,7 +3,7 @@
  * 展示订单详情、处理流程进度、买卖家操作（发货、确认收货、取消订单等）
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Card,
@@ -97,7 +97,9 @@ const OrderProcess = () => {
         const user = JSON.parse(raw);
         return user?.id;
       }
-    } catch { }
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('解析 authUser 失败，无法确定当前用户角色', e);
+    }
     return null;
   }, []);
 
@@ -129,7 +131,7 @@ const OrderProcess = () => {
           name: `image-${i}.jpg`
         })));
       }
-    } catch (error) {
+    } catch {
       message.error('加载订单信息失败');
       navigate('/profile?t=orders');
     } finally {

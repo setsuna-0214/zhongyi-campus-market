@@ -6,6 +6,29 @@ import { isLoggedIn } from '../utils/auth';
  * 用于获取和管理系统通知消息
  */
 
+const USE_MOCK = String(import.meta.env.VITE_USE_MOCK || 'false') === 'true';
+const MOCK_MESSAGES_KEY = 'mock_system_messages';
+const MOCK_SETTINGS_KEY = 'mock_notification_settings';
+
+function readJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // ignore
+  }
+}
+
 // 系统消息类型 - 与实际业务流程对应
 export const SYSTEM_MESSAGE_TYPES = {
   // 商品相关
@@ -78,6 +101,16 @@ export async function listSystemMessages(forceRefresh = false) {
   if (!isLoggedIn()) {
     return [];
   }
+
+  // Mock 模式：不请求后端，避免本地无后端时 Vite proxy 报 ECONNREFUSED
+  if (USE_MOCK) {
+    if (!forceRefresh && systemMessagesCache) return systemMessagesCache;
+    const list = readJson(MOCK_MESSAGES_KEY, []);
+    const messages = Array.isArray(list) ? list : [];
+    systemMessagesCache = messages;
+    cacheTimestamp = Date.now();
+    return messages;
+  }
   
   const now = Date.now();
   
@@ -116,6 +149,11 @@ export function clearSystemMessagesCache() {
  * @returns {Promise<number>} 未读数量
  */
 export async function getUnreadSystemMessageCount() {
+  if (USE_MOCK) {
+    const list = readJson(MOCK_MESSAGES_KEY, []);
+    const messages = Array.isArray(list) ? list : [];
+    return messages.filter(m => !m?.isRead).length;
+  }
   try {
     const response = await client.get('/system-messages/unread-count');
     const result = extractData(response);
@@ -132,6 +170,17 @@ export async function getUnreadSystemMessageCount() {
  * @returns {Promise<{success: boolean}>}
  */
 export async function markSystemMessageAsRead(messageId) {
+  if (USE_MOCK) {
+    const list = readJson(MOCK_MESSAGES_KEY, []);
+    const messages = Array.isArray(list) ? list : [];
+    const updated = messageId === 'all'
+      ? messages.map(m => ({ ...m, isRead: true }))
+      : messages.map(m => (String(m?.id) === String(messageId) ? { ...m, isRead: true } : m));
+    writeJson(MOCK_MESSAGES_KEY, updated);
+    systemMessagesCache = updated;
+    cacheTimestamp = Date.now();
+    return { success: true };
+  }
   try {
     if (messageId === 'all') {
       const response = await client.put('/system-messages/read-all');
@@ -161,6 +210,15 @@ export async function markSystemMessageAsRead(messageId) {
  * @returns {Promise<{success: boolean}>}
  */
 export async function deleteSystemMessage(messageId) {
+  if (USE_MOCK) {
+    const list = readJson(MOCK_MESSAGES_KEY, []);
+    const messages = Array.isArray(list) ? list : [];
+    const updated = messages.filter(m => String(m?.id) !== String(messageId));
+    writeJson(MOCK_MESSAGES_KEY, updated);
+    systemMessagesCache = updated;
+    cacheTimestamp = Date.now();
+    return { success: true };
+  }
   try {
     const response = await client.delete(`/system-messages/${messageId}`);
     return extractData(response);
@@ -175,6 +233,12 @@ export async function deleteSystemMessage(messageId) {
  * @returns {Promise<{success: boolean}>}
  */
 export async function clearAllSystemMessages() {
+  if (USE_MOCK) {
+    writeJson(MOCK_MESSAGES_KEY, []);
+    systemMessagesCache = [];
+    cacheTimestamp = Date.now();
+    return { success: true };
+  }
   try {
     const response = await client.delete('/system-messages/all');
     return extractData(response);
@@ -189,6 +253,14 @@ export async function clearAllSystemMessages() {
  * @returns {Promise<{product: boolean, order: boolean, social: boolean}>}
  */
 export async function getNotificationSettings() {
+  if (USE_MOCK) {
+    const result = readJson(MOCK_SETTINGS_KEY, null);
+    return {
+      product: result?.product !== false,
+      order: result?.order !== false,
+      social: result?.social !== false,
+    };
+  }
   try {
     const response = await client.get('/system-messages/settings');
     const result = extractData(response);
@@ -212,6 +284,15 @@ export async function getNotificationSettings() {
  * @returns {Promise<{success: boolean}>}
  */
 export async function updateNotificationSettings(settings) {
+  if (USE_MOCK) {
+    const next = {
+      product: settings?.product !== false,
+      order: settings?.order !== false,
+      social: settings?.social !== false,
+    };
+    writeJson(MOCK_SETTINGS_KEY, next);
+    return { success: true };
+  }
   try {
     const response = await client.put('/system-messages/settings', settings);
     return extractData(response);

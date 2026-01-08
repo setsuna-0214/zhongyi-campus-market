@@ -98,7 +98,9 @@ const SellerProfile = () => {
         delete merged.adress;
         delete merged.location;
         basicForm.setFieldsValue(merged);
-      } catch { }
+      } catch (e) {
+        if (import.meta.env.DEV) console.warn('表单回填失败，将跳过本次 setFieldsValue', e);
+      }
     }
   }, [userInfo, basicForm]);
 
@@ -161,7 +163,7 @@ const SellerProfile = () => {
         message.success('关注成功');
         setIsFollowing(true);
       }
-    } catch (error) {
+    } catch {
       message.error('操作失败');
     }
   };

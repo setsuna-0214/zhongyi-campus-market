@@ -6,7 +6,7 @@ function readLocalStorage(key) {
     const raw = localStorage.getItem(key);
     if (!raw) return undefined;
     return JSON.parse(raw);
-  } catch (_error) {
+  } catch {
     return undefined;
   }
 }
@@ -14,7 +14,7 @@ function readLocalStorage(key) {
 function writeLocalStorage(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
-  } catch (_error) {
+  } catch {
     // ignore quota errors in mock mode
   }
 }

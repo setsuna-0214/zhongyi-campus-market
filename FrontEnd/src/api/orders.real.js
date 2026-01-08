@@ -85,7 +85,9 @@ export async function createOrder({ productId, quantity = 1, skipDuplicateCheck 
             const user = JSON.parse(raw);
             return user?.id;
           }
-        } catch { }
+        } catch (e) {
+          if (import.meta.env.DEV) console.warn('读取当前用户信息失败，将跳过重复下单预检查', e);
+        }
         return null;
       })();
 

@@ -19,13 +19,13 @@ function extractData(response) {
  */
 function normalizeConversation(conv) {
   if (!conv) return conv;
-  
+
   // 尝试从多种可能的字段名获取用户信息
   const rawPartnerId = conv.partnerId || conv.userId || conv.targetUserId || conv.otherUserId;
-  const partnerId = rawPartnerId != null ? String(rawPartnerId) : '';
+  const partnerId = rawPartnerId !== null && rawPartnerId !== undefined ? String(rawPartnerId) : '';
   const partnerName = conv.partnerName || conv.userName || conv.targetUserName || conv.otherUserName || conv.nickname || '用户';
   const partnerAvatar = conv.partnerAvatar || conv.userAvatar || conv.targetUserAvatar || conv.otherUserAvatar || conv.avatar || '';
-  
+
   return {
     ...conv,
     partnerId: partnerId,
@@ -49,16 +49,16 @@ let convCacheTimestamp = 0;
  */
 export async function listConversations(forceRefresh = false) {
   const now = Date.now();
-  
+
   // 使用缓存
   if (!forceRefresh && conversationsCache && (now - convCacheTimestamp) < CONV_CACHE_TTL) {
     return conversationsCache;
   }
-  
+
   const response = await client.get('/chat/conversations');
   const result = extractData(response);
   const arr = Array.isArray(result) ? result : (result?.items || []);
-  
+
   // 按 partnerId 去重，同一用户只保留一个会话
   const seen = new Set();
   const out = [];
@@ -70,11 +70,11 @@ export async function listConversations(forceRefresh = false) {
       out.push(normalized);
     }
   }
-  
+
   // 更新缓存
   conversationsCache = out;
   convCacheTimestamp = now;
-  
+
   return out;
 }
 
@@ -109,8 +109,8 @@ export async function sendMessage(conversationId, payload) {
   // 如果 content 是对象（如商品卡片），需要序列化为 JSON 字符串
   const requestPayload = {
     ...payload,
-    content: typeof payload.content === 'object' 
-      ? JSON.stringify(payload.content) 
+    content: typeof payload.content === 'object'
+      ? JSON.stringify(payload.content)
       : payload.content
   };
   const response = await client.post(`/chat/conversations/${conversationId}/messages`, requestPayload);
@@ -126,18 +126,20 @@ export async function createConversation(payload) {
     userId: payload.userId,
     productId: payload.productId,
     orderId: payload.orderId,
+    partnerName: payload.partnerName,
+    partnerAvatar: payload.partnerAvatar,
   };
-  
+
   const response = await client.post('/chat/conversations', requestPayload);
   const result = extractData(response);
-  
+
   if (!result) {
     throw new Error('创建会话失败');
   }
-  
+
   // 标准化返回数据
   const normalized = normalizeConversation(result);
-  
+
   // 补充前端传入的用户信息（如果后端没有返回完整信息）
   if (payload.partnerName && (!normalized.userName || normalized.userName === '用户')) {
     normalized.userName = payload.partnerName;
@@ -147,7 +149,7 @@ export async function createConversation(payload) {
     normalized.userAvatar = payload.partnerAvatar;
     normalized.partnerAvatar = payload.partnerAvatar;
   }
-  
+
   return normalized;
 }
 

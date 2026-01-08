@@ -3,14 +3,13 @@
  * 提供商品和用户的搜索功能，支持多条件筛选（分类、价格、排序等）和分页展示
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Row,
   Col,
   Select,
   Pagination,
   Input,
-  Space,
   Empty,
   Spin,
   message,
@@ -29,7 +28,7 @@ import ProductCard from '../../components/ProductCard';
 import FollowButton from '../../components/FollowButton';
 import { resolveImageSrc } from '../../utils/images';
 import { searchProducts } from '../../api/products';
-import { searchUsers, checkIsFollowing, followUser, unfollowUser, getFollows } from '../../api/user';
+import { searchUsers, followUser, unfollowUser, getFollows } from '../../api/user';
 import { toCategoryCode } from '../../utils/labels';
 import { getCurrentUserId, isSelf } from '../../utils/auth';
 import { useLoginPrompt } from '../../components/LoginPromptModal';
@@ -125,7 +124,7 @@ const SearchPage = () => {
         setTotal(total);
       } else {
         const currentUserId = getCurrentUserId();
-        let followMap = {};
+        const followMap = {};
         let followingIds = new Set();
 
         // 如果需要筛选关注状态，先获取关注列表
@@ -327,7 +326,7 @@ const SearchPage = () => {
         message.success('关注成功');
       }
       setFollowingMap(prev => ({ ...prev, [userId]: !isFollowing }));
-    } catch (error) {
+    } catch {
       message.error('操作失败');
     }
   };

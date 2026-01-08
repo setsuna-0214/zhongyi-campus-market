@@ -20,6 +20,9 @@ public class ChatConversationService {
     @Autowired
     private UserInfoMapper userInfoMapper;
 
+    // 与前端静态资源保持一致的默认头像路径（FrontEnd/public/images/avatars/default-avatar.svg）
+    private static final String DEFAULT_AVATAR = "/images/avatars/default-avatar.svg";
+
     /** 获取当前用户的会话列表 */
     public List<ChatConversation> listConversations(Integer userId) {
         return conversationMapper.listConversations(userId);
@@ -64,8 +67,8 @@ public class ChatConversationService {
         if (partnerName == null || partnerName.trim().isEmpty()) {
             partnerName = "用户" + partnerId;
         }
-        if (partnerAvatar == null) {
-            partnerAvatar = "/images/avatars/default.svg";
+        if (partnerAvatar == null || partnerAvatar.trim().isEmpty()) {
+            partnerAvatar = DEFAULT_AVATAR;
         }
         
         // 当前用户的昵称和头像（优先昵称，其次用户名）
@@ -81,8 +84,8 @@ public class ChatConversationService {
         if (currentUserName == null || currentUserName.trim().isEmpty()) {
             currentUserName = "用户" + currentUserId;
         }
-        if (currentUserAvatar == null) {
-            currentUserAvatar = "/images/avatars/default.svg";
+        if (currentUserAvatar == null || currentUserAvatar.trim().isEmpty()) {
+            currentUserAvatar = DEFAULT_AVATAR;
         }
 
         // 1. 为当前用户创建会话（显示对方信息）

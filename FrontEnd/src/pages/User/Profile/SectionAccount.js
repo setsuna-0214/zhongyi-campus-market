@@ -3,7 +3,7 @@
  * 提供修改密码、更换绑定邮箱和注销账号的功能
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, Space, Typography, Form, Input, Button, message, Modal, Alert } from 'antd';
 import { LockOutlined, MailOutlined, ExclamationCircleOutlined, WarningOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';

@@ -58,7 +58,7 @@ const Header = () => {
         if (!cancelled) {
           setUser(merged);
         }
-      } catch (e) {
+      } catch {
         // 失败时退回到本地存储的原始数据
         if (!cancelled) {
           const localUser = getLocalUser();
@@ -250,7 +250,7 @@ const Header = () => {
             <Dropdown
               menu={{ items: userMenuItems, className: 'user-dropdown-menu' }}
               placement="bottomRight"
-              trigger={['hover']}
+              trigger={['hover', 'click']}
               overlayClassName="user-dropdown-overlay"
               onOpenChange={setDropdownOpen}
               getPopupContainer={(trigger) => trigger.parentElement}

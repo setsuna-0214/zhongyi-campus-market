@@ -51,7 +51,7 @@ const formatToYMDHMS = (input) => {
     const mm = String(d.getMinutes()).padStart(2, '0');
     const ss = String(d.getSeconds()).padStart(2, '0');
     return `${y}-${m}-${day} ${hh}:${mm}:${ss}`;
-  } catch (_) {
+  } catch {
     return String(input);
   }
 };

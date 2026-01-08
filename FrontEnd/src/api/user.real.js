@@ -39,7 +39,9 @@ export async function uploadAvatar(file) {
         user.avatar = avatarUrl;
         localStorage.setItem('authUser', JSON.stringify(user));
       }
-    } catch {}
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('同步更新本地用户头像失败', e);
+    }
   }
   
   return data?.data || data;

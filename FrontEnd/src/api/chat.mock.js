@@ -1,6 +1,12 @@
 import { initialConversations, initialMessages, ensureMockState, mockProducts } from './mockData';
 import { resolveImageSrc } from '../utils/images';
 
+const DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true';
+const logNonFatal = (context, error) => {
+  if (!DEBUG) return;
+  console.warn(`[MockChat] ${context}`, error);
+};
+
 /**
  * 标准化会话数据，确保字段一致
  */
@@ -33,7 +39,9 @@ function getConversationsFromStorage() {
         return arr;
       }
     }
-  } catch {}
+  } catch (e) {
+    logNonFatal('读取 mock_conversations 失败，将回退到初始会话', e);
+  }
   return [...initialConversations];
 }
 
@@ -54,7 +62,9 @@ function saveConversationsToStorage(conversations) {
   }
   try {
     localStorage.setItem('mock_conversations', JSON.stringify(deduped));
-  } catch {}
+  } catch (e) {
+    logNonFatal('写入 mock_conversations 失败', e);
+  }
   return deduped;
 }
 
@@ -82,7 +92,9 @@ export async function listMessages(conversationId) {
     const raw = localStorage.getItem('mock_messages');
     const all = raw ? JSON.parse(raw) : initialMessages;
     return Array.isArray(all[conversationId]) ? all[conversationId] : [];
-  } catch {}
+  } catch (e) {
+    logNonFatal('读取 mock_messages 失败，将返回空列表', e);
+  }
   return [];
 }
 
@@ -112,7 +124,9 @@ export async function sendMessage(conversationId, payload) {
         : c
     );
     saveConversationsToStorage(updated);
-  } catch {}
+  } catch (e) {
+    logNonFatal('写入 mock_messages 失败', e);
+  }
   return message;
 }
 
@@ -174,7 +188,9 @@ export async function createConversation({ userId, productId, orderId, partnerNa
       allMsgs[newConv.id] = [];
       localStorage.setItem('mock_messages', JSON.stringify(allMsgs));
     }
-  } catch {}
+  } catch (e) {
+    logNonFatal('初始化新会话的 mock_messages 失败', e);
+  }
   
   return newConv;
 }
@@ -185,7 +201,9 @@ export async function deleteConversation(conversationId) {
     const conversations = getConversationsFromStorage();
     const filtered = conversations.filter(c => c.id !== conversationId);
     saveConversationsToStorage(filtered);
-  } catch {}
+  } catch (e) {
+    logNonFatal('删除 mock_conversations 失败', e);
+  }
   try {
     const msgsRaw = localStorage.getItem('mock_messages');
     const allMsgs = msgsRaw ? JSON.parse(msgsRaw) : { ...initialMessages };
@@ -193,7 +211,9 @@ export async function deleteConversation(conversationId) {
       delete allMsgs[conversationId];
       localStorage.setItem('mock_messages', JSON.stringify(allMsgs));
     }
-  } catch {}
+  } catch (e) {
+    logNonFatal('删除 mock_messages 失败', e);
+  }
   return { success: true };
 }
 
@@ -214,7 +234,9 @@ export async function markConversationAsRead(conversationId) {
       c.id === conversationId ? { ...c, unreadCount: 0 } : c
     );
     saveConversationsToStorage(updated);
-  } catch {}
+  } catch (e) {
+    logNonFatal('更新 mock_conversations 未读数失败', e);
+  }
   return { success: true };
 }
 

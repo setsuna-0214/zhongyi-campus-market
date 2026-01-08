@@ -35,22 +35,23 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             if (request instanceof ServletServerHttpRequest servletRequest) {
                 // 从查询参数获取 token
                 String token = servletRequest.getServletRequest().getParameter("token");
-                
+
+                // 兼容旧实现：仍支持通过 query 传 token；但允许不传 token，由连接后消息认证完成
                 if (token == null || token.isEmpty()) {
-                    log.warn("WebSocket 握手失败：缺少 token");
-                    return false;
+                    log.debug("WebSocket 握手：未携带 token，将等待消息认证");
+                    return true;
                 }
-                
+
                 // 验证 token 并获取用户ID
                 Integer userId = validateTokenAndGetUserId(token);
                 if (userId == null) {
                     log.warn("WebSocket 握手失败：token 无效");
                     return false;
                 }
-                
+
                 // 将用户ID存入 attributes，供后续使用
                 attributes.put("userId", userId);
-                log.info("WebSocket 握手成功：userId={}", userId);
+                log.info("WebSocket 握手成功（query token）：userId={}", userId);
                 return true;
             }
         } catch (Exception e) {

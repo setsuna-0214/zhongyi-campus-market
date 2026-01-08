@@ -12,8 +12,16 @@ export async function login({ username, email, password }) {
 
   // 快速登录：用户名/邮箱为1，密码为1
   if ((username === '1' || email === '1') && password === '1') {
-    try { localStorage.setItem('authUser', JSON.stringify(mockUserDebug)); } catch { }
-    try { localStorage.setItem('authToken', mockUserDebug.token); } catch { }
+    try {
+      localStorage.setItem('authUser', JSON.stringify(mockUserDebug));
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('authUser 写入 localStorage 失败', e);
+    }
+    try {
+      localStorage.setItem('authToken', mockUserDebug.token);
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('authToken 写入 localStorage 失败', e);
+    }
     return { code: 200, message: `登录成功（使用${loginType}登录）`, data: { token: mockUserDebug.token, user: mockUserDebug } };
   }
   if (loginValue && password) {

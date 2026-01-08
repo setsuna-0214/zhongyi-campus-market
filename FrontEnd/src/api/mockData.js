@@ -435,6 +435,39 @@ export const initialMessages = {
 // 工具方法：在 localStorage 中初始化一次
 export function ensureMockState() {
   try {
+    const normalizeMockAvatar = (value) => {
+      const raw = (value === null || value === undefined ? '' : String(value)).trim();
+      if (!raw) return '/images/avatars/default-avatar.svg';
+
+      // 兼容历史默认头像路径
+      if (
+        raw === '/images/avatars/default.svg' ||
+        raw === 'images/avatars/default.svg' ||
+        raw.endsWith('/images/avatars/default.svg') ||
+        raw.endsWith('images/avatars/default.svg')
+      ) {
+        return '/images/avatars/default-avatar.svg';
+      }
+
+      // 兼容不存在的历史头像文件（如 avatar-1.svg、avatar-2.svg 等）
+      // 这些文件在 public 中不存在，需要迁移到默认头像
+      if (/avatar-\d+\.svg$/.test(raw)) {
+        return '/images/avatars/default-avatar.svg';
+      }
+
+      // data/blob/http(s) 直接放行；其余相对路径统一补成以 "/" 开头，避免在 /chat 路由下 404
+      if (
+        raw.startsWith('http://') ||
+        raw.startsWith('https://') ||
+        raw.startsWith('data:image/') ||
+        raw.startsWith('blob:') ||
+        raw.startsWith('/')
+      ) {
+        return raw;
+      }
+      return `/${raw}`;
+    };
+
     // 迁移旧的心愿单到新的收藏列表
     const oldWishlist = localStorage.getItem('mock_wishlist');
     const hasFavorites = !!localStorage.getItem('mock_favorites');
@@ -470,23 +503,59 @@ export function ensureMockState() {
           return item;
         });
         if (changed) {
-          try { localStorage.setItem('mock_favorites', JSON.stringify(items)); } catch {}
+          try {
+            localStorage.setItem('mock_favorites', JSON.stringify(items));
+          } catch (e) {
+            if (import.meta.env.DEV) console.warn('mock_favorites 写入失败', e);
+          }
         }
       }
-    } catch {}
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn('mock_favorites 清理失败', e);
+    }
     // 保留订单与消息初始化
     if (!localStorage.getItem('mock_orders')) {
       localStorage.setItem('mock_orders', JSON.stringify(initialOrders));
     }
     if (!localStorage.getItem('mock_conversations')) {
       localStorage.setItem('mock_conversations', JSON.stringify(initialConversations));
+    } else {
+      // 迁移旧的会话头像字段，避免历史数据导致对方头像不显示（例如 default.svg 或相对路径）
+      try {
+        const rawConv = localStorage.getItem('mock_conversations');
+        if (rawConv) {
+          const arr = JSON.parse(rawConv);
+          if (Array.isArray(arr)) {
+            let changed = false;
+            const normalized = arr.map((c) => {
+              if (!c || typeof c !== 'object') return c;
+              const currentAvatar = c.userAvatar ?? c.partnerAvatar ?? c.avatar ?? '';
+              const fixedAvatar = normalizeMockAvatar(currentAvatar);
+              if (fixedAvatar !== currentAvatar) changed = true;
+              return {
+                ...c,
+                userAvatar: fixedAvatar,
+                partnerAvatar: fixedAvatar,
+              };
+            });
+            if (changed) {
+              localStorage.setItem('mock_conversations', JSON.stringify(normalized));
+            }
+          }
+        }
+      } catch (e) {
+        if (import.meta.env.DEV) console.warn('mock_conversations 迁移失败', e);
+      }
     }
     if (!localStorage.getItem('mock_messages')) {
       localStorage.setItem('mock_messages', JSON.stringify(initialMessages));
     }
-  } catch {}
+  } catch (e) {
+    if (import.meta.env.DEV) console.warn('Mock 数据初始化失败', e);
+  }
 }
 
 export function isMockEnabled() {
-  return String(import.meta.env.VITE_USE_MOCK || 'true') === 'true';
+  // 默认关闭 Mock，避免生产环境漏配时误走本地 Mock 数据
+  return String(import.meta.env.VITE_USE_MOCK || 'false') === 'true';
 }

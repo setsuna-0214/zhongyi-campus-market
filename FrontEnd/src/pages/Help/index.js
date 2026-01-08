@@ -3,7 +3,7 @@
  * 提供常见问题解答（FAQ）、意见反馈表单和联系方式
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Typography,
   Collapse,
@@ -119,7 +119,7 @@ const Help = () => {
   ];
 
   // 提交反馈
-  const handleSubmit = async (values) => {
+  const handleSubmit = async () => {
     setSubmitting(true);
     try {
       // 模拟提交

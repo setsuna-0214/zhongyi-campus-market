@@ -1,6 +1,12 @@
 import { mockUserDebug, mockProducts, mockSellers, ensureMockState } from './mockData';
 import { normalizeFavorites, normalizePurchases, readMockList, writeMockList } from './mockHelpers';
 
+const DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true';
+const logNonFatal = (context, error) => {
+  if (!DEBUG) return;
+  console.warn(`[MockUser] ${context}`, error);
+};
+
 // --- 关注相关 ---
 export async function getFollows() {
   ensureMockState();
@@ -58,17 +64,21 @@ export async function unfollowUser(sellerId) {
 export async function getCurrentUser() {
   const raw = localStorage.getItem('authUser');
   if (raw) {
-    const parsed = JSON.parse(raw);
-    const merged = { ...mockUserDebug, ...parsed };
-    // 清理不需要的字段，只保留：id, username, nickname, email, avatar, phone, address, bio, joinDate, gender, lastLoginAt
-    delete merged.adress;
-    delete merged.location;
-    delete merged.role;
-    delete merged.school;
-    delete merged.studentId;
-    delete merged.createdAt;
-    if ('verified' in merged) delete merged.verified;
-    return merged;
+    try {
+      const parsed = JSON.parse(raw);
+      const merged = { ...mockUserDebug, ...parsed };
+      // 清理不需要的字段，只保留：id, username, nickname, email, avatar, phone, address, bio, joinDate, gender, lastLoginAt
+      delete merged.adress;
+      delete merged.location;
+      delete merged.role;
+      delete merged.school;
+      delete merged.studentId;
+      delete merged.createdAt;
+      if ('verified' in merged) delete merged.verified;
+      return merged;
+    } catch (e) {
+      logNonFatal('authUser 解析失败，将回退到 mockUserDebug', e);
+    }
   }
   return mockUserDebug;
 }
@@ -78,7 +88,9 @@ export async function updateCurrentUser(payload) {
   try {
     const raw = localStorage.getItem('authUser');
     if (raw) base = { ...mockUserDebug, ...JSON.parse(raw) };
-  } catch {}
+  } catch (e) {
+    logNonFatal('读取 authUser 失败，将使用默认用户信息', e);
+  }
   const sanitized = { ...payload };
   // 清理不需要的字段
   delete sanitized.adress;
@@ -99,7 +111,11 @@ export async function updateCurrentUser(payload) {
   delete updated.studentId;
   delete updated.createdAt;
   if ('verified' in updated) delete updated.verified;
-  try { localStorage.setItem('authUser', JSON.stringify(updated)); } catch {}
+  try {
+    localStorage.setItem('authUser', JSON.stringify(updated));
+  } catch (e) {
+    logNonFatal('authUser 写入 localStorage 失败', e);
+  }
   return updated;
 }
 
@@ -135,7 +151,9 @@ export async function uploadAvatar(file) {
     const user = raw ? JSON.parse(raw) : mockUserDebug;
     const updated = { ...user, avatar: avatarUrl };
     localStorage.setItem('authUser', JSON.stringify(updated));
-  } catch {}
+  } catch (e) {
+    logNonFatal('上传头像后同步更新 authUser 失败', e);
+  }
   return { avatarUrl };
 }
 
@@ -159,9 +177,15 @@ export async function confirmEmailChange({ newEmail }) {
   try {
     const raw = localStorage.getItem('authUser');
     if (raw) base = { ...mockUserDebug, ...JSON.parse(raw) };
-  } catch {}
+  } catch (e) {
+    logNonFatal('读取 authUser 失败，将使用默认用户信息', e);
+  }
   const updated = { ...base, email: newEmail };
-  try { localStorage.setItem('authUser', JSON.stringify(updated)); } catch {}
+  try {
+    localStorage.setItem('authUser', JSON.stringify(updated));
+  } catch (e) {
+    logNonFatal('authUser 写入 localStorage 失败', e);
+  }
   return { success: true, user: updated };
 }
 
@@ -239,6 +263,8 @@ export async function deleteAccount({ verificationCode }) {
     localStorage.removeItem('mock_favorites');
     localStorage.removeItem('mock_orders');
     localStorage.removeItem('mock_follows');
-  } catch {}
+  } catch (e) {
+    logNonFatal('清理 localStorage 失败', e);
+  }
   return { success: true, message: '账号已注销' };
 }

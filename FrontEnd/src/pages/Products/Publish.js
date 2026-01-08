@@ -56,15 +56,15 @@ const ACCEPTED_FORMATS = [
 const MAX_IMAGES = 9;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-// 验证文件魔数（文件头）以确保文件类型真实
-const FILE_SIGNATURES = {
-  'image/jpeg': [[0xFF, 0xD8, 0xFF]],
-  'image/png': [[0x89, 0x50, 0x4E, 0x47]],
-  'image/webp': [[0x52, 0x49, 0x46, 0x46]], // RIFF header
-  'image/gif': [[0x47, 0x49, 0x46, 0x38]], // GIF8
-  'image/bmp': [[0x42, 0x4D]],
-  'image/tiff': [[0x49, 0x49, 0x2A, 0x00], [0x4D, 0x4D, 0x00, 0x2A]], // Little/Big endian
-};
+// 验证文件魔数（文件头）以确保文件类型真实 - 预留功能
+// const FILE_SIGNATURES = {
+//   'image/jpeg': [[0xFF, 0xD8, 0xFF]],
+//   'image/png': [[0x89, 0x50, 0x4E, 0x47]],
+//   'image/webp': [[0x52, 0x49, 0x46, 0x46]],
+//   'image/gif': [[0x47, 0x49, 0x46, 0x38]],
+//   'image/bmp': [[0x42, 0x4D]],
+//   'image/tiff': [[0x49, 0x49, 0x2A, 0x00], [0x4D, 0x4D, 0x00, 0x2A]],
+// };
 
 // 四芒星 SVG 图标组件
 const SparkleIcon = ({ className }) => (
@@ -130,7 +130,7 @@ const PublishProduct = () => {
         setImageList(existingImages);
         form.setFieldsValue({ images: existingImages });
       }
-    } catch (error) {
+    } catch {
       message.error('加载商品信息失败');
       navigate('/profile?t=products');
     } finally {
@@ -214,7 +214,7 @@ const PublishProduct = () => {
     const updatedList = [...imageList, ...newImages];
     setImageList(updatedList);
     form.setFieldsValue({ images: updatedList.length > 0 ? updatedList : undefined });
-  }, [imageList.length, validateFile, form]);
+  }, [imageList, validateFile, form]);
 
   // 点击上传按钮
   const handleUploadClick = () => {
@@ -316,6 +316,7 @@ const PublishProduct = () => {
         }
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // AI 生成商品描述
@@ -440,7 +441,7 @@ const PublishProduct = () => {
           layout="vertical"
           onFinish={handleSubmit}
           onFinishFailed={(errorInfo) => {
-            console.log('表单验证失败:', errorInfo);
+            console.warn('表单验证失败:', errorInfo);
             const firstError = errorInfo.errorFields?.[0]?.errors?.[0];
             message.error(firstError || '请填写所有必填项并确保信息正确');
           }}

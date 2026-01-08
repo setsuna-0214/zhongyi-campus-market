@@ -3,7 +3,7 @@
  * 展示商品详细信息、图片轮播、卖家信息、评论区，并提供购买、收藏、联系卖家等功能
  */
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Row,
   Col,
@@ -43,7 +43,7 @@ import { getCategoryLabel, getStatusLabel, getStatusColor, getTradeMethodLabel, 
 import { getFavorites, addToFavorites, removeFavoriteByProductId } from '../../api/favorites';
 import { checkIsFollowing, followUser, unfollowUser } from '../../api/user';
 import { createOrder } from '../../api/orders';
-import { resolveImageSrc, FALLBACK_IMAGE } from '../../utils/images';
+import { resolveImageSrc, resolveAvatar, FALLBACK_IMAGE } from '../../utils/images';
 import { getComments, addComment } from '../../api/comments';
 import { getCurrentUserId, isSelf } from '../../utils/auth';
 import { useLoginPrompt } from '../../components/LoginPromptModal';
@@ -230,7 +230,7 @@ const ProductDetail = () => {
         setIsFavorited(true);
         message.success('已添加到收藏');
       }
-    } catch (e) {
+    } catch {
       message.error('操作失败，请稍后重试');
     }
   };
@@ -276,7 +276,7 @@ const ProductDetail = () => {
         setIsFollowing(true);
         message.success('关注成功');
       }
-    } catch (error) {
+    } catch {
       message.error('操作失败');
     }
   };
@@ -371,7 +371,7 @@ const ProductDetail = () => {
       const mm = String(d.getMinutes()).padStart(2, '0');
       const ss = String(d.getSeconds()).padStart(2, '0');
       return `${y}-${m}-${day} ${hh}:${mm}:${ss}`;
-    } catch (_) {
+    } catch {
       return String(input);
     }
   };
@@ -494,7 +494,7 @@ const ProductDetail = () => {
                 renderItem={(item) => (
                   <List.Item>
                     <List.Item.Meta
-                      avatar={<Avatar src={item.userAvatar} icon={<UserOutlined />} />}
+                      avatar={<Avatar src={resolveAvatar(item.userAvatar)} icon={<UserOutlined />} />}
                       title={
                         <span>
                           {item.userNickname || '用户'} ·
@@ -561,7 +561,7 @@ const ProductDetail = () => {
               {/* 卖家信息 - 简化版 */}
               <div className="seller-simple-card" onClick={handleViewSeller} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <Avatar size={48} src={product.seller?.avatar} icon={<UserOutlined />} />
+                  <Avatar size={48} src={resolveAvatar(product.seller?.avatar)} icon={<UserOutlined />} />
                   <div className="seller-simple-info">
                     <div className="seller-name-row">
                       <span className="seller-nickname">{product.seller?.nickname || product.seller?.username || '卖家'}</span>

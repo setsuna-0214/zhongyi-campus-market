@@ -3,7 +3,7 @@
  * 提供邮箱验证码验证和重置密码功能
  */
 
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Form,
   Input,

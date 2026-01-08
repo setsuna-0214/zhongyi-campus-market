@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { Spin } from 'antd';
 import { Navigate, useLocation } from 'react-router-dom';
-import { getCurrentUser, isLoggedIn as checkIsLoggedIn, hasRole as checkHasRole } from '../../utils/auth';
+import { isLoggedIn as checkIsLoggedIn, hasRole as checkHasRole } from '../../utils/auth';
 
 export default function ProtectedRoute({ children, allowRoles, redirectTo = '/login', serverCheck }) {
   const location = useLocation();
@@ -25,7 +25,7 @@ export default function ProtectedRoute({ children, allowRoles, redirectTo = '/lo
         try {
           const ok = await serverCheck();
           if (mounted) setServerOk(Boolean(ok));
-        } catch (_) {
+        } catch {
           if (mounted) setServerOk(false);
         } finally {
           if (mounted) setLoading(false);
