@@ -3,7 +3,7 @@
  * 展示用户的关注对象和粉丝，并提供关注/取消关注的操作
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, List, Avatar, Empty, message } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +32,7 @@ export default function SectionFollows({
     if (followSubTab === 'followers') {
       loadFollowers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [followSubTab]);
 
   const loadFollowers = async () => {
@@ -68,7 +69,7 @@ export default function SectionFollows({
   const handleUnfollow = async (userId) => {
     try {
       await onUnfollow(userId);
-    } catch (err) {
+    } catch {
       // 错误已在父组件处理
     }
   };

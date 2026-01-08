@@ -19,13 +19,13 @@ const ScrollToTop = () => {
       if (typeof window !== "undefined" && window.history && "scrollRestoration" in window.history) {
         window.history.scrollRestoration = "manual";
       }
-    } catch (e) { }
+    } catch { }
     return () => {
       try {
         if (typeof window !== "undefined" && window.history && "scrollRestoration" in window.history) {
           window.history.scrollRestoration = "auto";
         }
-      } catch (e) { }
+      } catch { }
     };
   }, []);
 

@@ -163,7 +163,7 @@ const AvatarUpload = ({ visible, onClose, currentAvatar, onSuccess }) => {
       }
       message.success('头像更新成功！');
       handleClose();
-    } catch (error) {
+    } catch {
       message.error('头像上传失败');
     }
   };

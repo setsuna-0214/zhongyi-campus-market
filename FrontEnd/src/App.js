@@ -3,25 +3,27 @@
  * 定义全局布局和路由配置
  */
 
-import React from 'react';
+import { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Layout } from 'antd';
-import 'moment/locale/zh-cn';
+import { Layout, Spin } from 'antd';
 
 import Header from './components/Layout/Header';
 import Home from './pages/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import ForgotPassword from './pages/Auth/ForgotPassword';
-import ProductDetail from './pages/Products/Detail';
-import PublishProduct from './pages/Products/Publish';
-import SearchPage from './pages/Search';
-import UserProfile from './pages/User/Profile';
-import SellerProfile from './pages/User/SellerProfile';
-import Chat from './pages/Chat';
 import FloatingButtons from './components/FloatingButtons';
-import OrderProcess from './pages/Orders/OrderProcess';
-import Help from './pages/Help';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
+
+// 路由级代码分割：减少首屏包体（首页/登录等保留同步加载，避免首屏 Suspense 闪烁）
+const ProductDetail = lazy(() => import('./pages/Products/Detail'));
+const PublishProduct = lazy(() => import('./pages/Products/Publish'));
+const SearchPage = lazy(() => import('./pages/Search'));
+const UserProfile = lazy(() => import('./pages/User/Profile'));
+const SellerProfile = lazy(() => import('./pages/User/SellerProfile'));
+const Chat = lazy(() => import('./pages/Chat'));
+const OrderProcess = lazy(() => import('./pages/Orders/OrderProcess'));
+const Help = lazy(() => import('./pages/Help'));
 
 import './App.css';
 import './components/ProductCard/index.css';
@@ -33,22 +35,30 @@ function App() {
     <Layout className="app-layout">
       <Header />
       <Content className="app-content">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/products/:id" element={<ProductDetail />} />
-          <Route path="/products/:id/edit" element={<PublishProduct />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/publish" element={<PublishProduct />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/users/:id" element={<SellerProfile />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/orders/:id" element={<OrderProcess />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Suspense
+          fallback={(
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 0' }}>
+              <Spin size="large" />
+            </div>
+          )}
+        >
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
+            <Route path="/products/:id/edit" element={<ProtectedRoute><PublishProduct /></ProtectedRoute>} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/publish" element={<ProtectedRoute><PublishProduct /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+            <Route path="/users/:id" element={<SellerProfile />} />
+            <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+            <Route path="/orders/:id" element={<ProtectedRoute><OrderProcess /></ProtectedRoute>} />
+            <Route path="/help" element={<Help />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </Content>
       <FloatingButtons />
     </Layout>

@@ -3,7 +3,7 @@
  * 使用多层背景实现平滑过渡，支持关注/取关状态切换
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { HeartOutlined, HeartFilled } from '@ant-design/icons';
 import './index.css';
 
@@ -23,7 +23,7 @@ const FollowButton = ({
     if (state === 'idle-follow' || state === 'idle-unfollow') {
       setState(isFollowing ? 'idle-unfollow' : 'idle-follow');
     }
-  }, [isFollowing]);
+  }, [isFollowing, state]);
 
   // 清理定时器
   useEffect(() => {

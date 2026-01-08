@@ -5,10 +5,10 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/React-18.2-blue?logo=react" alt="React">
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.5-green?logo=springboot" alt="Spring Boot">
-  <img src="https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql" alt="MySQL">
-  <img src="https://img.shields.io/badge/Redis-7-red?logo=redis" alt="Redis">
+  <a href="https://react.dev/" target="_blank"><img src="https://img.shields.io/badge/React-18.2-blue?logo=react" alt="React"></a>
+  <a href="https://spring.io/projects/spring-boot" target="_blank"><img src="https://img.shields.io/badge/Spring%20Boot-3.5-green?logo=springboot" alt="Spring Boot"></a>
+  <a href="https://www.mysql.com/" target="_blank"><img src="https://img.shields.io/badge/MySQL-8.0-orange?logo=mysql" alt="MySQL"></a>
+  <a href="https://redis.io/" target="_blank"><img src="https://img.shields.io/badge/Redis-7-red?logo=redis" alt="Redis"></a>
 </p>
 
 ---
@@ -193,7 +193,7 @@ npm install
 # 5. 启动开发服务器
 npm run dev
 
-# 6. 访问 http://localhost:5173/
+# 6. 访问 http://localhost:3000/
 ```
 
 **Mock 测试账号：**
@@ -235,7 +235,7 @@ npm install
 # 启动开发服务器
 npm run dev
 
-# 前端地址：http://localhost:5173/
+# 前端地址：http://localhost:3000/
 ```
 
 ### 方式三：Docker 一键部署
@@ -335,7 +335,7 @@ docker-compose build --no-cache # 重新构建镜像
 
 ### 端口占用
 
-- **前端**：默认端口 `5173`，可在 `vite.config.js` 中修改
+- **前端**：默认端口 `3000`，可在 `vite.config.js` 中修改（或用 `VITE_DEV_PORT/PORT` 覆盖）
 - **后端**：默认端口 `8080`，可在 `application.properties` 中修改
 - **Docker MySQL**：映射端口 `3307`，避免与本地 MySQL 冲突
 

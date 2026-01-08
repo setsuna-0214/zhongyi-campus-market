@@ -10,8 +10,7 @@ import './index.css';
 
 let modalInstance = null;
 
-// 允许的重定向路径白名单（防止开放重定向攻击）
-const ALLOWED_REDIRECT_PATHS = ['/login', '/register', '/'];
+// 注意：重定向路径验证在 sanitizeRedirectPath 函数中进行
 
 /**
  * 验证重定向路径是否安全

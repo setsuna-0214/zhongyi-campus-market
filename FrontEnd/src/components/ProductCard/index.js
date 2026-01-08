@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.css';
-import { FALLBACK_IMAGE } from '../../utils/images';
+import { FALLBACK_IMAGE, resolveAvatar } from '../../utils/images';
 import { Card, Tag, Avatar } from 'antd';
 import { EyeOutlined, EnvironmentOutlined, UserOutlined, EditOutlined, DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { Popconfirm } from 'antd';
@@ -38,7 +38,7 @@ const formatToYMD = (input) => {
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
-  } catch (_) {
+  } catch {
     return String(input);
   }
 };
@@ -91,7 +91,10 @@ const ProductCard = ({
   const imageList = Array.isArray(images) && images.length > 0 ? images : (imageSrc ? [imageSrc] : [FALLBACK_IMAGE]);
   const imageCount = imageList.length;
   const imageCountRef = useRef(imageCount);
-  imageCountRef.current = imageCount;
+
+  useEffect(() => {
+    imageCountRef.current = imageCount;
+  }, [imageCount]);
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
@@ -198,7 +201,7 @@ const ProductCard = ({
             alt={imageAlt || title}
             loading="lazy"
             decoding="async"
-            fetchpriority="low"
+            fetchPriority="low"
             onLoad={() => setImageLoaded(true)}
             onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = FALLBACK_IMAGE; setImageLoaded(true); }}
             className={`product-image ${imageLoaded ? 'loaded' : ''} ${isFading ? 'fade-transition' : ''}`}
@@ -351,7 +354,7 @@ const ProductCard = ({
                   className={`product-seller ${sellerId ? 'clickable' : ''}`}
                   onClick={handleSellerClick}
                 >
-                  <Avatar size={18} src={sellerAvatar} icon={<UserOutlined />} />
+                  <Avatar size={18} src={resolveAvatar(sellerAvatar)} icon={<UserOutlined />} />
                   <span className="seller-name">{sellerName}</span>
                 </div>
                 {publishedAtDisplay && (

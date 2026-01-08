@@ -31,17 +31,22 @@ import { isLoggedIn as checkIsLoggedIn } from '../../utils/auth';
 
 const { Title, Paragraph } = Typography;
 
+const pseudoRandom = (seed) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
 // 粒子组件 - 使用 React.memo 避免不必要的重渲染
 const Particles = React.memo(({ count = 30 }) => {
   const particles = useMemo(() => {
     return Array.from({ length: count }, (_, i) => ({
       id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      size: Math.random() * 4 + 2,
-      duration: Math.random() * 20 + 10,
-      delay: Math.random() * 5,
-      opacity: Math.random() * 0.5 + 0.2,
+      left: pseudoRandom(i + count * 1000 + 1) * 100,
+      top: pseudoRandom(i + count * 1000 + 2) * 100,
+      size: pseudoRandom(i + count * 1000 + 3) * 4 + 2,
+      duration: pseudoRandom(i + count * 1000 + 4) * 20 + 10,
+      delay: pseudoRandom(i + count * 1000 + 5) * 5,
+      opacity: pseudoRandom(i + count * 1000 + 6) * 0.5 + 0.2,
     }));
   }, [count]);
 
@@ -65,6 +70,8 @@ const Particles = React.memo(({ count = 30 }) => {
     </div>
   );
 });
+
+Particles.displayName = 'Particles';
 
 const PAGE_SIZE = 12;
 
@@ -118,6 +125,7 @@ const Home = () => {
   // 无限滚动观察器
   const loadMoreRef = useRef(null);
   const observerRef = useRef(null);
+  const supportsIntersectionObserver = typeof window !== 'undefined' && 'IntersectionObserver' in window;
 
   // 页面展开状态
   const [isExpanded, setIsExpanded] = useState(loggedIn);
@@ -187,7 +195,6 @@ const Home = () => {
 
       // 向下滚动时展开
       if (e.deltaY > 0) {
-        e.preventDefault();
         setIsTransitioning(true);
         setTransitionDirection('down');
         // 状态重置将由 onAnimationEnd 处理
@@ -207,16 +214,15 @@ const Home = () => {
 
       // 向上滑动（手指向上）时展开
       if (deltaY > 50) {
-        e.preventDefault();
         setIsTransitioning(true);
         setTransitionDirection('down');
         // 状态重置将由 onAnimationEnd 处理
       }
     };
 
-    window.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     return () => {
       window.removeEventListener('wheel', handleWheel);
@@ -234,12 +240,11 @@ const Home = () => {
 
       // 向上滚动（deltaY < 0）且页面在顶部时返回轮播图
       if (e.deltaY < 0 && window.scrollY === 0) {
-        e.preventDefault();
         handleCollapseTransition();
       }
     };
 
-    window.addEventListener('wheel', handleWheelCollapse, { passive: false });
+    window.addEventListener('wheel', handleWheelCollapse, { passive: true });
 
     return () => {
       window.removeEventListener('wheel', handleWheelCollapse);
@@ -264,13 +269,12 @@ const Home = () => {
 
       // 向下滑动（手指向下移动）超过阈值且页面在顶部时返回轮播图
       if (deltaY > 50 && window.scrollY === 0) {
-        e.preventDefault();
         handleCollapseTransition();
       }
     };
 
     window.addEventListener('touchstart', handleTouchStartCollapse, { passive: true });
-    window.addEventListener('touchmove', handleTouchMoveCollapse, { passive: false });
+    window.addEventListener('touchmove', handleTouchMoveCollapse, { passive: true });
 
     return () => {
       window.removeEventListener('touchstart', handleTouchStartCollapse);
@@ -325,7 +329,7 @@ const Home = () => {
         setHotHasMore(res.hasMore ?? filtered.length >= PAGE_SIZE);
         setHotPage(page);
       });
-    } catch (e) {
+    } catch {
       if (page === 1) message.info('热门商品暂不可用');
     } finally {
       hotLoadingRef.current = false;
@@ -357,7 +361,7 @@ const Home = () => {
         setRecentHasMore(res.hasMore ?? filtered.length >= PAGE_SIZE);
         setRecentPage(page);
       });
-    } catch (e) {
+    } catch {
       if (page === 1) message.info('最新发布暂不可用');
     } finally {
       recentLoadingRef.current = false;
@@ -390,11 +394,13 @@ const Home = () => {
       ]);
       setInitialLoading(false);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 无限滚动 - IntersectionObserver（使用稳定的 loadMore 引用）
   useEffect(() => {
     if (!isExpanded) return;
+    if (!supportsIntersectionObserver) return;
 
     const currentLoadMoreRef = loadMoreRef.current;
 
@@ -419,7 +425,7 @@ const Home = () => {
         observerRef.current.unobserve(currentLoadMoreRef);
       }
     };
-  }, [isExpanded, loadMore]);
+  }, [isExpanded, loadMore, supportsIntersectionObserver]);
 
   const bannerItems = [
     {
@@ -545,7 +551,7 @@ const Home = () => {
                   alt={item.title}
                   loading="lazy"
                   decoding="async"
-                  fetchpriority="low"
+                  fetchPriority="low"
                 />
                 <div className="auth-carousel-overlay"></div>
               </div>
@@ -708,9 +714,17 @@ const Home = () => {
                     style={{
                       height: 1,
                       marginTop: 24,
-                      display: hasMore ? 'block' : 'none'
+                      display: hasMore && supportsIntersectionObserver ? 'block' : 'none'
                     }}
                   />
+
+                  {!supportsIntersectionObserver && hasMore && !isLoadingMore && (
+                    <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                      <Button type="default" onClick={loadMore}>
+                        加载更多
+                      </Button>
+                    </div>
+                  )}
 
                   {/* 加载中提示 */}
                   {isLoadingMore && (

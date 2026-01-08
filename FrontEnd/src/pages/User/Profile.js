@@ -214,7 +214,7 @@ const UserProfile = () => {
     try {
       setMyProducts(myProducts.filter(item => item.id !== productId));
       message.success('商品删除成功！');
-    } catch (error) {
+    } catch {
       message.error('删除失败');
     }
   };
@@ -225,7 +225,7 @@ const UserProfile = () => {
       await removeFromFavorites(favoriteItemId);
       setFavorites(prev => prev.filter(item => item.id !== favoriteItemId));
       message.success('已取消收藏');
-    } catch (error) {
+    } catch {
       message.error('操作失败');
     }
   };
@@ -267,7 +267,7 @@ const UserProfile = () => {
       await unfollowUser(sellerId);
       setFollows(follows.filter(item => item.id !== sellerId));
       message.success('已取消关注');
-    } catch (error) {
+    } catch {
       message.error('操作失败');
     }
   };
@@ -347,7 +347,9 @@ const UserProfile = () => {
     if (userInfo && Object.keys(userInfo).length > 0) {
       try {
         basicForm.setFieldsValue(userInfo);
-      } catch { }
+      } catch (e) {
+        if (import.meta.env.DEV) console.warn('表单回填失败，将跳过本次 setFieldsValue', e);
+      }
       setIsBasicDirty(false);
     }
   }, [userInfo, basicForm]);
@@ -380,7 +382,19 @@ const UserProfile = () => {
               isBasicDirty={isBasicDirty}
               onBasicDirtyChange={setIsBasicDirty}
               onSaveBasic={handleBasicSave}
-              onChangeBannerKey={async (key) => { try { setBannerKey(key); localStorage.setItem('profileBannerKey', key); await updateCurrentUser({ profileBanner: key }); } catch { } }}
+              onChangeBannerKey={async (key) => {
+                try {
+                  setBannerKey(key);
+                  try {
+                    localStorage.setItem('profileBannerKey', key);
+                  } catch (e) {
+                    if (import.meta.env.DEV) console.warn('profileBannerKey 写入 localStorage 失败', e);
+                  }
+                  await updateCurrentUser({ profileBanner: key });
+                } catch (err) {
+                  message.error(err?.message || '更新封面失败');
+                }
+              }}
               onOpenAvatarModal={() => setAvatarModalVisible(true)}
               loading={loading}
               followersCount={followers.length}

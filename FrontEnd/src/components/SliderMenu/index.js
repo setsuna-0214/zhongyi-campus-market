@@ -3,7 +3,7 @@
  * 带滑块指示器的垂直菜单
  */
 
-import { useMemo, useState, useEffect, useLayoutEffect } from 'react';
+import { useMemo, useState, useLayoutEffect } from 'react';
 import './index.css';
 
 const SliderMenu = ({

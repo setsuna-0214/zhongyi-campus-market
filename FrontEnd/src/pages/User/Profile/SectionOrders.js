@@ -37,8 +37,8 @@ export default function SectionOrders({
         const list = await listOrders();
         // 调试日志：查看订单数据结构
         if (import.meta.env.DEV) {
-          console.log('[SectionOrders] 获取到订单列表:', list);
-          console.log('[SectionOrders] 当前用户ID:', myId);
+          console.warn('[SectionOrders] 获取到订单列表:', list);
+          console.warn('[SectionOrders] 当前用户ID:', myId);
         }
         if (mounted) setOrders(Array.isArray(list) ? list : []);
       } catch (err) {

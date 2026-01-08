@@ -148,7 +148,7 @@ export async function updateOrderStatus(orderId, data) {
 }
 
 // 上传订单图片
-export async function uploadOrderImages(orderId, formData) {
+export async function uploadOrderImages(_orderId, _formData) {
   await new Promise(resolve => setTimeout(resolve, 500));
   return { code: 200, url: `/images/products/product-${Date.now()}.jpg` };
 }

@@ -17,16 +17,24 @@ import {
   UserOutlined,
   LockOutlined
 } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './Auth.css';
 import '../../styles/form.css';
 import { login } from '../../api/auth';
 import { setAuthUser } from '../../utils/auth';
 
+function sanitizeRedirectPath(path) {
+  if (!path || typeof path !== 'string') return '/';
+  if (path.startsWith('//') || /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(path)) return '/';
+  if (!path.startsWith('/')) return '/';
+  return path;
+}
+
 const Login = () => {
 
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+  const location = useLocation();
 
   // 判断输入是否为邮箱格式
   const isEmail = (value) => {
@@ -53,7 +61,14 @@ const Login = () => {
       const { token, user } = res.data || {};
       setAuthUser(user, token);
       message.success('登录成功');
-      window.location.href = '/';
+
+      const fromState = location.state?.from;
+      const fromStatePath = fromState ? `${fromState.pathname || ''}${fromState.search || ''}${fromState.hash || ''}` : '';
+      const fromSession = sessionStorage.getItem('loginRedirect') || '';
+      sessionStorage.removeItem('loginRedirect');
+
+      const redirectTo = sanitizeRedirectPath(fromStatePath || fromSession || '/');
+      window.location.href = redirectTo;
     } catch (error) {
       message.error(error.message || '登录失败，请检查用户名和密码');
     } finally {
