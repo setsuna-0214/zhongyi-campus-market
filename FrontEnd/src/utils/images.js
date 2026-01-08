@@ -11,24 +11,28 @@ const ALLOWED_PROTOCOLS = ['http:', 'https:', 'data:', 'blob:'];
 // 验证图片 URL 是否安全
 export function isValidImageUrl(url) {
   if (!url || typeof url !== 'string') return false;
+  
+  // 去除首尾空白
+  const trimmed = url.trim();
+  if (!trimmed) return false;
 
   // 允许相对路径
-  if (url.startsWith('/') && !url.startsWith('//')) {
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
     return true;
   }
 
   // 允许 data URL（base64 图片）
-  if (url.startsWith('data:image/')) {
+  if (trimmed.startsWith('data:image/')) {
     return true;
   }
 
   // 允许 blob URL
-  if (url.startsWith('blob:')) {
+  if (trimmed.startsWith('blob:')) {
     return true;
   }
 
   try {
-    const parsed = new URL(url, window.location.origin);
+    const parsed = new URL(trimmed, window.location.origin);
     return ALLOWED_PROTOCOLS.includes(parsed.protocol);
   } catch {
     return false;
