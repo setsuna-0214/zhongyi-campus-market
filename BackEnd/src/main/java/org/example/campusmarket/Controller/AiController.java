@@ -24,12 +24,10 @@ public class AiController {
     @PostMapping("/generate-description")
     public Result generateDescription(@RequestBody AiDto.GenerateDescriptionRequest request) {
         try {
-            log.info("收到AI生成描述请求 - title: {}, category: {}", 
-                     request.getTitle(), request.getCategory());
+            log.info("收到AI生成描述请求 - title: {}, category: {}",
+                    request.getTitle(), request.getCategory());
 
-            String description = aiService.generateProductDescription(request);
-
-            AiDto.GenerateDescriptionResponse response = new AiDto.GenerateDescriptionResponse(description);
+            AiDto.GenerateDescriptionResponse response = aiService.generateProductDescription(request);
             return new Result(200, "生成成功", response);
 
         } catch (Exception e) {

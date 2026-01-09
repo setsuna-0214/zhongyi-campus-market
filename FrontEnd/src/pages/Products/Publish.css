@@ -168,23 +168,27 @@
 }
 
 /* ===================== AI 生成按钮 ===================== */
+/* ===================== AI 生成按钮 ===================== */
 .ai-generate-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  /* 增大尺寸以保留可见性 */
+  height: 42px;
   padding: 0;
   border: none;
-  border-radius: 8px;
-  background: rgba(255, 107, 107, 0.1);
+  border-radius: 50%;
+  background: transparent;
+  /* 背景透明 */
   cursor: pointer;
-  transition: transform 0.3s ease, background 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin-right: 4px;
 }
 
 .ai-generate-btn:hover {
-  transform: scale(1.15);
-  background: rgba(255, 107, 107, 0.15);
+  transform: scale(1.2);
+  /* 悬停时明显放大 */
 }
 
 .ai-generate-btn:active {
@@ -193,53 +197,82 @@
 
 .ai-generate-btn:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.5;
+  transform: none;
 }
 
 /* 四芒星图标 */
 .ai-generate-btn .sparkle-icon {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  /* 图标调大 */
+  height: 28px;
   color: #ff6b6b;
-  transition: color 0.3s ease, transform 0.3s ease;
+  /* 默认：缓慢旋转 (当鼠标没有悬停时) */
+  animation: slowSpin 12s linear infinite;
+  /* 添加轻微投影以在不同背景下保持可见性 */
+  filter: drop-shadow(0 2px 4px rgba(255, 107, 107, 0.2));
+  transform-origin: center center;
 }
 
-/* 悬停时的 RGB 渐变动画 */
+/* 悬停时：快速旋转然后停下 */
 .ai-generate-btn:hover .sparkle-icon {
-  animation: rgbGradient 2s linear infinite;
+  /* 0.6s 快速旋转一周并停下 */
+  animation: fastSpinStop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  color: #ff4757;
+  filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.6));
 }
 
-/* 生成中的旋转动画 */
+/* 生成中：持续旋转动画 */
 .ai-generate-btn.generating .sparkle-icon {
-  animation: spinAndGradient 1s linear infinite;
+  animation: generatingSpin 1s linear infinite;
+  color: #4FACFE;
+  filter: none;
 }
 
-@keyframes rgbGradient {
+/* 缓慢旋转动画 */
+@keyframes slowSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 快速旋转并停止动画 */
+@keyframes fastSpinStop {
   0% {
-    color: #ff6b6b;
-  }
-
-  16% {
-    color: #ffa500;
-  }
-
-  33% {
-    color: #ffff00;
-  }
-
-  50% {
-    color: #00ff00;
-  }
-
-  66% {
-    color: #00bfff;
-  }
-
-  83% {
-    color: #8a2be2;
+    transform: rotate(0deg);
   }
 
   100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 生成中动画 (带颜色变化) */
+@keyframes generatingSpin {
+  0% {
+    transform: rotate(0deg);
+    color: #ff6b6b;
+  }
+
+  25% {
+    color: #ffa500;
+  }
+
+  50% {
+    transform: rotate(180deg);
+    color: #00ff00;
+  }
+
+  75% {
+    color: #00bfff;
+  }
+
+  100% {
+    transform: rotate(360deg);
     color: #ff6b6b;
   }
 }
@@ -269,6 +302,17 @@
     color: #ff6b6b;
     transform: rotate(360deg);
   }
+}
+
+/* AI 生成警告提示文字 */
+.ai-warning-text {
+  font-size: 12px;
+  font-weight: 400;
+  color: #faad14;
+  background: rgba(250, 173, 20, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 4px;
 }
 
 /* ===================== 自定义图片上传 ===================== */

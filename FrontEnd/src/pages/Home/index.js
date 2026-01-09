@@ -123,7 +123,6 @@ const Home = () => {
   const didFetchRef = useRef(false);
 
   // 无限滚动观察器
-  const loadMoreRef = useRef(null);
   const observerRef = useRef(null);
   const supportsIntersectionObserver = typeof window !== 'undefined' && 'IntersectionObserver' in window;
 
@@ -397,35 +396,45 @@ const Home = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 无限滚动 - IntersectionObserver（使用稳定的 loadMore 引用）
+  // Sentinel handling for infinite scroll
+  const [sentinel, setSentinel] = useState(null);
+
+  // Release observer on unmount
   useEffect(() => {
-    if (!isExpanded) return;
-    if (!supportsIntersectionObserver) return;
-
-    const currentLoadMoreRef = loadMoreRef.current;
-
-    // 只在 observer 不存在时创建
-    if (!observerRef.current) {
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting) {
-            loadMore();
-          }
-        },
-        { rootMargin: '200px' }
-      );
-    }
-
-    if (currentLoadMoreRef) {
-      observerRef.current.observe(currentLoadMoreRef);
-    }
-
     return () => {
-      if (currentLoadMoreRef && observerRef.current) {
-        observerRef.current.unobserve(currentLoadMoreRef);
+      if (observerRef.current) {
+        observerRef.current.disconnect();
       }
     };
-  }, [isExpanded, loadMore, supportsIntersectionObserver]);
+  }, []);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    if (!isExpanded || !supportsIntersectionObserver || !sentinel) return;
+
+    // Disconnect previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    // Create new observer
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+
+    observerRef.current.observe(sentinel);
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [isExpanded, loadMore, supportsIntersectionObserver, sentinel]);
 
   const bannerItems = [
     {
@@ -709,7 +718,7 @@ const Home = () => {
 
                   {/* 无限滚动触发器 */}
                   <div
-                    ref={loadMoreRef}
+                    ref={setSentinel}
                     className="load-more-trigger"
                     style={{
                       height: 1,
