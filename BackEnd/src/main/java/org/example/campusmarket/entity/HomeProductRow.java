@@ -30,4 +30,6 @@ public class HomeProductRow {
     private String status;
     // 估算的热度（收藏数 + 购买数）
     private Integer views;
+    // 商品发布时间（来自 products.created_at）
+    private java.time.LocalDateTime createdAt;
 }

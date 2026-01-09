@@ -17,14 +17,14 @@ public class HomeController {
     private HomeService homeService; // 首页数据服务，封装热门与最新列表的获取
 
     @GetMapping("/hot")
-    public List<HomeDto.HomeProduct> getHot(@RequestParam(value = "limit", required = false) Integer limit) {
-        // limit：可选的返回条数限制，默认 10 条
-        return homeService.getHotProducts(limit == null ? 10 : limit);
+    public List<HomeDto.HomeProduct> getHot(@RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+        return homeService.getHotProducts(page, pageSize);
     }
 
     @GetMapping("/latest")
-    public List<HomeDto.HomeProduct> getLatest(@RequestParam(value = "limit", required = false) Integer limit) {
-        // limit：可选的返回条数限制，默认 10 条
-        return homeService.getLatestProducts(limit == null ? 10 : limit);
+    public List<HomeDto.HomeProduct> getLatest(@RequestParam(value = "page", defaultValue = "1") Integer page,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+        return homeService.getLatestProducts(page, pageSize);
     }
 }

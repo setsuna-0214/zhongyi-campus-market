@@ -1,4 +1,5 @@
 package org.example.campusmarket.config;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.campusmarket.entity.Result;
@@ -41,11 +42,10 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // 允许的前端地址
         configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3001",
-            "http://localhost:3000",
-            "http://127.0.0.1:3001",
-            "http://127.0.0.1:3000"
-        ));
+                "http://localhost:3001",
+                "http://localhost:3000",
+                "http://127.0.0.1:3001",
+                "http://127.0.0.1:3000"));
         // 允许的 HTTP 方法
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         // 允许的请求头
@@ -54,16 +54,23 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
         // 预检请求缓存时间（秒）
         configuration.setMaxAge(3600L);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
     @Bean
-    public SecurityFilterChain apiSecurity(HttpSecurity http, JwtAuthFilter jwtAuthFilter, AuthenticationEntryPoint entryPoint) throws Exception {
+    public SecurityFilterChain apiSecurity(HttpSecurity http, JwtAuthFilter jwtAuthFilter,
+            AuthenticationEntryPoint entryPoint) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.csrf(csrf -> csrf.disable());
+        // 配置 CSP 允许 blob: 和 data: 协议，解决图片预览和 AI 生成描述的问题
+        http.headers(headers -> headers
+                .contentSecurityPolicy(csp -> csp
+                        .policyDirectives(
+                                "default-src 'self' 'unsafe-inline' 'unsafe-eval' http: https: data: blob:;")));
+
         http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(eh -> eh.authenticationEntryPoint(entryPoint));
         http.authorizeHttpRequests(auth -> auth
@@ -84,8 +91,7 @@ public class SecurityConfig {
                 .requestMatchers("/ai/**").authenticated()
                 // 系统消息接口需要认证
                 .requestMatchers("/system-messages/**").authenticated()
-                .anyRequest().permitAll()
-        );
+                .anyRequest().permitAll());
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

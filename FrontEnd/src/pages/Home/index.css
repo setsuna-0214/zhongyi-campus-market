@@ -747,8 +747,8 @@ body:has(.home-page.hero-mode) ::-webkit-scrollbar-thumb {
 .section-header {
   margin-bottom: 24px;
   display: flex;
-  justify-content: center;
-  /* Center the tabs */
+  justify-content: space-between;
+  align-items: center;
   position: relative;
 }
 

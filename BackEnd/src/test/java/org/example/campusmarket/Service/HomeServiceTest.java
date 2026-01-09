@@ -25,6 +25,9 @@ class HomeServiceTest {
     @Mock
     private HomeMapper homeMapper;
 
+    @Mock
+    private ProductHotnessService productHotnessService;
+
     @InjectMocks
     private HomeService homeService;
 
@@ -57,20 +60,21 @@ class HomeServiceTest {
         row2.setViews(50);
 
         List<HomeProductRow> rows = Arrays.asList(row1, row2);
-        when(homeMapper.listHot(10)).thenReturn(rows);
+        when(homeMapper.listHot(0, 10)).thenReturn(rows);
+        when(productHotnessService.getViewCounts(anyList())).thenReturn(java.util.Collections.emptyMap());
 
-        List<HomeDto.HomeProduct> result = homeService.getHotProducts(10);
+        List<HomeDto.HomeProduct> result = homeService.getHotProducts(1, 10);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        
+
         // 验证第一个商品
         assertEquals(1, result.get(0).getId());
         assertEquals("热门商品1", result.get(0).getTitle());
         assertEquals(99, result.get(0).getPrice()); // intValue
         assertEquals("卖家1", result.get(0).getSeller());
         assertEquals("北京大学", result.get(0).getLocation());
-        assertEquals(100, result.get(0).getViews());
+        assertEquals(0, result.get(0).getViews()); // Mock returns empty map, so 0
     }
 
     /**
@@ -79,9 +83,9 @@ class HomeServiceTest {
      */
     @Test
     void testGetHotProducts_NullResult() {
-        when(homeMapper.listHot(10)).thenReturn(null);
+        when(homeMapper.listHot(0, 10)).thenReturn(null);
 
-        List<HomeDto.HomeProduct> result = homeService.getHotProducts(10);
+        List<HomeDto.HomeProduct> result = homeService.getHotProducts(1, 10);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -98,9 +102,10 @@ class HomeServiceTest {
         row.setPrice("  123.45  "); // 带空格的价格
         row.setStatus("在售");
 
-        when(homeMapper.listHot(1)).thenReturn(Arrays.asList(row));
+        when(homeMapper.listHot(0, 1)).thenReturn(Arrays.asList(row));
+        when(productHotnessService.getViewCounts(anyList())).thenReturn(java.util.Collections.emptyMap());
 
-        List<HomeDto.HomeProduct> result = homeService.getHotProducts(1);
+        List<HomeDto.HomeProduct> result = homeService.getHotProducts(1, 1);
 
         assertEquals(123, result.get(0).getPrice()); // 去除空格并转为整数
     }
@@ -116,9 +121,10 @@ class HomeServiceTest {
         row.setPrice("invalid"); // 无效价格
         row.setStatus("在售");
 
-        when(homeMapper.listHot(1)).thenReturn(Arrays.asList(row));
+        when(homeMapper.listHot(0, 1)).thenReturn(Arrays.asList(row));
+        when(productHotnessService.getViewCounts(anyList())).thenReturn(java.util.Collections.emptyMap());
 
-        List<HomeDto.HomeProduct> result = homeService.getHotProducts(1);
+        List<HomeDto.HomeProduct> result = homeService.getHotProducts(1, 1);
 
         assertNull(result.get(0).getPrice()); // 解析失败返回null
     }
@@ -134,9 +140,10 @@ class HomeServiceTest {
         row.setPrice(null);
         row.setStatus("在售");
 
-        when(homeMapper.listHot(1)).thenReturn(Arrays.asList(row));
+        when(homeMapper.listHot(0, 1)).thenReturn(Arrays.asList(row));
+        when(productHotnessService.getViewCounts(anyList())).thenReturn(java.util.Collections.emptyMap());
 
-        List<HomeDto.HomeProduct> result = homeService.getHotProducts(1);
+        List<HomeDto.HomeProduct> result = homeService.getHotProducts(1, 1);
 
         assertNull(result.get(0).getPrice());
     }
@@ -170,17 +177,17 @@ class HomeServiceTest {
         row2.setViews(5);
 
         List<HomeProductRow> rows = Arrays.asList(row1, row2);
-        when(homeMapper.listLatest(10)).thenReturn(rows);
+        when(homeMapper.listLatest(0, 10)).thenReturn(rows);
 
-        List<HomeDto.HomeProduct> result = homeService.getLatestProducts(10);
+        List<HomeDto.HomeProduct> result = homeService.getLatestProducts(1, 10);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        
+
         // 验证按ID倒序（最新的在前）
         assertEquals(100, result.get(0).getId());
         assertEquals(99, result.get(1).getId());
-        
+
         // 验证状态
         assertEquals("在售", result.get(0).getStatus());
         assertEquals("已售", result.get(1).getStatus());
@@ -191,9 +198,9 @@ class HomeServiceTest {
      */
     @Test
     void testGetLatestProducts_NullResult() {
-        when(homeMapper.listLatest(10)).thenReturn(null);
+        when(homeMapper.listLatest(0, 10)).thenReturn(null);
 
-        List<HomeDto.HomeProduct> result = homeService.getLatestProducts(10);
+        List<HomeDto.HomeProduct> result = homeService.getLatestProducts(1, 10);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
