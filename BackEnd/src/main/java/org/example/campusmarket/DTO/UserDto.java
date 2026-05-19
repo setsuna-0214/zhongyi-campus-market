@@ -2,6 +2,7 @@ package org.example.campusmarket.DTO;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,7 +24,7 @@ public class UserDto {
         @Size(max = 500)
         private String bio;
 
-        @Size(min = 11, max = 11)
+        @Pattern(regexp = "^(|\\d{11})$", message = "手机号必须为11位数字")
         private String phone;
 
         @Size(max = 100)

@@ -1,0 +1,34 @@
+/**
+ * 统一发布页样式
+ * 切换器居中，内容区直接透传给子页面
+ */
+
+.unified-publish-page {
+  min-height: calc(100vh - 64px);
+  background: var(--campus-bg);
+}
+
+/* 顶部切换器栏 */
+.unified-publish-switcher {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 24px 0;
+  background: transparent;
+}
+
+/* 内容区：完全透传，不加任何约束 */
+.unified-publish-body {
+  /* 子页面自带 padding 和 max-width，这里不干涉 */
+}
+
+/* 让 SubTabSlider 在这里变大一点 */
+.unified-publish-switcher .sub-tab-slider {
+  font-size: 16px;
+}
+
+.unified-publish-switcher .sub-tab-item {
+  padding: 8px 28px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}

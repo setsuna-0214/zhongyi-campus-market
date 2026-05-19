@@ -1,0 +1,13 @@
+node_modules
+.vite
+build
+dist
+.git
+.gitignore
+.idea
+.vscode
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.md

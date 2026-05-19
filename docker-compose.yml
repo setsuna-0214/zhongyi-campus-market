@@ -46,7 +46,7 @@ services:
     container_name: campus-market-backend
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8100:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_HOST: mysql

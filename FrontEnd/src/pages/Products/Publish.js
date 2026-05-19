@@ -79,7 +79,7 @@ const SparkleIcon = ({ className }) => (
   </svg>
 );
 
-const PublishProduct = () => {
+const PublishProduct = ({ unified = false }) => {
   const navigate = useNavigate();
   const { id: productId } = useParams(); // 编辑模式时有商品ID
   const isEditMode = !!productId;
@@ -428,12 +428,15 @@ const PublishProduct = () => {
 
   return (
     <div className="publish-container">
-      <div className="publish-header">
-        <Title level={2}>{isEditMode ? '编辑商品' : '发布商品'}</Title>
-        <Text type="secondary">
-          {isEditMode ? '修改商品信息后点击保存' : '发布你的闲置物品，让它们找到新主人'}
-        </Text>
-      </div>
+      {/* 仅在独立路由模式显示标题，统一发布页由外层切换器提供标题语境 */}
+      {!unified && (
+        <div className="publish-header">
+          <Title level={2}>{isEditMode ? '编辑商品' : '发布商品'}</Title>
+          <Text type="secondary">
+            {isEditMode ? '修改商品信息后点击保存' : '发布你的闲置物品，让它们找到新主人'}
+          </Text>
+        </div>
+      )}
 
       <Card className="publish-card">
         <Form

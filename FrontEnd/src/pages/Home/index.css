@@ -359,6 +359,10 @@ body:has(.home-page.hero-mode) ::-webkit-scrollbar-thumb {
   padding: 0 32px;
   position: relative;
   z-index: 10;
+}
+
+/* 仅在过渡期间启用硬件加速，防止列表过长时占用大量 GPU 显存导致卡顿 */
+.home-page.transitioning .home-content {
   will-change: transform, opacity;
   transform: translateZ(0);
   backface-visibility: hidden;

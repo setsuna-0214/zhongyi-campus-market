@@ -249,3 +249,70 @@ CREATE TABLE IF NOT EXISTS `user_follows` (
     CONSTRAINT `user_follows_ibfk_2` FOREIGN KEY (`followee_id`) REFERENCES `userinfo` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `chk_no_self_follow` CHECK ((`follower_id` <> `followee_id`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户关注表（不能关注自己）';
+
+-- ============================================
+-- 14. 论坛帖子表（Forum 模块独立，依赖 users）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `forum_posts` (
+    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '帖子ID',
+    `user_id` int NOT NULL COMMENT '发帖用户ID',
+    `title` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '帖子标题',
+    `content` text COLLATE utf8mb4_unicode_ci COMMENT '帖子正文内容',
+    `post_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'normal' COMMENT '帖子类型：normal-普通帖, resource-资源帖, help-求助帖',
+    `images` varchar(2000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '图片URL列表，JSON数组格式',
+    `view_count` int DEFAULT '0' COMMENT '浏览量（从Redis同步）',
+    `like_count` int DEFAULT '0' COMMENT '点赞数（从Redis同步）',
+    `comment_count` int DEFAULT '0' COMMENT '评论数（冗余字段，实时更新）',
+    `share_count` int DEFAULT '0' COMMENT '分享数',
+    `is_deleted` tinyint(1) DEFAULT '0' COMMENT '是否已删除：0-正常, 1-已删除',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发帖时间',
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_post_type` (`post_type`),
+    KEY `idx_created_at` (`created_at`),
+    KEY `idx_like_count` (`like_count`),
+    KEY `idx_view_count` (`view_count`),
+    CONSTRAINT `forum_posts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='论坛帖子表';
+
+-- ============================================
+-- 15. 论坛多级评论表（Forum 模块独立，依赖 forum_posts 和 users）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `forum_comments` (
+    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '评论ID',
+    `post_id` bigint NOT NULL COMMENT '所属帖子ID',
+    `user_id` int NOT NULL COMMENT '评论用户ID',
+    `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '评论内容',
+    `images` varchar(1000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '评论图片URL列表（仅一级评论支持）',
+    `parent_id` bigint DEFAULT NULL COMMENT '父评论ID（NULL表示是顶层评论）',
+    `root_id` bigint DEFAULT NULL COMMENT '根评论ID（楼中楼时指向最顶层评论，NULL表示本身是顶层）',
+    `reply_to_user_id` int DEFAULT NULL COMMENT '回复目标用户ID（楼中楼时记录@的对象）',
+    `like_count` int DEFAULT '0' COMMENT '评论点赞数',
+    `is_deleted` tinyint(1) DEFAULT '0' COMMENT '是否已删除：0-正常, 1-已删除',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评论时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_post_id` (`post_id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_parent_id` (`parent_id`),
+    KEY `idx_root_id` (`root_id`),
+    KEY `idx_created_at` (`created_at`),
+    CONSTRAINT `forum_comments_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `forum_posts` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `forum_comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='论坛评论表（支持多级楼中楼）';
+
+-- ============================================
+-- 16. 论坛帖子收藏表（Forum 模块独立，依赖 forum_posts 和 users）
+-- ============================================
+CREATE TABLE IF NOT EXISTS `forum_favorites` (
+    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '收藏ID',
+    `user_id` int NOT NULL COMMENT '用户ID',
+    `post_id` bigint NOT NULL COMMENT '帖子ID',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '收藏时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_post` (`user_id`, `post_id`) COMMENT '用户-帖子唯一约束',
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_post_id` (`post_id`),
+    CONSTRAINT `forum_favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+    CONSTRAINT `forum_favorites_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `forum_posts` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='论坛帖子收藏表';

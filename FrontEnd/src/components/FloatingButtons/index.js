@@ -93,7 +93,9 @@ const FloatingButtons = () => {
   }, [location.pathname, loggedIn, fetchUnreadCount]);
 
   const handlePublish = () => {
-    navigate('/publish');
+    // 在论坛相关页面时默认进入「发布帖子」tab，其他页面默认「发布商品」
+    const isForumContext = location.pathname.startsWith('/forum');
+    navigate(`/publish?tab=${isForumContext ? 'post' : 'product'}`);
   };
 
   const handleChat = () => {
@@ -110,7 +112,7 @@ const FloatingButtons = () => {
         {loggedIn && (
           <>
             <Tooltip
-              title="发布商品"
+              title="发布"
               placement="left"
               mouseEnterDelay={0.15}
               mouseLeaveDelay={0.1}

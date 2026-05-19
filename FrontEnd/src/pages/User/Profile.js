@@ -17,6 +17,7 @@ import {
   LockOutlined,
   OrderedListOutlined,
   TeamOutlined,
+  FormOutlined,
 } from '@ant-design/icons';
 import SliderMenu from '../../components/SliderMenu';
 import AvatarUpload from '../../components/AvatarUpload';
@@ -32,6 +33,7 @@ import SectionFavorites from './Profile/SectionFavorites';
 import SectionAccount from './Profile/SectionAccount';
 import SectionOrders from './Profile/SectionOrders';
 import SectionFollows from './Profile/SectionFollows';
+import SectionMyPosts from './Profile/SectionMyPosts';
 
 const { Sider, Content } = Layout;
 
@@ -97,7 +99,7 @@ const UserProfile = () => {
     // 支持新旧参数名
     const tab = searchParams.get('t') || searchParams.get('tab');
     // 更新为扁平化菜单的有效 tab 值
-    const validTabs = ['profile', 'account', 'products', 'orders', 'favorites', 'follows'];
+    const validTabs = ['profile', 'account', 'products', 'orders', 'favorites', 'follows', 'my-posts'];
     if (tab && validTabs.includes(tab)) {
       setSelectedKey(tab);
     }
@@ -165,8 +167,8 @@ const UserProfile = () => {
   const handleBasicSave = async () => {
     const values = basicForm.getFieldsValue();
     const payload = { ...values };
-    // 删除不可编辑的字段
-    ['id', 'username', 'email', 'token', 'createdAt', 'lastLoginAt', 'joinDate'].forEach(k => {
+    // 删除不可编辑的字段和后端不支持的字段
+    ['id', 'username', 'email', 'token', 'createdAt', 'lastLoginAt', 'joinDate', 'profileBanner'].forEach(k => {
       if (k in payload) delete payload[k];
     });
 
@@ -288,6 +290,7 @@ const UserProfile = () => {
     { key: 'orders', icon: <OrderedListOutlined />, label: '订单管理' },
     { key: 'favorites', icon: <HeartOutlined />, label: '我的收藏' },
     { key: 'follows', icon: <TeamOutlined />, label: '我的关注' },
+    { key: 'my-posts', icon: <FormOutlined />, label: '我的帖子' },
   ];
 
   // 移除 openKeys 相关逻辑，因为不再有子菜单
@@ -462,6 +465,10 @@ const UserProfile = () => {
 
           {selectedKey === 'account' && (
             <SectionAccount userInfo={userInfo} setUserInfo={setUserInfo} />
+          )}
+
+          {selectedKey === 'my-posts' && (
+            <SectionMyPosts userId={userInfo.id} />
           )}
 
           {/* 更换头像 */}

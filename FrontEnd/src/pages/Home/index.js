@@ -539,9 +539,9 @@ const Home = () => {
         className={`auth-carousel-section ${isExpanded ? 'as-background' : ''} ${isTransitioning ? 'fading' : ''}`}
         ref={heroRef}
       >
-        <Particles count={30} />
+        <Particles count={isExpanded && !isTransitioning ? 0 : 30} />
         <Carousel
-          autoplay
+          autoplay={!isExpanded}
           autoplaySpeed={4000}
           className="auth-carousel"
           dots={false}

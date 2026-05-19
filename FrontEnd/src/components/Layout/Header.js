@@ -14,7 +14,8 @@ import {
   OrderedListOutlined,
   TeamOutlined,
   SettingOutlined,
-  RightOutlined
+  RightOutlined,
+  FormOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
@@ -39,6 +40,9 @@ const Header = () => {
 
   // 判断是否在首页
   const isHomePage = location.pathname === '/';
+
+  // 判断是否在论坛页面
+  const isForumPage = location.pathname.startsWith('/forum') || location.pathname === '/publish-post' || location.pathname.startsWith('/publish-post/');
 
   // 计算是否应该显示透明模式
   const shouldBeTransparent = isHomePage && !homeExpanded && !isTransitioning;
@@ -120,19 +124,21 @@ const Header = () => {
 
   const handleSearch = (value) => {
     const keyword = (value || '').trim();
-    // 获取当前搜索类型（如果在搜索页面）
+
+    // 论坛页面：搜索论坛帖子
+    if (isForumPage) {
+      const params = new URLSearchParams();
+      if (keyword) params.set('q', keyword);
+      navigate(params.toString() ? `/forum/search?${params.toString()}` : '/forum/search');
+      return;
+    }
+
+    // 非论坛页面：搜索商品（原有逻辑）
     const currentParams = new URLSearchParams(location.search);
     const currentType = location.pathname === '/search' ? (currentParams.get('type') || 'products') : 'products';
-
-    // 构建简洁的URL参数
     const params = new URLSearchParams();
-    if (currentType !== 'products') {
-      params.set('type', currentType);
-    }
-    if (keyword) {
-      params.set('q', keyword);
-    }
-
+    if (currentType !== 'products') params.set('type', currentType);
+    if (keyword) params.set('q', keyword);
     const queryString = params.toString();
     navigate(queryString ? `/search?${queryString}` : '/search');
   };
@@ -191,6 +197,12 @@ const Header = () => {
       label: <span className="menu-label">我的关注<RightOutlined className="menu-arrow" /></span>,
       onClick: () => navigate('/profile?t=follows')
     },
+    {
+      key: 'my-posts',
+      icon: <FormOutlined />,
+      label: <span className="menu-label">我的帖子<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/profile?t=my-posts')
+    },
     { type: 'divider' },
     {
       key: 'settings',
@@ -216,16 +228,40 @@ const Header = () => {
   return (
     <AntHeader className={headerClassName}>
       <div className="header-content">
-        {/* Logo */}
-        <div className="logo" onClick={() => navigate('/')}>
-          <span className="logo-text">中易</span>
+        {/* Logo + 模式导航 */}
+        <div className="header-left">
+          <div className="logo" onClick={() => navigate('/')}>
+            <span className="logo-text">中易</span>
+          </div>
+
+          {/* 市场 / 论坛 导航标签 */}
+          <nav className="header-nav-tabs" aria-label="模式切换">
+            <button
+              id="nav-tab-market"
+              className={`nav-tab ${!isForumPage ? 'active' : ''}`}
+              onClick={() => navigate('/')}
+              aria-current={!isForumPage ? 'page' : undefined}
+            >
+              <span className="nav-tab-icon">🛒</span>
+              <span className="nav-tab-text">商品</span>
+            </button>
+            <button
+              id="nav-tab-forum"
+              className={`nav-tab ${isForumPage ? 'active' : ''}`}
+              onClick={() => navigate('/forum')}
+              aria-current={isForumPage ? 'page' : undefined}
+            >
+              <span className="nav-tab-icon">💬</span>
+              <span className="nav-tab-text">论坛</span>
+            </button>
+          </nav>
         </div>
 
         {/* 搜索 */}
         <div className="header-search">
           <Space.Compact>
             <Input
-              placeholder="开始探索"
+              placeholder={isForumPage ? '搜索论坛帖子' : '搜索商品'}
               size="large"
               value={headerKeyword}
               onChange={(e) => setHeaderKeyword(e.target.value)}
