@@ -118,6 +118,7 @@ INSERT IGNORE INTO `orders` (`id`, `user_id`, `product_id`, `quantity`, `total_p
 (29, 32, 34, 1, 180.00, 'pending', 36, '2025-11-02 14:00:00', NULL, NULL),
 (30, 38, 37, 1, 89.00, 'pending', 35, '2025-11-03 09:00:00', NULL, NULL),
 (31, 30, 46, 1, 320.00, 'pending', 37, '2025-11-04 16:00:00', NULL, NULL),
+(32, 33, 27, 1, 3200.00, 'pending_buyer', 38, '2025-10-25 11:00:00', NULL, NULL),
 (33, 35, 23, 1, 380.00, 'pending_buyer', 34, '2025-10-28 15:00:00', NULL, NULL),
 (34, 34, 30, 1, 35.00, 'cancelled', 31, '2025-10-20 10:00:00', NULL, NULL);
 

@@ -35,7 +35,14 @@ const SellerProfile = () => {
   // Banner related
   const [bannerKey, setBannerKey] = useState(DEFAULT_PROFILE_BANNER_KEY);
   const bannerPath = useMemo(() => PROFILE_BANNER_OPTIONS.find(opt => opt.key === bannerKey)?.path ?? null, [bannerKey]);
-  const bannerBgUrl = useMemo(() => bannerPath ? new URL(bannerPath, window.location.origin).toString() : null, [bannerPath]);
+  const bannerBgUrl = useMemo(() => {
+    if (!bannerPath) return null;
+    try {
+      return new URL(bannerPath, window.location.origin).toString();
+    } catch {
+      return null;
+    }
+  }, [bannerPath]);
 
   // Form for SectionBasic (read-only for seller profile but required by component)
   const [basicForm] = Form.useForm();
