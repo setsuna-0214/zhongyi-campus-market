@@ -39,5 +39,10 @@ public class AiDto {
     @AllArgsConstructor
     public static class GenerateDescriptionResponse {
         private String description;
+        private String inferredCategory;
+
+        public GenerateDescriptionResponse(String description) {
+            this.description = description;
+        }
     }
 }

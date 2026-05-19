@@ -575,6 +575,7 @@ const PublishProduct = () => {
                       >
                         <SparkleIcon className="sparkle-icon" />
                       </button>
+                      <span className="ai-warning-text">AI生成可能出错，注意鉴别</span>
                     </span>
                   }
                   rules={[

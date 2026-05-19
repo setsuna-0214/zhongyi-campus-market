@@ -13,26 +13,26 @@ public interface HomeMapper {
     // ids：商品ID列表
     // 返回按传入ID顺序排列的商品列表
     @Select("""
-    <script>
-    SELECT p.pro_id AS id,
-           p.pro_name AS title,
-           p.picture AS image,
-           p.price AS price,
-           ui.user_id AS sellerId,
-           ui.nickname AS seller,
-           ui.username AS sellerUsername,
-           ui.address AS location,
-           p.category AS category,
-           CASE WHEN p.is_seal THEN '已售' ELSE '在售' END AS status,
-           COALESCE(p.view_count, 0) AS views
-    FROM products p
-    LEFT JOIN userinfo ui ON ui.user_id = p.saler_id
-    WHERE p.pro_id IN
-    <foreach item="id" collection="ids" open="(" separator="," close=")">
-        #{id}
-    </foreach>
-    </script>
-    """)
+            <script>
+            SELECT p.pro_id AS id,
+                   p.pro_name AS title,
+                   p.picture AS image,
+                   p.price AS price,
+                   ui.user_id AS sellerId,
+                   ui.nickname AS seller,
+                   ui.username AS sellerUsername,
+                   ui.address AS location,
+                   p.category AS category,
+                   CASE WHEN p.is_seal THEN '已售' ELSE '在售' END AS status,
+                   COALESCE(p.view_count, 0) AS views
+            FROM products p
+            LEFT JOIN userinfo ui ON ui.user_id = p.saler_id
+            WHERE p.pro_id IN
+            <foreach item="id" collection="ids" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            </script>
+            """)
     List<HomeProductRow> findByIds(@Param("ids") List<Integer> ids);
 
     // 查询热门商品列表
@@ -43,56 +43,48 @@ public interface HomeMapper {
     // - 统计 fav_products 与 buy_products 的数量作为 views（热度）
     // - 依据 views 从高到低排序，次序用 pro_id 兜底，限制返回条目数
     @Select("""
-    SELECT p.pro_id AS id,
-           p.pro_name AS title,
-           p.picture AS image,
-           p.price AS price,
-           ui.user_id AS sellerId,
-           ui.nickname AS seller,
-           ui.username AS sellerUsername,
-           ui.address AS location,
-           NULL AS category,
-           CASE WHEN p.is_seal THEN '已售' ELSE '在售' END AS status,
-           COALESCE(f.cnt,0) + COALESCE(b.cnt,0) AS views
-    FROM products p
-    LEFT JOIN (
-        SELECT pro_id, COUNT(*) AS cnt FROM fav_products GROUP BY pro_id
-    ) f ON f.pro_id = p.pro_id
-    LEFT JOIN (
-        SELECT pro_id, COUNT(*) AS cnt FROM buy_products GROUP BY pro_id
-    ) b ON b.pro_id = p.pro_id
-    LEFT JOIN userinfo ui ON ui.user_id = p.saler_id
-    ORDER BY views DESC, p.pro_id DESC
-    LIMIT #{limit}
-    """)
-    List<HomeProductRow> listHot(@Param("limit") Integer limit);
+            SELECT p.pro_id AS id,
+                   p.pro_name AS title,
+                   p.picture AS image,
+                   p.price AS price,
+                   ui.user_id AS sellerId,
+                   ui.nickname AS seller,
+                   ui.username AS sellerUsername,
+                   ui.address AS location,
+                   p.category AS category,
+                   '在售' AS status,
+                   COALESCE(p.view_count, 0) AS views
+            FROM products p
+            LEFT JOIN userinfo ui ON ui.user_id = p.saler_id
+            WHERE p.is_seal = 0
+            ORDER BY views DESC, p.pro_id DESC
+            LIMIT #{offset}, #{limit}
+            """)
+    List<HomeProductRow> listHot(@Param("offset") Integer offset, @Param("limit") Integer limit);
 
     // 查询最新发布商品列表
+    // offset：偏移量
     // limit：返回条目数量上限
     // 逻辑说明：
     // - 字段同上，但改为按 pro_id 倒序（假设 pro_id 越新越大）
     @Select("""
-    SELECT p.pro_id AS id,
-           p.pro_name AS title,
-           p.picture AS image,
-           p.price AS price,
-           ui.user_id AS sellerId,
-           ui.nickname AS seller,
-           ui.username AS sellerUsername,
-           ui.address AS location,
-           NULL AS category,
-           CASE WHEN p.is_seal THEN '已售' ELSE '在售' END AS status,
-           COALESCE(f.cnt,0) + COALESCE(b.cnt,0) AS views
-    FROM products p
-    LEFT JOIN (
-        SELECT pro_id, COUNT(*) AS cnt FROM fav_products GROUP BY pro_id
-    ) f ON f.pro_id = p.pro_id
-    LEFT JOIN (
-        SELECT pro_id, COUNT(*) AS cnt FROM buy_products GROUP BY pro_id
-    ) b ON b.pro_id = p.pro_id
-    LEFT JOIN userinfo ui ON ui.user_id = p.saler_id
-    ORDER BY p.pro_id DESC
-    LIMIT #{limit}
-    """)
-    List<HomeProductRow> listLatest(@Param("limit") Integer limit);
+            SELECT p.pro_id AS id,
+                   p.pro_name AS title,
+                   p.picture AS image,
+                   p.price AS price,
+                   ui.user_id AS sellerId,
+                   ui.nickname AS seller,
+                   ui.username AS sellerUsername,
+                   ui.address AS location,
+                   p.category AS category,
+                   '在售' AS status,
+                   COALESCE(p.view_count, 0) AS views,
+                   p.created_at AS createdAt
+            FROM products p
+            LEFT JOIN userinfo ui ON ui.user_id = p.saler_id
+            WHERE p.is_seal = 0
+            ORDER BY p.created_at DESC, p.pro_id DESC
+            LIMIT #{offset}, #{limit}
+            """)
+    List<HomeProductRow> listLatest(@Param("offset") Integer offset, @Param("limit") Integer limit);
 }

@@ -14,9 +14,9 @@ public class AiConfig {
     private String apiKey;
 
     /**
-     * 模型名称，默认 qwen-vl-plus（支持图片识别）
+     * 模型名称，默认 qwen-vl-max（支持图片识别）
      */
-    private String model = "qwen-vl-plus";
+    private String model = "qwen-vl-max";
 
     /**
      * 文本生成 API 地址

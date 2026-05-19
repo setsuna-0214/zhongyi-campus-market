@@ -11,14 +11,14 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD:-campus123}
       TZ: Asia/Shanghai
     ports:
-      - "3307:3306"
+      - "13306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./BackEnd/sql/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
       - ./BackEnd/sql/seed_data.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,11 +29,11 @@ services:
     container_name: campus-market-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "16379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
