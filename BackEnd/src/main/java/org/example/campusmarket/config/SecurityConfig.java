@@ -87,6 +87,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/user/{id}/published").permitAll()
                 .requestMatchers(HttpMethod.POST, "/user/me/avatar").authenticated()
                 .requestMatchers("/user/**", "/favorites/**", "/orders/**", "/cart/**").authenticated()
+                // 论坛接口：GET 公开，写操作需要认证
+                .requestMatchers(HttpMethod.GET, "/forum/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/forum/**").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/forum/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/forum/**").authenticated()
                 // AI接口需要认证
                 .requestMatchers("/ai/**").authenticated()
                 // 系统消息接口需要认证

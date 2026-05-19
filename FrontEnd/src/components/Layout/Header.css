@@ -207,9 +207,10 @@
   flex-direction: row;
   align-items: center;
   cursor: pointer;
-  margin-right: 24px;
+  margin-right: 12px;
   height: 64px;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .logo-text {
@@ -523,4 +524,145 @@
 .user-dropdown-menu .ant-dropdown-menu-item-divider {
   margin: 4px 12px;
   background: #f0f0f0;
+}
+
+/* ===================== header-left: Logo + 导航标签 ===================== */
+
+.header-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  /* 不让左侧压缩搜索框 */
+  margin-right: 12px;
+}
+
+/* 导航标签容器 */
+.header-nav-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  height: 64px;
+}
+
+/* 单个导航标签 */
+.nav-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 64px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: #8c8c8c;
+  white-space: nowrap;
+  transition: color 0.25s ease;
+  /* 下划线指示条（默认不显示） */
+  font-family: inherit;
+}
+
+/* 下划线使用 ::after 伪元素实现 */
+.nav-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  right: 50%;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: linear-gradient(90deg, #4FACFE, #00F2FE);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              right 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease;
+  opacity: 0;
+}
+
+/* 悬停效果 */
+.nav-tab:hover {
+  color: #4FACFE;
+}
+
+.nav-tab:hover::after {
+  left: 16px;
+  right: 16px;
+  opacity: 0.4;
+}
+
+/* 激活状态 */
+.nav-tab.active {
+  color: #4FACFE;
+  font-weight: 700;
+}
+
+.nav-tab.active::after {
+  left: 16px;
+  right: 16px;
+  opacity: 1;
+}
+
+/* emoji 图标 */
+.nav-tab-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.nav-tab-text {
+  font-size: 15px;
+}
+
+/* 透明模式（首页轮播图区域） */
+.app-header.header-transparent .nav-tab {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.app-header.header-transparent .nav-tab:hover {
+  color: #fff;
+}
+
+.app-header.header-transparent .nav-tab.active {
+  color: #fff;
+}
+
+.app-header.header-transparent .nav-tab::after {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* 响应式：小屏幕缩短标签文字 */
+@media (max-width: 640px) {
+  .nav-tab {
+    padding: 0 10px;
+    gap: 4px;
+    font-size: 13px;
+  }
+
+  .nav-tab-text {
+    font-size: 13px;
+  }
+
+  .nav-tab.active::after,
+  .nav-tab:hover::after {
+    left: 10px;
+    right: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 很小屏幕只显示 emoji，隐藏文字 */
+  .nav-tab-text {
+    display: none;
+  }
+
+  .nav-tab {
+    padding: 0 10px;
+  }
+
+  .nav-tab.active::after,
+  .nav-tab:hover::after {
+    left: 8px;
+    right: 8px;
+  }
 }
