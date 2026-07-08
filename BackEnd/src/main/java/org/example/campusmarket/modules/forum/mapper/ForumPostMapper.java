@@ -28,6 +28,7 @@ public interface ForumPostMapper {
             fp.title,
             LEFT(fp.content, 200) as summary,
             fp.post_type as postType,
+            fp.category,
             fp.images,
             fp.view_count as viewCount,
             fp.like_count as likeCount,
@@ -40,6 +41,9 @@ public interface ForumPostMapper {
             fp.is_deleted = 0
             <if test="postType != null and postType != '' and postType != 'all'">
                 AND fp.post_type = #{postType}
+            </if>
+            <if test="category != null and category != '' and category != 'all'">
+                AND fp.category = #{category}
             </if>
             <if test="keyword != null and keyword != ''">
                 AND (fp.title LIKE CONCAT('%', #{keyword}, '%')
@@ -65,6 +69,7 @@ public interface ForumPostMapper {
         @Result(property = "title", column = "title"),
         @Result(property = "summary", column = "summary"),
         @Result(property = "postType", column = "postType"),
+        @Result(property = "category", column = "category"),
         @Result(property = "images", column = "images", typeHandler = StringListTypeHandler.class),
         @Result(property = "viewCount", column = "viewCount"),
         @Result(property = "likeCount", column = "likeCount"),
@@ -74,6 +79,7 @@ public interface ForumPostMapper {
     })
     List<ForumPostDto.PostListItem> searchPosts(
         @Param("postType") String postType,
+        @Param("category") String category,
         @Param("keyword") String keyword,
         @Param("userId") Integer userId,
         @Param("sort") String sort,
@@ -93,6 +99,9 @@ public interface ForumPostMapper {
             <if test="postType != null and postType != '' and postType != 'all'">
                 AND fp.post_type = #{postType}
             </if>
+            <if test="category != null and category != '' and category != 'all'">
+                AND fp.category = #{category}
+            </if>
             <if test="keyword != null and keyword != ''">
                 AND (fp.title LIKE CONCAT('%', #{keyword}, '%')
                     OR fp.content LIKE CONCAT('%', #{keyword}, '%'))
@@ -105,6 +114,7 @@ public interface ForumPostMapper {
     """)
     long countPosts(
         @Param("postType") String postType,
+        @Param("category") String category,
         @Param("keyword") String keyword,
         @Param("userId") Integer userId
     );
@@ -121,6 +131,7 @@ public interface ForumPostMapper {
             fp.title,
             fp.content,
             fp.post_type as postType,
+            fp.category,
             fp.images,
             fp.view_count as viewCount,
             fp.like_count as likeCount,
@@ -140,6 +151,7 @@ public interface ForumPostMapper {
         @Result(property = "title", column = "title"),
         @Result(property = "content", column = "content"),
         @Result(property = "postType", column = "postType"),
+        @Result(property = "category", column = "category"),
         @Result(property = "images", column = "images", typeHandler = StringListTypeHandler.class),
         @Result(property = "viewCount", column = "viewCount"),
         @Result(property = "likeCount", column = "likeCount"),
@@ -162,6 +174,7 @@ public interface ForumPostMapper {
             fp.title,
             LEFT(fp.content, 200) as summary,
             fp.post_type as postType,
+            fp.category,
             fp.images,
             fp.view_count as viewCount,
             fp.like_count as likeCount,

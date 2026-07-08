@@ -13,24 +13,39 @@ import {
   LikeOutlined, LikeFilled, StarOutlined, StarFilled,
   ShareAltOutlined, MessageOutlined, EyeOutlined,
   LeftOutlined, SmileOutlined, PictureOutlined,
-  DeleteOutlined
 } from '@ant-design/icons';
 import {
   getPostDetail, getComments, createComment, createReply,
   deleteComment, togglePostLike, toggleCommentLike,
   addForumFavorite, removeForumFavorite
 } from '../../api/forum';
+import { searchProducts } from '../../api/products';
 import { isLoggedIn } from '../../utils/auth';
 import './Forum.css';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-const POST_TYPE_CONFIG = {
-  normal: { color: 'blue', label: '普通帖' },
-  resource: { color: 'green', label: '资源帖' },
-  help: { color: 'orange', label: '求助帖' },
+const CATEGORY_COLOR = {
+  '交易交流': 'blue',
+  '闲置交流': 'blue',
+  '求购互助': 'orange',
+  '校园拼单': 'blue',
+  '经验反馈': 'green',
+  '避坑经验': 'green',
+  '失物招领': 'purple',
+  '交易反馈': 'green',
 };
+const CATEGORY_LABEL = {
+  '闲置交流': '交易交流',
+  '校园拼单': '交易交流',
+  '避坑经验': '经验反馈',
+  '交易反馈': '经验反馈',
+};
+
+function getCategoryLabel(category) {
+  return CATEGORY_LABEL[category] || category;
+}
 
 const COMMENT_SORT_OPTIONS = [
   { label: '时间正序', value: 'asc' },
@@ -39,6 +54,18 @@ const COMMENT_SORT_OPTIONS = [
 ];
 
 const EMOJI_LIST = ['😀','😂','🥰','😎','🤔','😭','👍','🎉','💪','🔥','❤️','✨'];
+const DEFAULT_PRODUCT_IMAGE = '/images/products/thinkpad.jpg';
+
+function normalizeImage(src) {
+  if (!src) return DEFAULT_PRODUCT_IMAGE;
+  if (src.startsWith('http') || src.startsWith('/')) return src;
+  return `/${src.replace(/^\/+/, '')}`;
+}
+
+function buildRecommendKeyword(post) {
+  const text = `${post?.title || ''} ${post?.content || ''}`;
+  return text.replace(/求购|想买|收一个|收台|收|二手|闲置/g, ' ').trim();
+}
 
 export default function PostDetail() {
   const { id: postId } = useParams();
@@ -50,6 +77,8 @@ export default function PostDetail() {
   const [commentSort, setCommentSort] = useState('asc');
   const [loading, setLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [recommendLoading, setRecommendLoading] = useState(false);
 
   // 悬浮回复框状态
   const [replyText, setReplyText] = useState('');
@@ -59,7 +88,7 @@ export default function PostDetail() {
   const fileInputRef = useRef(null);
 
   // 楼中楼内联回复框
-  const [activeReplyId, setActiveReplyId] = useState(null); // 正在回复的 commentId
+  const [activeReplyTarget, setActiveReplyTarget] = useState(null);
   const [inlineReplyText, setInlineReplyText] = useState('');
   const [inlineSubmitting, setInlineSubmitting] = useState(false);
 
@@ -97,6 +126,22 @@ export default function PostDetail() {
 
   useEffect(() => { fetchPost(); }, [fetchPost]);
   useEffect(() => { fetchComments(1); }, [postId, commentSort]);
+
+  useEffect(() => {
+    if (!post || getCategoryLabel(post.category) !== '求购互助') {
+      setRecommendedProducts([]);
+      return;
+    }
+    let cancelled = false;
+    setRecommendLoading(true);
+    searchProducts({ keyword: buildRecommendKeyword(post), status: '在售', page: 1, pageSize: 6 })
+      .then(result => {
+        if (!cancelled) setRecommendedProducts(result?.items || []);
+      })
+      .catch(() => { if (!cancelled) setRecommendedProducts([]); })
+      .finally(() => { if (!cancelled) setRecommendLoading(false); });
+    return () => { cancelled = true; };
+  }, [post]);
 
   const formatTime = (dateStr) => {
     if (!dateStr) return '';
@@ -172,20 +217,21 @@ export default function PostDetail() {
   };
 
   // 发表楼中楼回复
-  const handleSubmitReply = async (comment) => {
+  const handleSubmitReply = async () => {
     if (!isLoggedIn()) { navigate('/login'); return; }
     if (!inlineReplyText.trim()) { message.warning('请输入内容'); return; }
+    if (!activeReplyTarget) return;
     setInlineSubmitting(true);
     try {
       await createReply({
         postId: Number(postId),
-        parentId: comment.id,
-        rootId: comment.id,
-        replyToUserId: comment.userId,
+        parentId: activeReplyTarget.parentId,
+        rootId: activeReplyTarget.rootId,
+        replyToUserId: activeReplyTarget.replyToUserId,
         content: inlineReplyText,
       });
       setInlineReplyText('');
-      setActiveReplyId(null);
+      setActiveReplyTarget(null);
       message.success('回复成功');
       fetchComments(1);
     } catch { message.error('回复失败'); }
@@ -253,9 +299,11 @@ export default function PostDetail() {
             <div className="post-detail-author-info">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Text strong style={{ fontSize: 15 }}>{post.userNickname}</Text>
-                <Tag color={POST_TYPE_CONFIG[post.postType]?.color || 'default'}>
-                  {POST_TYPE_CONFIG[post.postType]?.label || post.postType}
-                </Tag>
+                {post.category && (
+                  <Tag color={CATEGORY_COLOR[post.category] || 'default'}>
+                    {getCategoryLabel(post.category)}
+                  </Tag>
+                )}
               </div>
               <Text type="secondary" style={{ fontSize: 12 }}>{formatTime(post.createdAt)}</Text>
             </div>
@@ -310,6 +358,33 @@ export default function PostDetail() {
             </span>
           </div>
         </div>
+
+        {getCategoryLabel(post.category) === '求购互助' && (
+          <div className="comment-section" style={{ marginTop: 16 }}>
+            <div className="comment-section-title">
+              <span>智能推荐商品</span>
+              <Text type="secondary" style={{ fontSize: 13, fontWeight: 400 }}>（根据帖子内容自动匹配）</Text>
+            </div>
+            <Spin spinning={recommendLoading}>
+              {recommendedProducts.length === 0 && !recommendLoading ? (
+                <Empty description="暂未匹配到商品，可以补充品牌、型号或预算后再试" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              ) : (
+                <div className="forum-recommend-grid">
+                  {recommendedProducts.map(product => (
+                    <div key={product.id} className="forum-recommend-card" onClick={() => navigate(`/products/${product.id}`)}>
+                      <img src={normalizeImage(product.image || product.tempImage)} alt="" />
+                      <div className="forum-recommend-info">
+                        <Text strong ellipsis>{product.title}</Text>
+                        <Text type="danger">¥{product.price}</Text>
+                        <Text type="secondary" ellipsis>{product.description || '匹配帖子求购内容'}</Text>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Spin>
+          </div>
+        )}
 
         {/* 评论区 */}
         <div className="comment-section">
@@ -376,7 +451,12 @@ export default function PostDetail() {
                       </button>
                       <button
                         className="comment-action-btn"
-                        onClick={() => setActiveReplyId(activeReplyId === comment.id ? null : comment.id)}
+                        onClick={() => setActiveReplyTarget(activeReplyTarget?.parentId === comment.id && activeReplyTarget?.replyToUserId === comment.userId ? null : {
+                          parentId: comment.id,
+                          rootId: comment.id,
+                          replyToUserId: comment.userId,
+                          nickname: comment.userNickname,
+                        })}
                       >
                         <MessageOutlined />
                         <span>回复</span>
@@ -408,6 +488,19 @@ export default function PostDetail() {
                                 <Text type="secondary" style={{ fontSize: 11, marginLeft: 'auto' }}>{formatTime(reply.createdAt)}</Text>
                               </div>
                               <div className="reply-content">{reply.content}</div>
+                              <button
+                                className="comment-action-btn"
+                                style={{ marginTop: 4, paddingLeft: 0 }}
+                                onClick={() => setActiveReplyTarget(activeReplyTarget?.parentId === reply.id ? null : {
+                                  parentId: reply.id,
+                                  rootId: comment.id,
+                                  replyToUserId: reply.userId,
+                                  nickname: reply.userNickname,
+                                })}
+                              >
+                                <MessageOutlined />
+                                <span>回复</span>
+                              </button>
                             </div>
                           </div>
                         ))}
@@ -415,11 +508,11 @@ export default function PostDetail() {
                     )}
 
                     {/* 内联回复框 */}
-                    {activeReplyId === comment.id && (
+                    {activeReplyTarget?.rootId === comment.id && (
                       <div className="inline-reply-box">
                         <TextArea
                           autoFocus
-                          placeholder={`回复 ${comment.userNickname}...`}
+                          placeholder={`回复 ${activeReplyTarget.nickname}...`}
                           autoSize={{ minRows: 2, maxRows: 4 }}
                           value={inlineReplyText}
                           onChange={e => setInlineReplyText(e.target.value)}
@@ -427,12 +520,12 @@ export default function PostDetail() {
                           style={{ border: 'none', padding: 0, resize: 'none', fontSize: 13 }}
                         />
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
-                          <Button size="small" onClick={() => { setActiveReplyId(null); setInlineReplyText(''); }}>取消</Button>
+                          <Button size="small" onClick={() => { setActiveReplyTarget(null); setInlineReplyText(''); }}>取消</Button>
                           <Button
                             size="small" type="primary"
                             loading={inlineSubmitting}
                             disabled={!inlineReplyText.trim()}
-                            onClick={() => handleSubmitReply(comment)}
+                            onClick={handleSubmitReply}
                           >
                             回复
                           </Button>

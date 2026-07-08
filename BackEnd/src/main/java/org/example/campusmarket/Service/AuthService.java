@@ -114,8 +114,8 @@ public class AuthService {
         // 更新最后登录时间
         userInfoMapper.updateLastLoginAt(user.getUser_id());
 
-        //签发token
-        String token = TokenUtil.GenerateToken(safeUser.getUser_id(),safeUser.getUsername(),null,jwtSecret,jwtExpSeconds);
+        //签发token（携带用户角色，便于后端做管理员鉴权）
+        String token = TokenUtil.GenerateToken(safeUser.getUser_id(),safeUser.getUsername(),null,safeUser.getRole(),jwtSecret,jwtExpSeconds);
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         data.put("user", safeUser);
@@ -141,7 +141,8 @@ public class AuthService {
         // 更新最后登录时间
         userInfoMapper.updateLastLoginAt(user.getUser_id());
 
-        String token = TokenUtil.GenerateToken(safeUser.getUser_id(),safeUser.getUsername(),null,jwtSecret,jwtExpSeconds);
+        //签发token（携带用户角色，便于后端做管理员鉴权）
+        String token = TokenUtil.GenerateToken(safeUser.getUser_id(),safeUser.getUsername(),null,safeUser.getRole(),jwtSecret,jwtExpSeconds);
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
         data.put("user", safeUser);

@@ -27,6 +27,8 @@ public class ForumPostDto {
         /** 内容摘要（超长截断，前端做省略） */
         private String summary;
         private String postType;
+        /** 内容分类（闲置交流/求购互助/避坑经验/校园拼单/失物招领/交易反馈），与 postType 独立 */
+        private String category;
         /** 第一张图片作为缩略图 */
         private String coverImage;
         /** 所有图片列表 */
@@ -56,6 +58,8 @@ public class ForumPostDto {
         private String title;
         private String content;
         private String postType;
+        /** 内容分类（与 postType 独立） */
+        private String category;
         private List<String> images;
         private Integer viewCount;
         private Integer likeCount;
@@ -78,6 +82,8 @@ public class ForumPostDto {
         private String content;
         /** normal | resource | help */
         private String postType;
+        /** 内容分类：闲置交流/求购互助/避坑经验/校园拼单/失物招领/交易反馈，可为空 */
+        private String category;
         /** 已上传图片 URL 列表（前端先上传图片，再提交帖子） */
         private List<String> images;
     }
@@ -92,6 +98,8 @@ public class ForumPostDto {
         private String title;
         private String content;
         private String postType;
+        /** 内容分类，可为空（null 表示不修改） */
+        private String category;
         private List<String> images;
     }
 

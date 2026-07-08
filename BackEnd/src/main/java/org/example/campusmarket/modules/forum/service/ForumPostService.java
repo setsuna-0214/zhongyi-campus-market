@@ -34,20 +34,21 @@ public class ForumPostService {
     /**
      * 分页查询帖子列表
      *
-     * @param postType 帖子类型（null/all 不过滤）
+     * @param postType 帖子形态类型（null/all 不过滤）
+     * @param category 内容分类（null/all 不过滤）
      * @param keyword  关键字搜索
      * @param userId   指定用户（null 不过滤）
      * @param sort     排序方式：latest（默认）/ hot / views
      * @param page     当前页（1-indexed）
      * @param pageSize 每页数量
      */
-    public ForumPostDto.PostPageResult searchPosts(String postType, String keyword,
+    public ForumPostDto.PostPageResult searchPosts(String postType, String category, String keyword,
                                                     Integer userId, String sort,
                                                     int page, int pageSize) {
         int offset = (page - 1) * pageSize;
         List<ForumPostDto.PostListItem> posts = postMapper.searchPosts(
-                postType, keyword, userId, sort, offset, pageSize);
-        long total = postMapper.countPosts(postType, keyword, userId);
+                postType, category, keyword, userId, sort, offset, pageSize);
+        long total = postMapper.countPosts(postType, category, keyword, userId);
 
         // 解析图片 JSON，提取 coverImage
         posts.forEach(this::processPostImages);
@@ -93,6 +94,7 @@ public class ForumPostService {
         post.setTitle(req.getTitle().trim());
         post.setContent(req.getContent());
         post.setPostType(req.getPostType() != null ? req.getPostType() : "normal");
+        post.setCategory(req.getCategory()); // 内容分类可为空
         post.setImages(serializeImages(req.getImages()));
         return postRepository.save(post);
     }
@@ -113,6 +115,7 @@ public class ForumPostService {
         if (req.getTitle() != null) post.setTitle(req.getTitle().trim());
         if (req.getContent() != null) post.setContent(req.getContent());
         if (req.getPostType() != null) post.setPostType(req.getPostType());
+        if (req.getCategory() != null) post.setCategory(req.getCategory()); // 允许清空分类
         if (req.getImages() != null) post.setImages(serializeImages(req.getImages()));
         return postRepository.save(post);
     }
@@ -125,6 +128,32 @@ public class ForumPostService {
         int affected = postRepository.softDeleteByIdAndUserId(postId, userId);
         if (affected == 0) {
             throw new RuntimeException("帖子不存在或无权限删除");
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // 管理员操作（隐藏/恢复帖子，软删除映射为状态 NORMAL/HIDDEN）
+    // ----------------------------------------------------------------
+
+    /**
+     * 管理员隐藏帖子（等价于软删除，普通用户列表中将不再展示）
+     */
+    @Transactional
+    public void adminHidePost(Long postId) {
+        int affected = postRepository.softDeleteById(postId);
+        if (affected == 0) {
+            throw new RuntimeException("帖子不存在");
+        }
+    }
+
+    /**
+     * 管理员恢复帖子（取消软删除）
+     */
+    @Transactional
+    public void adminRestorePost(Long postId) {
+        int affected = postRepository.restoreById(postId);
+        if (affected == 0) {
+            throw new RuntimeException("帖子不存在");
         }
     }
 

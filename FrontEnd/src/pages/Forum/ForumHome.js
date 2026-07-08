@@ -26,6 +26,25 @@ const POST_TYPE_OPTIONS = [
   { label: '求助帖', value: 'help' },
 ];
 
+// 内容分类（与形态分类独立）：闲置交流/求购互助/避坑经验/校园拼单/失物招领/交易反馈
+const CATEGORY_OPTIONS = [
+  { label: '全部', value: 'all' },
+  { label: '闲置交流', value: '闲置交流' },
+  { label: '求购互助', value: '求购互助' },
+  { label: '避坑经验', value: '避坑经验' },
+  { label: '校园拼单', value: '校园拼单' },
+  { label: '失物招领', value: '失物招领' },
+  { label: '交易反馈', value: '交易反馈' },
+];
+const CATEGORY_COLOR = {
+  '闲置交流': 'blue',
+  '求购互助': 'orange',
+  '避坑经验': 'red',
+  '校园拼单': 'green',
+  '失物招领': 'purple',
+  '交易反馈': 'cyan',
+};
+
 const SORT_OPTIONS = [
   { label: '最新发布', value: 'latest', icon: <ClockCircleOutlined /> },
   { label: '最热', value: 'hot', icon: <FireOutlined /> },
@@ -42,7 +61,7 @@ export default function ForumHome() {
   const [posts, setPosts] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({ type: 'all', sort: 'latest' });
+  const [filters, setFilters] = useState({ type: 'all', category: 'all', sort: 'latest' });
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -51,6 +70,7 @@ export default function ForumHome() {
     try {
       const result = await getPosts({
         type: filters.type,
+        category: filters.category,
         sort: filters.sort,
         page,
         pageSize,
@@ -147,6 +167,19 @@ export default function ForumHome() {
               ))}
             </Space>
           </div>
+
+          {/* 内容分类筛选 */}
+          <div className="forum-type-tabs" style={{ marginTop: 12 }}>
+            {CATEGORY_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                className={`forum-type-tab ${filters.category === opt.value ? 'active' : ''}`}
+                onClick={() => handleFilterChange('category', opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </Card>
 
         {/* 帖子列表 */}
@@ -185,6 +218,11 @@ export default function ForumHome() {
                             >
                               {POST_TYPE_CONFIG[post.postType]?.label || post.postType}
                             </Tag>
+                            {post.category && (
+                              <Tag color={CATEGORY_COLOR[post.category] || 'default'}>
+                                {post.category}
+                              </Tag>
+                            )}
                             <Text type="secondary" className="forum-post-time">{formatTime(post.createdAt)}</Text>
                           </Space>
                         </div>

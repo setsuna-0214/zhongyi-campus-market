@@ -29,18 +29,19 @@ public class ForumPostController {
 
     /**
      * 分页查询帖子列表
-     * GET /forum/posts?type=all&sort=latest&keyword=&page=1&pageSize=10
+     * GET /forum/posts?type=all&category=&keyword=&sort=latest&page=1&pageSize=10
      */
     @GetMapping
     public Result getPosts(
             @RequestParam(defaultValue = "all") String type,
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer userId,
             @RequestParam(defaultValue = "latest") String sort,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             Authentication auth) {
-        ForumPostDto.PostPageResult result = postService.searchPosts(type, keyword, userId, sort, page, pageSize);
+        ForumPostDto.PostPageResult result = postService.searchPosts(type, category, keyword, userId, sort, page, pageSize);
 
         // 若已登录，注入点赞/收藏状态
         if (auth != null) {

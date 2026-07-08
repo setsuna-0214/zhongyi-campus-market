@@ -66,6 +66,12 @@ export async function getRelatedProducts(id) {
   return items.map(normalizeProduct);
 }
 
+// 获取与当前商品相关的求购信息
+export async function getRelatedWants(id) {
+  const { data } = await client.get(`/products/${id}/related-wants`);
+  return extractData(data);
+}
+
 // 发布商品
 export async function createProduct(formData) {
   const { data } = await client.post('/products', formData, {

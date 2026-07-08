@@ -10,7 +10,8 @@ import java.util.Date;
 public final class TokenUtil {
     private TokenUtil() {}
     //生成token
-    public static String GenerateToken(Integer userId, String username, String email, String secret, long expiresSeconds) {
+    // 增加角色入参：将用户角色写入 claim，便于 JwtAuthFilter 装配 Spring Security 角色权限
+    public static String GenerateToken(Integer userId, String username, String email, String role, String secret, long expiresSeconds) {
         if (secret == null || secret.isBlank()) {
             throw new IllegalArgumentException("jwt secret 不能为空");
         }
@@ -20,6 +21,7 @@ public final class TokenUtil {
                 .withSubject(userId == null ? "" : userId.toString())
                 .withClaim("username", username)
                 .withClaim("email", email)
+                .withClaim("role", role)
                 .withIssuedAt(new Date(now))
                 .withExpiresAt(new Date(now + expiresSeconds * 1000))
                 .sign(alg);

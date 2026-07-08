@@ -36,6 +36,21 @@ const PostDetail = lazy(() => import('./pages/Forum/PostDetail'));
 const ForumSearch = lazy(() => import('./pages/Forum/ForumSearch'));
 const PublishPost = lazy(() => import('./pages/Forum/PublishPost'));
 
+// 求购模块（阶段四重点创新）
+const WantsHome = lazy(() => import('./pages/Want/WantHome'));
+const PublishWant = lazy(() => import('./pages/Want/PublishWant'));
+const WantDetail = lazy(() => import('./pages/Want/WantDetail'));
+
+// 管理员后台模块（懒加载，由 ProtectedRoute 限制仅 admin 角色可访问）
+const AdminLayout = lazy(() => import('./pages/Admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const AdminUsers = lazy(() => import('./pages/Admin/Users'));
+const AdminProducts = lazy(() => import('./pages/Admin/Products'));
+const AdminOrders = lazy(() => import('./pages/Admin/Orders'));
+const AdminPosts = lazy(() => import('./pages/Admin/Posts'));
+const AdminWants = lazy(() => import('./pages/Admin/Wants'));
+const AdminSystem = lazy(() => import('./pages/Admin/System'));
+
 import './App.css';
 import './components/ProductCard/index.css';
 
@@ -75,6 +90,26 @@ function App() {
             <Route path="/forum/search" element={<ForumSearch />} />
             {/* 论坛帖子编辑（保持独立路由） */}
             <Route path="/publish-post/:id/edit" element={<ProtectedRoute><PublishPost /></ProtectedRoute>} />
+
+            {/* ======= 求购路由 ======= */}
+            <Route path="/wants" element={<WantsHome />} />
+            <Route path="/wants/new" element={<ProtectedRoute><PublishWant /></ProtectedRoute>} />
+            <Route path="/wants/:id" element={<WantDetail />} />
+
+            {/* ======= 管理员后台路由 ======= */}
+            <Route
+              path="/admin"
+              element={<ProtectedRoute allowRoles={['admin']}><AdminLayout /></ProtectedRoute>}
+            >
+              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="posts" element={<AdminPosts />} />
+              <Route path="wants" element={<AdminWants />} />
+              <Route path="system" element={<AdminSystem />} />
+            </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

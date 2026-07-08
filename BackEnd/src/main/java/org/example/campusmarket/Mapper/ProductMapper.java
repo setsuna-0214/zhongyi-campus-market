@@ -35,6 +35,14 @@ public interface ProductMapper {
     @Update("UPDATE products SET view_count = view_count + 1 WHERE pro_id = #{productId}")
     int incrementViewCount(@Param("productId") Integer productId);
 
+    // 管理员下架商品（admin_offline=1）。与 is_seal 独立，不改变"已售出"语义
+    @Update("UPDATE products SET admin_offline = 1 WHERE pro_id = #{productId}")
+    int offlineProductByAdmin(@Param("productId") Integer productId);
+
+    // 管理员恢复商品上架（admin_offline=0）
+    @Update("UPDATE products SET admin_offline = 0 WHERE pro_id = #{productId}")
+    int restoreProductByAdmin(@Param("productId") Integer productId);
+
     // 综合搜索商品列表
     // 支持多条件过滤：关键词、分类、位置、状态、价格范围
     // 支持多种排序方式：最新、价格升降序、热度
@@ -65,8 +73,14 @@ public interface ProductMapper {
         LEFT JOIN userinfo ui ON p.saler_id = ui.user_id
         LEFT JOIN (SELECT pro_id, COUNT(*) as cnt FROM fav_products GROUP BY pro_id) f ON f.pro_id = p.pro_id
         <where>
-            <if test="keyword != null and keyword != ''">
-                AND (p.pro_name LIKE CONCAT('%', #{keyword}, '%') OR p.discription LIKE CONCAT('%', #{keyword}, '%'))
+            <!-- 普通用户搜索屏蔽管理员下架的商品，保留"已售/在售"语义不变 -->
+            AND p.admin_offline = 0
+            <if test="keywords != null and keywords.size() > 0">
+                AND (
+                <foreach collection="keywords" item="word" separator=" OR ">
+                    (p.pro_name LIKE CONCAT('%', #{word}, '%') OR p.discription LIKE CONCAT('%', #{word}, '%'))
+                </foreach>
+                )
             </if>
             <if test="category != null and category != ''">
                 AND p.category = #{category}
@@ -118,7 +132,7 @@ public interface ProductMapper {
         @Result(property = "tempSellerRating", column = "tempSellerRating")
     })
     List<ProductDto.ProductDetail> searchProducts(
-        @Param("keyword") String keyword,
+        @Param("keywords") List<String> keywords,
         @Param("category") String category,
         @Param("location") String location,
         @Param("status") String status,
@@ -136,8 +150,14 @@ public interface ProductMapper {
         FROM products p
         LEFT JOIN userinfo ui ON p.saler_id = ui.user_id
         <where>
-            <if test="keyword != null and keyword != ''">
-                AND (p.pro_name LIKE CONCAT('%', #{keyword}, '%') OR p.discription LIKE CONCAT('%', #{keyword}, '%'))
+            <!-- 普通用户搜索屏蔽管理员下架的商品 -->
+            AND p.admin_offline = 0
+            <if test="keywords != null and keywords.size() > 0">
+                AND (
+                <foreach collection="keywords" item="word" separator=" OR ">
+                    (p.pro_name LIKE CONCAT('%', #{word}, '%') OR p.discription LIKE CONCAT('%', #{word}, '%'))
+                </foreach>
+                )
             </if>
             <if test="category != null and category != ''">
                 AND p.category = #{category}
@@ -161,7 +181,7 @@ public interface ProductMapper {
         </script>
     """)
     long countProducts(
-        @Param("keyword") String keyword,
+        @Param("keywords") List<String> keywords,
         @Param("category") String category,
         @Param("location") String location,
         @Param("status") String status,
@@ -195,7 +215,7 @@ public interface ProductMapper {
         LEFT JOIN userinfo ui ON p.saler_id = ui.user_id
         LEFT JOIN (SELECT pro_id, COUNT(*) as cnt FROM fav_products GROUP BY pro_id) f ON f.pro_id = p.pro_id
         LEFT JOIN (SELECT pro_id, COUNT(*) as cnt FROM buy_products GROUP BY pro_id) b ON b.pro_id = p.pro_id
-        WHERE p.pro_id = #{id}
+        WHERE p.pro_id = #{id} AND p.admin_offline = 0
     """)
     @ResultMap("productDetailMap")
     ProductDto.ProductDetail getProductDetail(@Param("id") Integer id);
@@ -216,7 +236,7 @@ public interface ProductMapper {
             ui.username as tempSellerUsername
         FROM products p
         LEFT JOIN userinfo ui ON p.saler_id = ui.user_id
-        WHERE p.category = #{category} AND p.pro_id != #{excludeId}
+        WHERE p.category = #{category} AND p.pro_id != #{excludeId} AND p.admin_offline = 0
         LIMIT 4
     """)
     @ResultMap("productDetailMap")

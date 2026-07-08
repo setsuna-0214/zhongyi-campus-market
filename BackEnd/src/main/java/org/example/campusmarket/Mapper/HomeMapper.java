@@ -56,7 +56,7 @@ public interface HomeMapper {
                    COALESCE(p.view_count, 0) AS views
             FROM products p
             LEFT JOIN userinfo ui ON ui.user_id = p.saler_id
-            WHERE p.is_seal = 0
+            WHERE p.is_seal = 0 AND p.admin_offline = 0
             ORDER BY views DESC, p.pro_id DESC
             LIMIT #{offset}, #{limit}
             """)
@@ -82,7 +82,7 @@ public interface HomeMapper {
                    p.created_at AS createdAt
             FROM products p
             LEFT JOIN userinfo ui ON ui.user_id = p.saler_id
-            WHERE p.is_seal = 0
+            WHERE p.is_seal = 0 AND p.admin_offline = 0
             ORDER BY p.created_at DESC, p.pro_id DESC
             LIMIT #{offset}, #{limit}
             """)

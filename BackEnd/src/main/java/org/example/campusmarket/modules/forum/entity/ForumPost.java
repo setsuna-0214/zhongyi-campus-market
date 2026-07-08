@@ -36,9 +36,17 @@ public class ForumPost {
 
     /**
      * 帖子类型：normal-普通帖, resource-资源帖, help-求助帖
+     * 这是"形态分类"，与下面"内容分类" category 相互独立
      */
     @Column(name = "post_type", length = 20)
     private String postType = "normal";
+
+    /**
+     * 内容分类（与 post_type 形态分类独立，中文直接存储便于展示与过滤）：
+     * 闲置交流 / 求购互助 / 避坑经验 / 校园拼单 / 失物招领 / 交易反馈
+     */
+    @Column(name = "category", length = 40)
+    private String category;
 
     /** 图片URL列表，JSON 数组字符串存储 */
     @Column(name = "images", length = 2000)

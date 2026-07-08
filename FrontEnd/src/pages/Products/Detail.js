@@ -38,7 +38,7 @@ import {
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import './Detail.css';
-import { getProduct, getRelatedProducts, updateProductStatus } from '../../api/products';
+import { getProduct, getRelatedProducts, getRelatedWants, updateProductStatus } from '../../api/products';
 import { getCategoryLabel, getStatusLabel, getStatusColor, getTradeMethodLabel, parseTradeMethod } from '../../utils/labels';
 import { getFavorites, addToFavorites, removeFavoriteByProductId } from '../../api/favorites';
 import { checkIsFollowing, followUser, unfollowUser } from '../../api/user';
@@ -151,6 +151,7 @@ const ProductDetail = () => {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [relatedWants, setRelatedWants] = useState([]);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
@@ -172,11 +173,16 @@ const ProductDetail = () => {
       const data = await getProduct(id);
       setProduct(data);
       try {
-        const related = await getRelatedProducts(id);
+        const [related, wants] = await Promise.all([
+          getRelatedProducts(id),
+          getRelatedWants(id),
+        ]);
         setRelatedProducts(related);
+        setRelatedWants(Array.isArray(wants) ? wants : []);
       } catch {
-        // 关联商品获取失败时不阻断详情渲染
+        // 相关推荐/相关求购获取失败时不阻断详情渲染
         setRelatedProducts([]);
+        setRelatedWants([]);
       }
     } catch (error) {
       message.error(error.message || '获取商品详情失败');
@@ -636,6 +642,30 @@ const ProductDetail = () => {
                     </div>
                   ))}
                 </div>
+              </Card>
+            )}
+
+            {relatedWants.length > 0 && (
+              <Card title="相关求购" className="related-products-card" style={{ marginTop: 16 }}>
+                <List
+                  dataSource={relatedWants.slice(0, 5)}
+                  renderItem={(want) => (
+                    <List.Item style={{ cursor: 'pointer' }} onClick={() => navigate(`/wants/${want.id}`)}>
+                      <List.Item.Meta
+                        title={want.title}
+                        description={
+                          <Space wrap>
+                            <Tag color="blue">{getCategoryLabel(want.category)}</Tag>
+                            <Tag color={want.status === 'OPEN' ? 'blue' : want.status === 'MATCHED' ? 'green' : 'default'}>
+                              {want.status === 'OPEN' ? '求购中' : want.status === 'MATCHED' ? '已匹配' : '已关闭'}
+                            </Tag>
+                            <span>预算：¥{want.minPrice ?? 0} - ¥{want.maxPrice ?? '不限'}</span>
+                          </Space>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
               </Card>
             )}
           </Col>

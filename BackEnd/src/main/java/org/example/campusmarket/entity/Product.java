@@ -22,6 +22,9 @@ public class Product {
     //物品是否售出
     private boolean is_seal;
 
+    //管理员下架标记：false-在售，true-已被管理员下架（与 is_seal 独立，区分"已售出"与"违规下架"）
+    private boolean admin_offline;
+
     @JsonProperty("description")
     private String discription;
     
