@@ -4,6 +4,8 @@ import org.example.campusmarket.DTO.ProductDto;
 import org.example.campusmarket.Service.ProductService;
 import org.example.campusmarket.entity.Product;
 import org.example.campusmarket.entity.Result;
+import org.example.campusmarket.modules.want.dto.WantDto;
+import org.example.campusmarket.modules.want.service.WantMatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +24,9 @@ public class ProductController {
 
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private WantMatchService wantMatchService;
 
     // 搜索商品接口
     // GET /products
@@ -64,6 +69,17 @@ public class ProductController {
     @GetMapping("/{id}/related")
     public List<ProductDto.ProductDetail> getRelatedProducts(@PathVariable Integer id) {
         return productService.getRelatedProducts(id);
+    }
+
+    // 获取与当前商品相关的求购信息（用于商品详情页展示）
+    @GetMapping("/{id}/related-wants")
+    public Result getRelatedWants(@PathVariable Integer id) {
+        ProductDto.ProductDetail detail = productService.getProductDetail(id);
+        if (detail == null) {
+            return new Result(404, "商品不存在", null);
+        }
+        List<WantDto.WantItem> wants = wantMatchService.findRelatedWants(detail.getCategory(), detail.getTitle());
+        return new Result(200, "操作成功", wants);
     }
 
     // 有效的商品分类代码

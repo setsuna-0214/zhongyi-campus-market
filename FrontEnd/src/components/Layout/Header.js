@@ -15,12 +15,13 @@ import {
   TeamOutlined,
   SettingOutlined,
   RightOutlined,
-  FormOutlined
+  FormOutlined,
+  SafetyCertificateOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Header.css';
 import { getCurrentUser } from '../../api/user';
-import { isLoggedIn as checkIsLoggedIn, getCurrentUser as getLocalUser, clearAuth } from '../../utils/auth';
+import { isLoggedIn as checkIsLoggedIn, getCurrentUser as getLocalUser, clearAuth, isAdmin } from '../../utils/auth';
 
 const { Header: AntHeader } = Layout;
 
@@ -204,6 +205,13 @@ const Header = () => {
       onClick: () => navigate('/profile?t=my-posts')
     },
     { type: 'divider' },
+    // 仅管理员显示"管理后台"入口
+    ...(isAdmin() ? [{
+      key: 'admin',
+      icon: <SafetyCertificateOutlined />,
+      label: <span className="menu-label">管理后台<RightOutlined className="menu-arrow" /></span>,
+      onClick: () => navigate('/admin/dashboard')
+    }] : []),
     {
       key: 'settings',
       icon: <SettingOutlined />,

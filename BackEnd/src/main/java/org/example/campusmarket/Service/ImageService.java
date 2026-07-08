@@ -9,6 +9,7 @@ import org.example.campusmarket.exception.ImageUploadException;
 import org.example.campusmarket.exception.ImageValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,8 +72,12 @@ public class ImageService {
     private final OSS ossClient;
     private final OssProperties ossProperties;
 
-    public ImageService(OSS ossClient, OssProperties ossProperties) {
-        this.ossClient = ossClient;
+    /**
+     * 构造时通过 ObjectProvider 间接接收 OSS 客户端，允许其缺失（未配置 OSS 时 Bean 为 null）。
+     * 这样可保证应用在未配置对象存储时仍能正常启动，仅在真正调用上传时给出中文降级提示。
+     */
+    public ImageService(ObjectProvider<OSS> ossClientProvider, OssProperties ossProperties) {
+        this.ossClient = ossClientProvider.getIfAvailable();
         this.ossProperties = ossProperties;
     }
 
@@ -98,6 +103,10 @@ public class ImageService {
      * @throws ImageUploadException 当OSS上传操作失败时
      */
     public String uploadImage(MultipartFile file, String directory) {
+        // 未配置对象存储时降级提示，避免直接 NPE
+        if (ossClient == null || !ossProperties.isConfigured()) {
+            throw new ImageUploadException("图片上传服务未配置，暂时不可用");
+        }
         long startTime = System.currentTimeMillis();
         String originalFilename = file.getOriginalFilename();
         long fileSize = file.getSize();
@@ -167,6 +176,10 @@ public class ImageService {
     public void deleteImage(String imageUrl) {
         if (imageUrl == null || imageUrl.isEmpty()) {
             log.debug("图片URL为空，跳过删除操作");
+            return;
+        }
+        if (ossClient == null || !ossProperties.isConfigured()) {
+            log.debug("OSS 未配置，跳过图片删除操作 - url: {}", imageUrl);
             return;
         }
 

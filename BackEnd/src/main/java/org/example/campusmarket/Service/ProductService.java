@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 // 商品服务层，处理商品相关的业务逻辑
@@ -22,6 +24,24 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private static final Logger log = LoggerFactory.getLogger(ProductService.class);
+
+    private static final Map<String, List<String>> SEARCH_SYNONYMS = Map.ofEntries(
+            Map.entry("球鞋", List.of("球鞋", "跑鞋", "运动鞋", "鞋")),
+            Map.entry("跑鞋", List.of("跑鞋", "球鞋", "运动鞋", "鞋")),
+            Map.entry("运动鞋", List.of("运动鞋", "跑鞋", "球鞋", "鞋")),
+            Map.entry("鞋", List.of("鞋", "跑鞋", "球鞋", "运动鞋")),
+            Map.entry("平板", List.of("平板", "ipad", "iPad", "pad", "Pad")),
+            Map.entry("ipad", List.of("ipad", "iPad", "平板", "pad", "Pad")),
+            Map.entry("pad", List.of("pad", "Pad", "ipad", "iPad", "平板")),
+            Map.entry("电脑", List.of("电脑", "笔记本", "笔记本电脑", "laptop", "MacBook")),
+            Map.entry("笔记本", List.of("笔记本", "笔记本电脑", "电脑", "laptop", "MacBook")),
+            Map.entry("耳机", List.of("耳机", "蓝牙耳机", "头戴耳机", "无线耳机", "headphone", "AirPods")),
+            Map.entry("手机", List.of("手机", "iphone", "iPhone", "安卓", "华为", "小米")),
+            Map.entry("教材", List.of("教材", "课本", "书", "资料")),
+            Map.entry("书", List.of("书", "教材", "课本", "资料")),
+            Map.entry("自行车", List.of("自行车", "单车", "山地车", "公路车")),
+            Map.entry("单车", List.of("单车", "自行车", "山地车", "公路车"))
+    );
 
     @Autowired
     private ProductMapper productMapper;
@@ -50,11 +70,13 @@ public class ProductService {
         // 计算分页偏移量 (Offset)
         int offset = (page - 1) * pageSize;
         
+        List<String> keywords = expandSearchKeywords(keyword);
+        
         // 调用 Mapper 查询商品列表
-        List<ProductDto.ProductDetail> items = productMapper.searchProducts(keyword, category, location, status, priceMin, priceMax, sort, offset, pageSize);
+        List<ProductDto.ProductDetail> items = productMapper.searchProducts(keywords, category, location, status, priceMin, priceMax, sort, offset, pageSize);
         
         // 调用 Mapper 查询符合条件的总数
-        long total = productMapper.countProducts(keyword, category, location, status, priceMin, priceMax);
+        long total = productMapper.countProducts(keywords, category, location, status, priceMin, priceMax);
         
         // 对查询结果进行后处理：填充图片列表和卖家信息结构
         if (items != null) {
@@ -74,6 +96,42 @@ public class ProductService {
         
         // 返回包含列表和总数的响应对象
         return new ProductDto.ProductListResponse(items, total);
+    }
+    
+    private List<String> expandSearchKeywords(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String cleaned = keyword.trim()
+                .replaceAll("[，。！？、,.!?;；:：()（）\\[\\]【】]+", " ")
+                .replaceAll("求购|想买|收一个|收台|收|二手|闲置|有没有|有人出|出吗", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
+        if (cleaned.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Set<String> keywords = new LinkedHashSet<>();
+        keywords.add(cleaned);
+        for (String token : cleaned.split("\\s+")) {
+            if (token.length() >= 2) {
+                keywords.add(token);
+            }
+        }
+
+        String lower = cleaned.toLowerCase();
+        SEARCH_SYNONYMS.forEach((trigger, words) -> {
+            if (cleaned.contains(trigger) || lower.contains(trigger.toLowerCase())) {
+                keywords.addAll(words);
+            }
+        });
+
+        return keywords.stream()
+                .filter(word -> word != null && !word.trim().isEmpty())
+                .map(String::trim)
+                .limit(12)
+                .collect(Collectors.toList());
     }
     
     /**

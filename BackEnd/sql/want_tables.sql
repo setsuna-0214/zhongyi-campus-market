@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS `want_requests` (
+    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '求购ID',
+    `user_id` int NOT NULL COMMENT '发布用户ID',
+    `title` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '求购标题',
+    `description` text COLLATE utf8mb4_unicode_ci COMMENT '求购描述',
+    `category` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '商品类目：electronics/books/daily/other',
+    `min_price` decimal(10,2) DEFAULT NULL COMMENT '最低预算',
+    `max_price` decimal(10,2) DEFAULT NULL COMMENT '最高预算',
+    `keywords` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '关键词，逗号分隔',
+    `expected_condition` varchar(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '期望成色（当前仅展示）',
+    `urgency` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '紧急程度：低/中/高',
+    `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'OPEN' COMMENT '状态：OPEN/MATCHED/CLOSED',
+    `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发布时间',
+    `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_category` (`category`),
+    KEY `idx_status` (`status`),
+    KEY `idx_created_at` (`created_at`),
+    CONSTRAINT `want_requests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='求购需求表';

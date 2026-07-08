@@ -248,6 +248,44 @@
   background: rgba(255, 77, 79, 0.08);
 }
 
+.forum-recommend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.forum-recommend-card {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.forum-recommend-card:hover {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.forum-recommend-card img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f5f7fb;
+  flex-shrink: 0;
+}
+
+.forum-recommend-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* ==================== 分页 ==================== */
 .forum-pagination {
   display: flex;

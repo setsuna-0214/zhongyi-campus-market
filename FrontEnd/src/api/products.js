@@ -14,6 +14,7 @@ const impl = useMock ? mock : real;
 export const searchProducts = impl.searchProducts;
 export const getProduct = impl.getProduct;
 export const getRelatedProducts = impl.getRelatedProducts;
+export const getRelatedWants = impl.getRelatedWants;
 export const createProduct = impl.createProduct;
 export const updateProduct = impl.updateProduct;
 export const updateProductStatus = impl.updateProductStatus;

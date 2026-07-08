@@ -27,6 +27,15 @@ const POST_TYPE_TABS = [
   { key: 'help', label: '求助帖' },
 ];
 
+const POST_CATEGORY_OPTIONS = [
+  { label: '闲置交流', value: '闲置交流' },
+  { label: '求购互助', value: '求购互助' },
+  { label: '避坑经验', value: '避坑经验' },
+  { label: '校园拼单', value: '校园拼单' },
+  { label: '失物招领', value: '失物招领' },
+  { label: '交易反馈', value: '交易反馈' },
+];
+
 const ACCEPTED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
 const MAX_IMAGES = 9;
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -55,6 +64,7 @@ export default function PublishPost({ unified = false }) {
       form.setFieldsValue({
         title: post.title,
         content: post.content,
+        category: post.category || undefined,
       });
       setPostType(post.postType || 'normal');
       if (post.images && post.images.length > 0) {
@@ -162,6 +172,7 @@ export default function PublishPost({ unified = false }) {
         title: values.title,
         content: values.content,
         postType,
+        category: values.category,
         images,
       };
       if (isEditMode) {
@@ -171,7 +182,8 @@ export default function PublishPost({ unified = false }) {
       } else {
         const result = await createPost(payload);
         message.success('帖子发布成功！');
-        navigate(`/forum/posts/${result.id || ''}`);
+        const createdId = result?.id || result?.postId || result?.data?.id;
+        navigate(createdId ? `/forum/posts/${createdId}` : '/forum');
       }
     } catch (e) {
       message.error(e.message || '操作失败');
@@ -221,6 +233,18 @@ export default function PublishPost({ unified = false }) {
           scrollToFirstError
           autoComplete="off"
         >
+          <Form.Item
+            name="category"
+            label={<span className="form-label-decorated">内容分类</span>}
+            rules={[{ required: true, message: '请选择内容分类' }]}
+          >
+            <Select
+              placeholder="请选择帖子内容分类"
+              options={POST_CATEGORY_OPTIONS}
+              allowClear
+            />
+          </Form.Item>
+
           <Form.Item
             name="title"
             label={<span className="form-label-decorated">帖子标题</span>}

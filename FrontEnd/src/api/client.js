@@ -6,7 +6,7 @@
 import axios from 'axios';
 import { message } from 'antd';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+const baseURL = import.meta.env.VITE_API_BASE_URL || '/api';
 const DEBUG = import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true';
 
 const client = axios.create({

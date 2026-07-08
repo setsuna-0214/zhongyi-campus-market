@@ -24,12 +24,20 @@ public class OssConfig {
 
     /**
      * 创建并配置OSS客户端Bean
-     * 
+     * <p>当 OssProperties 的 endpoint/accessKeyId/accessKeySecret/bucketName 任一为空时，
+     * 不创建 OSS 客户端而是返回 null，使应用在没有对象存储配置时也能正常启动。
+     * 图片上传相关接口会在调用时给出中文提示，详见 ImageService。
+     *
      * @param properties OSS配置属性
-     * @return 配置好的OSS客户端实例
+     * @return 配置好的OSS客户端实例；未配置时返回 null
      */
     @Bean
     public OSS ossClient(OssProperties properties) {
+        if (!properties.isConfigured()) {
+            log.warn("OSS 配置不完整（endpoint/accessKeyId/accessKeySecret/bucketName 至少一项为空），"
+                    + "已跳过 OSS 客户端初始化，图片上传功能将不可用。配置完成后重启即可启用。");
+            return null;
+        }
         try {
             // 创建OSS客户端
             this.ossClient = new OSSClientBuilder().build(
@@ -38,15 +46,16 @@ public class OssConfig {
                 properties.getAccessKeySecret()
             );
 
-            log.info("OSS客户端初始化成功 - endpoint: {}, bucket: {}", 
+            log.info("OSS客户端初始化成功 - endpoint: {}, bucket: {}",
                      properties.getEndpoint(), properties.getBucketName());
 
             return this.ossClient;
 
         } catch (Exception e) {
-            log.error("OSS客户端初始化失败 - endpoint: {}, bucket: {}, error: {}", 
+            log.error("OSS客户端初始化失败 - endpoint: {}, bucket: {}, error: {}",
                       properties.getEndpoint(), properties.getBucketName(), e.getMessage(), e);
-            throw new IllegalStateException("无法初始化OSS客户端", e);
+            // 初始化失败也降级为 null，避免阻断应用启动
+            return null;
         }
     }
 

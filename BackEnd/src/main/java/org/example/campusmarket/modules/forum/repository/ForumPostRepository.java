@@ -22,10 +22,15 @@ public interface ForumPostRepository extends JpaRepository<ForumPost, Long> {
     @Query("UPDATE ForumPost p SET p.isDeleted = true WHERE p.id = :id AND p.userId = :userId")
     int softDeleteByIdAndUserId(@Param("id") Long id, @Param("userId") Integer userId);
 
-    /** 管理员删除 */
+    /** 管理员删除（隐藏帖子，等价于 is_deleted=1） */
     @Modifying
     @Query("UPDATE ForumPost p SET p.isDeleted = true WHERE p.id = :id")
     int softDeleteById(@Param("id") Long id);
+
+    /** 管理员恢复帖子（is_deleted=0），与 softDeleteById 配对 */
+    @Modifying
+    @Query("UPDATE ForumPost p SET p.isDeleted = false WHERE p.id = :id")
+    int restoreById(@Param("id") Long id);
 
     /** 批量同步浏览量 */
     @Modifying

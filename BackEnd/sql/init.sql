@@ -258,7 +258,8 @@ CREATE TABLE IF NOT EXISTS `forum_posts` (
     `user_id` int NOT NULL COMMENT '发帖用户ID',
     `title` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '帖子标题',
     `content` text COLLATE utf8mb4_unicode_ci COMMENT '帖子正文内容',
-    `post_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'normal' COMMENT '帖子类型：normal-普通帖, resource-资源帖, help-求助帖',
+    `post_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'normal' COMMENT '帖子形态类型：normal-普通帖, resource-资源帖, help-求助帖',
+    `category` varchar(40) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '内容分类：闲置交流/求购互助/避坑经验/校园拼单/失物招领/交易反馈',
     `images` varchar(2000) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '图片URL列表，JSON数组格式',
     `view_count` int DEFAULT '0' COMMENT '浏览量（从Redis同步）',
     `like_count` int DEFAULT '0' COMMENT '点赞数（从Redis同步）',
@@ -270,6 +271,7 @@ CREATE TABLE IF NOT EXISTS `forum_posts` (
     PRIMARY KEY (`id`),
     KEY `idx_user_id` (`user_id`),
     KEY `idx_post_type` (`post_type`),
+    KEY `idx_category` (`category`),
     KEY `idx_created_at` (`created_at`),
     KEY `idx_like_count` (`like_count`),
     KEY `idx_view_count` (`view_count`),
@@ -316,3 +318,18 @@ CREATE TABLE IF NOT EXISTS `forum_favorites` (
     CONSTRAINT `forum_favorites_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
     CONSTRAINT `forum_favorites_ibfk_2` FOREIGN KEY (`post_id`) REFERENCES `forum_posts` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='论坛帖子收藏表';
+
+-- ============================================
+-- 17. 管理员后台新增字段：商品管理员下架标记
+-- ============================================
+-- 说明：admin_offline 与 is_seal 语义独立。
+--   is_seal 表示交易结果（0=在售,1=已售）；
+--   admin_offline 表示治理动作（0=正常,1=被管理员下架）。
+-- 注意：MySQL 不支持 ADD COLUMN IF NOT EXISTS，对已存在的旧库需手动执行下面的 ALTER 语句；
+--       首次建库时 docker-entrypoint-initdb.d 会自动执行本脚本，无需额外操作。
+ALTER TABLE `products` ADD COLUMN `admin_offline` TINYINT(1) DEFAULT '0' COMMENT '管理员下架：0-正常,1-已下架';
+ALTER TABLE `products` ADD KEY `idx_admin_offline` (`admin_offline`);
+
+-- 论坛帖子新增"内容分类"列（与 post_type 形态分类独立，旧库需手动执行）
+ALTER TABLE `forum_posts` ADD COLUMN `category` VARCHAR(40) DEFAULT NULL COMMENT '内容分类：闲置交流/求购互助/避坑经验/校园拼单/失物招领/交易反馈';
+ALTER TABLE `forum_posts` ADD KEY `idx_category` (`category`);

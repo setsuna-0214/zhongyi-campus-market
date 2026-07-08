@@ -26,7 +26,6 @@ import ProductCard from '../../components/ProductCard';
 import { getHotProducts, getLatestProducts } from '../../api/home';
 import { getCategoryIcons } from '../../utils/theme';
 import { message } from 'antd';
-import { getStatusLabel } from '../../utils/labels';
 import { isLoggedIn as checkIsLoggedIn } from '../../utils/auth';
 
 const { Title, Paragraph } = Typography;
@@ -312,7 +311,7 @@ const Home = () => {
     try {
       const res = await getHotProducts(page, PAGE_SIZE);
       const items = res.items || res;
-      const filtered = (Array.isArray(items) ? items : []).filter(p => getStatusLabel(p.status) === '在售');
+      const filtered = Array.isArray(items) ? items : [];
 
       startTransition(() => {
         if (append) {
@@ -344,7 +343,7 @@ const Home = () => {
     try {
       const res = await getLatestProducts(page, PAGE_SIZE);
       const items = res.items || res;
-      const filtered = (Array.isArray(items) ? items : []).filter(p => getStatusLabel(p.status) === '在售');
+      const filtered = Array.isArray(items) ? items : [];
 
       startTransition(() => {
         if (append) {
