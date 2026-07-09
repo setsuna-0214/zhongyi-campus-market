@@ -1,7 +1,7 @@
 /**
  * 帖子发布页（独立文件）
- * 可选择帖子类型（普通/资源/求助），支持标题、内容、图片上传
- * 样式参考商品发布页，使用 SubTabSlider 切换类型
+ * 只保留论坛一级分类，支持标题、内容、图片上传
+ * 样式参考商品发布页
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -13,7 +13,6 @@ import {
   CheckCircleOutlined, EyeOutlined, DeleteOutlined,
   CloudUploadOutlined, LeftOutlined, RightOutlined, CloseOutlined
 } from '@ant-design/icons';
-import SubTabSlider from '../../components/SubTabSlider';
 import { createPost, updatePost, getPostDetail } from '../../api/forum';
 import './Forum.css';
 import '../../styles/form.css';
@@ -21,19 +20,11 @@ import '../../styles/form.css';
 const { TextArea } = Input;
 const { Title, Text } = Typography;
 
-const POST_TYPE_TABS = [
-  { key: 'normal', label: '普通帖' },
-  { key: 'resource', label: '资源帖' },
-  { key: 'help', label: '求助帖' },
-];
-
 const POST_CATEGORY_OPTIONS = [
-  { label: '闲置交流', value: '闲置交流' },
+  { label: '交易交流', value: '交易交流' },
   { label: '求购互助', value: '求购互助' },
-  { label: '避坑经验', value: '避坑经验' },
-  { label: '校园拼单', value: '校园拼单' },
+  { label: '经验反馈', value: '经验反馈' },
   { label: '失物招领', value: '失物招领' },
-  { label: '交易反馈', value: '交易反馈' },
 ];
 
 const ACCEPTED_FORMATS = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
@@ -46,7 +37,6 @@ export default function PublishPost({ unified = false }) {
   const isEditMode = !!postId;
 
   const [form] = Form.useForm();
-  const [postType, setPostType] = useState('normal');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
   const [imageList, setImageList] = useState([]);
@@ -66,7 +56,6 @@ export default function PublishPost({ unified = false }) {
         content: post.content,
         category: post.category || undefined,
       });
-      setPostType(post.postType || 'normal');
       if (post.images && post.images.length > 0) {
         setImageList(post.images.map((url, i) => ({
           uid: `existing-${i}`,
@@ -171,7 +160,7 @@ export default function PublishPost({ unified = false }) {
       const payload = {
         title: values.title,
         content: values.content,
-        postType,
+        postType: 'normal',
         category: values.category,
         images,
       };
@@ -182,8 +171,7 @@ export default function PublishPost({ unified = false }) {
       } else {
         const result = await createPost(payload);
         message.success('帖子发布成功！');
-        const createdId = result?.id || result?.postId || result?.data?.id;
-        navigate(createdId ? `/forum/posts/${createdId}` : '/forum');
+        navigate(`/forum/posts/${result.id || ''}`);
       }
     } catch (e) {
       message.error(e.message || '操作失败');
@@ -212,16 +200,6 @@ export default function PublishPost({ unified = false }) {
       )}
 
       <Card className="publish-post-card">
-        {/* 帖子类型选择 */}
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>帖子类型</div>
-          <SubTabSlider
-            tabs={POST_TYPE_TABS}
-            activeKey={postType}
-            onChange={setPostType}
-          />
-        </div>
-
         <Form
           form={form}
           layout="vertical"
@@ -235,11 +213,11 @@ export default function PublishPost({ unified = false }) {
         >
           <Form.Item
             name="category"
-            label={<span className="form-label-decorated">内容分类</span>}
-            rules={[{ required: true, message: '请选择内容分类' }]}
+            label={<span className="form-label-decorated">论坛分类</span>}
+            rules={[{ required: true, message: '请选择论坛分类' }]}
           >
             <Select
-              placeholder="请选择帖子内容分类"
+              placeholder="请选择论坛分类"
               options={POST_CATEGORY_OPTIONS}
               allowClear
             />

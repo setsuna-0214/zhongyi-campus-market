@@ -106,7 +106,7 @@ export default function WantsHome() {
                   <div className="forum-post-card" style={{ width: '100%' }}>
                     <div className="forum-post-body">
                       <div className="forum-post-header">
-                        <Space size={8} align="center">
+                        <Space size={8} align="center" wrap>
                           <Text strong className="forum-post-author">{want.username}</Text>
                           <Tag color="blue">{CATEGORY_LABEL[want.category] || want.category || '未分类'}</Tag>
                           <Tag color={STATUS_COLOR[want.status] || 'default'}>{STATUS_LABEL[want.status] || want.status}</Tag>
@@ -122,6 +122,19 @@ export default function WantsHome() {
                         {want.keywords && <Tag color="cyan">关键词：{want.keywords}</Tag>}
                         {want.expectedCondition && <Tag color="purple">期望成色：{want.expectedCondition}</Tag>}
                       </Space>
+                      <div style={{ marginTop: 12 }}>
+                        <Button
+                          size="small"
+                          type="primary"
+                          ghost
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            navigate(`/wants/${want.id}`);
+                          }}
+                        >
+                          查看匹配商品
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </List.Item>

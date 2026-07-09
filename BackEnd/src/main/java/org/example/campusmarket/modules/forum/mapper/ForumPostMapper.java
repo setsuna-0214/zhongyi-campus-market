@@ -43,7 +43,17 @@ public interface ForumPostMapper {
                 AND fp.post_type = #{postType}
             </if>
             <if test="category != null and category != '' and category != 'all'">
-                AND fp.category = #{category}
+                <choose>
+                    <when test="categories != null and categories.size() > 0">
+                        AND fp.category IN
+                        <foreach collection="categories" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        AND fp.category = #{category}
+                    </otherwise>
+                </choose>
             </if>
             <if test="keyword != null and keyword != ''">
                 AND (fp.title LIKE CONCAT('%', #{keyword}, '%')
@@ -80,6 +90,7 @@ public interface ForumPostMapper {
     List<ForumPostDto.PostListItem> searchPosts(
         @Param("postType") String postType,
         @Param("category") String category,
+        @Param("categories") List<String> categories,
         @Param("keyword") String keyword,
         @Param("userId") Integer userId,
         @Param("sort") String sort,
@@ -100,7 +111,17 @@ public interface ForumPostMapper {
                 AND fp.post_type = #{postType}
             </if>
             <if test="category != null and category != '' and category != 'all'">
-                AND fp.category = #{category}
+                <choose>
+                    <when test="categories != null and categories.size() > 0">
+                        AND fp.category IN
+                        <foreach collection="categories" item="item" open="(" separator="," close=")">
+                            #{item}
+                        </foreach>
+                    </when>
+                    <otherwise>
+                        AND fp.category = #{category}
+                    </otherwise>
+                </choose>
             </if>
             <if test="keyword != null and keyword != ''">
                 AND (fp.title LIKE CONCAT('%', #{keyword}, '%')
@@ -115,6 +136,7 @@ public interface ForumPostMapper {
     long countPosts(
         @Param("postType") String postType,
         @Param("category") String category,
+        @Param("categories") List<String> categories,
         @Param("keyword") String keyword,
         @Param("userId") Integer userId
     );

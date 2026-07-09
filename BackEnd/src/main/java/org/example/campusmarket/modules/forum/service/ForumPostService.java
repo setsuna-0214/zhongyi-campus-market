@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.example.campusmarket.Service.SystemMessageService;
 import org.example.campusmarket.modules.forum.dto.ForumPostDto;
 import org.example.campusmarket.modules.forum.entity.ForumPost;
 import org.example.campusmarket.modules.forum.mapper.ForumPostMapper;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 论坛帖子 Service
@@ -26,6 +28,11 @@ public class ForumPostService {
     private final ForumPostRepository postRepository;
     private final ForumPostMapper postMapper;
     private final ObjectMapper objectMapper;
+    private final SystemMessageService systemMessageService;
+    private static final Map<String, List<String>> CATEGORY_GROUPS = Map.of(
+            "交易交流", List.of("交易交流", "闲置交流", "校园拼单"),
+            "经验反馈", List.of("经验反馈", "避坑经验", "交易反馈")
+    );
 
     // ----------------------------------------------------------------
     // 分页查询（MyBatis）
@@ -46,14 +53,22 @@ public class ForumPostService {
                                                     Integer userId, String sort,
                                                     int page, int pageSize) {
         int offset = (page - 1) * pageSize;
+        List<String> categories = resolveCategoryGroup(category);
         List<ForumPostDto.PostListItem> posts = postMapper.searchPosts(
-                postType, category, keyword, userId, sort, offset, pageSize);
-        long total = postMapper.countPosts(postType, category, keyword, userId);
+                postType, category, categories, keyword, userId, sort, offset, pageSize);
+        long total = postMapper.countPosts(postType, category, categories, keyword, userId);
 
         // 解析图片 JSON，提取 coverImage
         posts.forEach(this::processPostImages);
 
         return new ForumPostDto.PostPageResult(posts, total, page, pageSize);
+    }
+
+    private List<String> resolveCategoryGroup(String category) {
+        if (category == null || category.isBlank() || "all".equals(category)) {
+            return List.of();
+        }
+        return CATEGORY_GROUPS.getOrDefault(category, List.of(category));
     }
 
     /**
@@ -140,10 +155,20 @@ public class ForumPostService {
      */
     @Transactional
     public void adminHidePost(Long postId) {
+        ForumPost post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("帖子不存在"));
         int affected = postRepository.softDeleteById(postId);
         if (affected == 0) {
             throw new RuntimeException("帖子不存在");
         }
+        systemMessageService.createMessage(
+                post.getUserId(),
+                "forum_post_admin_deleted",
+                "帖子已被删除",
+                "你的帖子《" + post.getTitle() + "》已被管理员删除，普通用户将无法继续查看该帖子。",
+                "/forum",
+                "查看论坛"
+        );
     }
 
     /**

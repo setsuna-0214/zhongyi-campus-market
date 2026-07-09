@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Card, List, Avatar, Tag, Button, Select, Space, Spin, Empty,
+  Card, List, Avatar, Tag, Button, Space, Spin, Empty,
   Pagination, Typography, Divider, Tooltip
 } from 'antd';
 import {
@@ -19,30 +19,23 @@ import './Forum.css';
 
 const { Title, Text, Paragraph } = Typography;
 
-const POST_TYPE_OPTIONS = [
-  { label: '全部', value: 'all' },
-  { label: '普通帖', value: 'normal' },
-  { label: '资源帖', value: 'resource' },
-  { label: '求助帖', value: 'help' },
-];
-
-// 内容分类（与形态分类独立）：闲置交流/求购互助/避坑经验/校园拼单/失物招领/交易反馈
+// 论坛只保留一层分类，旧分类在展示和筛选时归并到这几个入口。
 const CATEGORY_OPTIONS = [
   { label: '全部', value: 'all' },
-  { label: '闲置交流', value: '闲置交流' },
+  { label: '交易交流', value: '交易交流' },
   { label: '求购互助', value: '求购互助' },
-  { label: '避坑经验', value: '避坑经验' },
-  { label: '校园拼单', value: '校园拼单' },
+  { label: '经验反馈', value: '经验反馈' },
   { label: '失物招领', value: '失物招领' },
-  { label: '交易反馈', value: '交易反馈' },
 ];
 const CATEGORY_COLOR = {
+  '交易交流': 'blue',
   '闲置交流': 'blue',
+  '校园拼单': 'blue',
   '求购互助': 'orange',
-  '避坑经验': 'red',
-  '校园拼单': 'green',
+  '经验反馈': 'green',
+  '避坑经验': 'green',
+  '交易反馈': 'green',
   '失物招领': 'purple',
-  '交易反馈': 'cyan',
 };
 
 const SORT_OPTIONS = [
@@ -50,18 +43,23 @@ const SORT_OPTIONS = [
   { label: '最热', value: 'hot', icon: <FireOutlined /> },
 ];
 
-const POST_TYPE_CONFIG = {
-  normal: { color: 'blue', label: '普通' },
-  resource: { color: 'green', label: '资源' },
-  help: { color: 'orange', label: '求助' },
+const CATEGORY_LABEL = {
+  '闲置交流': '交易交流',
+  '校园拼单': '交易交流',
+  '避坑经验': '经验反馈',
+  '交易反馈': '经验反馈',
 };
+
+function getCategoryLabel(category) {
+  return CATEGORY_LABEL[category] || category;
+}
 
 export default function ForumHome() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({ type: 'all', category: 'all', sort: 'latest' });
+  const [filters, setFilters] = useState({ category: 'all', sort: 'latest' });
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
@@ -69,7 +67,6 @@ export default function ForumHome() {
     setLoading(true);
     try {
       const result = await getPosts({
-        type: filters.type,
         category: filters.category,
         sort: filters.sort,
         page,
@@ -138,13 +135,12 @@ export default function ForumHome() {
         {/* 筛选栏 */}
         <Card className="forum-filter-card">
           <div className="forum-filter-bar">
-            {/* 帖子类型滑块 */}
             <div className="forum-type-tabs">
-              {POST_TYPE_OPTIONS.map(opt => (
+              {CATEGORY_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
-                  className={`forum-type-tab ${filters.type === opt.value ? 'active' : ''}`}
-                  onClick={() => handleFilterChange('type', opt.value)}
+                  className={`forum-type-tab ${filters.category === opt.value ? 'active' : ''}`}
+                  onClick={() => handleFilterChange('category', opt.value)}
                 >
                   {opt.label}
                 </button>
@@ -166,19 +162,6 @@ export default function ForumHome() {
                 </Button>
               ))}
             </Space>
-          </div>
-
-          {/* 内容分类筛选 */}
-          <div className="forum-type-tabs" style={{ marginTop: 12 }}>
-            {CATEGORY_OPTIONS.map(opt => (
-              <button
-                key={opt.value}
-                className={`forum-type-tab ${filters.category === opt.value ? 'active' : ''}`}
-                onClick={() => handleFilterChange('category', opt.value)}
-              >
-                {opt.label}
-              </button>
-            ))}
           </div>
         </Card>
 
@@ -212,15 +195,9 @@ export default function ForumHome() {
                         <div className="forum-post-header">
                           <Space size={8} align="center">
                             <Text strong className="forum-post-author">{post.userNickname}</Text>
-                            <Tag
-                              color={POST_TYPE_CONFIG[post.postType]?.color || 'default'}
-                              className="forum-post-type-tag"
-                            >
-                              {POST_TYPE_CONFIG[post.postType]?.label || post.postType}
-                            </Tag>
                             {post.category && (
                               <Tag color={CATEGORY_COLOR[post.category] || 'default'}>
-                                {post.category}
+                                {getCategoryLabel(post.category)}
                               </Tag>
                             )}
                             <Text type="secondary" className="forum-post-time">{formatTime(post.createdAt)}</Text>

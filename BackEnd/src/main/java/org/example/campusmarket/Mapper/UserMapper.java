@@ -51,6 +51,7 @@ public interface UserMapper {
             SELECT pro_id, pro_name, price, is_seal, discription, picture, saler_id
             FROM products
             WHERE saler_id = #{userId}
+              AND admin_offline = 0
             ORDER BY pro_id DESC
             """)
     List<Product> findPublishedProducts(@Param("userId") Integer userId);
@@ -71,6 +72,7 @@ public interface UserMapper {
             FROM fav_products fp
             JOIN products p ON p.pro_id = fp.pro_id
             WHERE fp.user_id = #{userId}
+              AND p.admin_offline = 0
             ORDER BY p.pro_id DESC
             """)
     List<Product> findFavoriteProducts(@Param("userId") Integer userId);

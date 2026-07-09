@@ -101,7 +101,7 @@ public class WantMatchService {
 
         // 2) 关键词命中
         List<String> hitKeywords = new ArrayList<>();
-        for (String keyword : splitKeywords(want.getKeywords())) {
+        for (String keyword : collectKeywords(want)) {
             String kw = safeLower(keyword);
             boolean hitTitle = productTitle.contains(kw);
             boolean hitDesc = productDescription.contains(kw);
@@ -158,9 +158,40 @@ public class WantMatchService {
         if (keywords == null || keywords.isBlank()) return List.of();
         return Arrays.stream(keywords.split("[,，、\\s]+"))
                 .map(String::trim)
+                .filter(s -> s.length() >= 2)
                 .filter(s -> !s.isBlank())
                 .distinct()
                 .collect(Collectors.toList());
+    }
+
+    private List<String> collectKeywords(WantRequest want) {
+        List<String> keywords = new ArrayList<>(splitKeywords(want.getKeywords()));
+        if (keywords.isEmpty()) {
+            keywords.addAll(extractTitleKeywords(want.getTitle()));
+        }
+        if (keywords.isEmpty() && want.getDescription() != null) {
+            keywords.addAll(extractTitleKeywords(want.getDescription()));
+        }
+        return keywords.stream().limit(8).collect(Collectors.toList());
+    }
+
+    private List<String> extractTitleKeywords(String text) {
+        if (text == null || text.isBlank()) return List.of();
+        String cleaned = text.replaceAll("求购|想买|收一个|收台|收|购买|二手|闲置", " ")
+                .replaceAll("[^\\p{IsHan}A-Za-z0-9]+", " ")
+                .trim();
+        List<String> words = new ArrayList<>(splitKeywords(cleaned));
+        if (cleaned.length() >= 2 && cleaned.length() <= 12) {
+            words.add(cleaned.replace(" ", ""));
+        }
+        String compact = cleaned.replace(" ", "");
+        int maxLen = Math.min(compact.length(), 6);
+        for (int len = maxLen; len >= 2; len--) {
+            for (int start = 0; start + len <= compact.length(); start++) {
+                words.add(compact.substring(start, start + len));
+            }
+        }
+        return words.stream().filter(s -> s.length() >= 2).distinct().limit(8).collect(Collectors.toList());
     }
 
     private String firstImage(String pictures) {

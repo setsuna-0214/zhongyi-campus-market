@@ -1,7 +1,9 @@
 package org.example.campusmarket.modules.admin.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.campusmarket.Service.SystemMessageService;
 import org.example.campusmarket.Mapper.ProductMapper;
+import org.example.campusmarket.entity.Product;
 import org.example.campusmarket.modules.admin.dto.AdminDto;
 import org.example.campusmarket.modules.admin.mapper.AdminMapper;
 import org.example.campusmarket.modules.admin.service.AdminStatisticsService;
@@ -28,6 +30,7 @@ public class AdminController {
     private final ProductMapper productMapper;
     private final ForumPostService forumPostService;
     private final WantService wantService;
+    private final SystemMessageService systemMessageService;
 
     // ==================== 首页统计 ====================
 
@@ -79,9 +82,20 @@ public class AdminController {
 
     @PutMapping("/products/{id}/offline")
     public Result offlineProduct(@PathVariable Integer id) {
+        Product product = productMapper.findProductBasicById(id);
         int affected = productMapper.offlineProductByAdmin(id);
         if (affected == 0) {
             return ResultUtil.notFound("商品不存在");
+        }
+        if (product != null && product.getSaler_id() != null) {
+            systemMessageService.createMessage(
+                    product.getSaler_id(),
+                    "product_admin_offline",
+                    "商品已被下架",
+                    "你的商品《" + product.getPro_name() + "》已被管理员下架，普通用户将无法继续查看该商品。",
+                    "/user",
+                    "查看我的发布"
+            );
         }
         return ResultUtil.success("已下架该商品，普通用户列表将不再展示");
     }

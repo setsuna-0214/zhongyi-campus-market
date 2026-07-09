@@ -5,13 +5,20 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Card, Tag, Typography, Space, Button, List, message, Spin, Empty } from 'antd';
+import { Card, Tag, Typography, Space, Button, List, message, Spin, Empty, Image, Progress } from 'antd';
 import { refreshWantMatches, getWantDetail, getWantMatches } from '../../api/wants';
 
 const { Title, Paragraph, Text } = Typography;
 const CATEGORY_LABEL = { electronics: '数码电子', books: '图书教材', daily: '生活用品', other: '其他' };
 const STATUS_LABEL = { OPEN: '求购中', MATCHED: '已匹配', CLOSED: '已关闭' };
 const STATUS_COLOR = { OPEN: 'blue', MATCHED: 'green', CLOSED: 'default' };
+const DEFAULT_PRODUCT_IMAGE = '/images/products/thinkpad.jpg';
+
+function normalizeImage(src) {
+  if (!src) return DEFAULT_PRODUCT_IMAGE;
+  if (src.startsWith('http') || src.startsWith('/')) return src;
+  return `/${src.replace(/^\/+/, '')}`;
+}
 
 export default function WantDetail() {
   const { id } = useParams();
@@ -85,18 +92,39 @@ export default function WantDetail() {
 
         <Card title={`匹配商品（${matches.length}）`} className="comments-card" style={{ marginTop: 16 }}>
           {matches.length === 0 ? (
-            <Empty description="暂无符合条件的匹配商品" />
+            <Empty description="暂无符合条件的匹配商品，可以调整预算、分类或补充关键词后重新匹配" />
           ) : (
             <List
               dataSource={matches}
               renderItem={(item) => (
-                <List.Item onClick={() => navigate(`/products/${item.productId}`)} style={{ cursor: 'pointer' }}>
+                <List.Item onClick={() => navigate(`/products/${item.productId}`)} style={{ cursor: 'pointer', alignItems: 'flex-start' }}>
+                  <Image
+                    src={normalizeImage(item.picture)}
+                    alt={item.title}
+                    width={88}
+                    height={88}
+                    preview={false}
+                    style={{ objectFit: 'cover', borderRadius: 8, marginRight: 16, background: '#f5f5f5' }}
+                  />
                   <List.Item.Meta
-                    title={<Space wrap><span>{item.title}</span><Tag color="green">匹配分：{item.matchScore}</Tag></Space>}
+                    title={
+                      <Space wrap>
+                        <span>{item.title}</span>
+                        <Tag color="green">智能推荐</Tag>
+                        <Tag color="blue">{item.sellerName || '卖家'}</Tag>
+                      </Space>
+                    }
                     description={
                       <Space direction="vertical" size={6}>
-                        <Text>价格：¥{item.price}</Text>
-                        <Text>分类：{CATEGORY_LABEL[item.category] || item.category || '未分类'}</Text>
+                        <Space wrap>
+                          <Text strong>¥{item.price}</Text>
+                          <Text type="secondary">{CATEGORY_LABEL[item.category] || item.category || '未分类'}</Text>
+                        </Space>
+                        <Progress
+                          percent={Math.min(item.matchScore || 0, 100)}
+                          size="small"
+                          format={() => `${item.matchScore || 0} 分`}
+                        />
                         <Space wrap>
                           {(item.matchReasons || []).map((reason, idx) => <Tag key={`${item.productId}-${idx}`}>{reason}</Tag>)}
                         </Space>

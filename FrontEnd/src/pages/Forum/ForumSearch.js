@@ -12,11 +12,26 @@ import './Forum.css';
 
 const { Text, Paragraph } = Typography;
 
-const POST_TYPE_CONFIG = {
-  normal: { color: 'blue', label: '普通' },
-  resource: { color: 'green', label: '资源' },
-  help: { color: 'orange', label: '求助' },
+const CATEGORY_COLOR = {
+  '交易交流': 'blue',
+  '闲置交流': 'blue',
+  '校园拼单': 'blue',
+  '求购互助': 'orange',
+  '经验反馈': 'green',
+  '避坑经验': 'green',
+  '交易反馈': 'green',
+  '失物招领': 'purple',
 };
+const CATEGORY_LABEL = {
+  '闲置交流': '交易交流',
+  '校园拼单': '交易交流',
+  '避坑经验': '经验反馈',
+  '交易反馈': '经验反馈',
+};
+
+function getCategoryLabel(category) {
+  return CATEGORY_LABEL[category] || category;
+}
 
 export default function ForumSearch() {
   const navigate = useNavigate();
@@ -110,7 +125,7 @@ export default function ForumSearch() {
                         <div className="forum-post-header">
                           <Space size={6}>
                             <Text strong style={{ fontSize: 13 }}>{post.userNickname}</Text>
-                            <Tag color={POST_TYPE_CONFIG[post.postType]?.color}>{POST_TYPE_CONFIG[post.postType]?.label}</Tag>
+                            {post.category && <Tag color={CATEGORY_COLOR[post.category] || 'default'}>{getCategoryLabel(post.category)}</Tag>}
                             <Text type="secondary" style={{ fontSize: 11 }}>{formatTime(post.createdAt)}</Text>
                           </Space>
                         </div>
